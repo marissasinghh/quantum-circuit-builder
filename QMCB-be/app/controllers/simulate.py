@@ -84,5 +84,5 @@ def simulate_unitaries(
         "message": "Successfully simulated circuits.",
         "trial_truth_table": trial_truth_table_dto.to_dict(),
         "target_truth_table": target_truth_table_dto.to_dict(),
-        "validation_mode:": validate_target,
+        "validation_mode": validate_target,
     }, 200
