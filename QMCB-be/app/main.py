@@ -11,17 +11,6 @@ logging.basicConfig(
 config = Config()
 app = create_app(config)
 
-# CORS: allow the Vite dev server origins
-CORS(
-    app,
-    resources={
-        r"/api/*": {"origins": ["http://localhost:5173", "http://127.0.0.1:5173"]}
-    },
-    supports_credentials=False,
-    methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
-    allow_headers=["Content-Type", "Authorization"],
-)
-
 # Accept both /simulate and /simulate/
 app.url_map.strict_slashes = False
 
