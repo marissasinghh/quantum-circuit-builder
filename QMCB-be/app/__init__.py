@@ -15,8 +15,16 @@ def create_app(config: Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config)
 
-    # Configure CORS using the allowed origins from config
-    CORS(app, resources={r"/*": {"origins": config.ALLOWED_ORIGINS}})
+    # CORS for API routes only; origins from config (default "*" in settings)
+    CORS(
+        app,
+        resources={
+            r"/api/*": {"origins": config.ALLOWED_ORIGINS},
+        },
+        supports_credentials=False,
+        methods=["GET", "POST", "OPTIONS", "PUT", "DELETE"],
+        allow_headers=["Content-Type", "Authorization"],
+    )
 
     logger.info("Quantum Circuit Builder Flask app created successfully.")
     return app
