@@ -54,7 +54,7 @@ The application uses the following environment variables:
 
 ### API Endpoints
 
-1. POST /simulate: Simulates a quantum circuit built from gates provided by the frontend and returns a truth table
+1. POST /api/simulate: Simulates a quantum circuit built from gates provided by the frontend and returns a truth table
 
 ## Example Request: 
 {
@@ -140,6 +140,6 @@ qmcb-be/
 
 
 ### Notes
-- The backend and frontend communicate via REST at /simulate.
+- The backend and frontend communicate via REST at /api/simulate.
 - Be sure ALLOWED_ORIGINS matches your frontend dev/prod URLs.
 - For production deployment, use a WSGI server (Gunicorn, uWSGI) behind Nginx.

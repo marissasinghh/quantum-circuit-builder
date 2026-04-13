@@ -55,7 +55,7 @@ Open: http://localhost:5173
 
 For daily development, you need to:
 
-1. Start backend (qmcb-be) and verify /simulate (or /api/smiluate) works.
+1. Start backend (qmcb-be) and verify `POST /api/simulate` works (for example with curl or your HTTP client).
 
 2. Start front end:
 
@@ -81,7 +81,7 @@ The application uses the following environment variables:
 
 ### API Contract
 
-1. POST ${VITE_API_BASE_URL}/simulate
+1. POST ${VITE_API_BASE_URL}/api/simulate
 
 ## Example Request:
 
@@ -147,8 +147,8 @@ npm run format     # Prettier write
 ```bash
 qmcb-fe/
 ├─ src/
-│  ├─ api/
-│  │  └─ simulate.ts           # fetch wrapper (POST /simulate)
+│  ├─ services/
+│  │  └─ simulate.ts           # fetch wrapper (POST /api/simulate)
 │  ├─ components/
 │  │  └─ gate-designs.tsx      # SVG glyphs for CNOT, H, T
 │  ├─ controllers/
@@ -192,8 +192,8 @@ qmcb-fe/
 
 - CORS error in console:
   - Make sure backend allows http://localhost:5173 (dev) and your production FE origin.
-- 404 on /api/simulate vs /simulate:
-  - Check backend routes (flask --app app.main routes) and align simulate.ts base URL accordingly.
+- 404 on `/api/simulate`:
+  - Check backend routes (`flask --app app.main routes`), `VITE_API_BASE_URL`, and that `src/services/simulate.ts` posts to `/api/simulate`.
 - Drag overlay not showing / errors with useDndMonitor:
   - We use DndContext props (onDragStart/onDragEnd) instead of useDndMonitor to avoid provider issues.
 - No gates placed but output appears:

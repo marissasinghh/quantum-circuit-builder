@@ -48,7 +48,7 @@ Although this project is not an ML training pipeline, it does operate over struc
 - **Trial circuits**
   - Student-designed gate sequences built in the UI.
   - Represented as an ordered list of gates (for example, `["CNOT", "CNOT", "CNOT"]`) and associated qubit order tuples (for example, `[[0, 1], [1, 0], [0, 1]]`).
-  - Encoded as a JSON payload and submitted to the `/simulate` backend endpoint.
+  - Encoded as a JSON payload and submitted to the `/api/simulate` backend endpoint.
 
 - **Truth tables**
   - For a given circuit and number of qubits, the backend computes:
@@ -84,7 +84,7 @@ The system implements a simple end-to-end modeling pipeline that takes a symboli
   - Qubit order tuple:
     - For two-qubit gates (for example, `CNOT`): `[control, target]` such as `[0, 1]` or `[1, 0]`.
     - For single-qubit gates: `[wire, wire]` such as `[0, 0]` for the first wire and `[1, 1]` for the second.
-- The frontend controller serializes the ordered list of placed gates and wires into a `UnitaryRequestDTO` that is POSTed to `/simulate`.
+- The frontend controller serializes the ordered list of placed gates and wires into a `UnitaryRequestDTO` that is POSTed to `/api/simulate`.
 
 ### 2. Quantum Circuit Construction (Backend)
 
@@ -127,7 +127,7 @@ While the system does not train a model, it does compute metrics that characteri
 ### System-Level Metrics
 
 - **Deterministic simulation**
-  - For a fixed circuit description, repeated calls to `/simulate` should be stable and idempotent.
+  - For a fixed circuit description, repeated calls to `/api/simulate` should be stable and idempotent.
 - **Input validation**
   - Requests with invalid gate types or qubit orders are rejected with structured error responses rather than causing runtime failures.
 
@@ -202,11 +202,11 @@ Then run the development server:
 npm run dev
 ```
 
-Open the application at `http://localhost:5173`. You should be able to place gates on the canvas and use **Check Solution** to trigger simulations via `POST /simulate`.
+Open the application at `http://localhost:5173`. You should be able to place gates on the canvas and use **Check Solution** to trigger simulations via `POST /api/simulate`.
 
 ### 4. Recommended Developer Workflow
 
-- Start the backend and verify that `POST /simulate` responds as expected (for example, using `curl` or an HTTP client).
+- Start the backend and verify that `POST /api/simulate` responds as expected (for example, using `curl` or an HTTP client).
 - Start the frontend and confirm the UI can reach the backend without CORS issues.
 - Use tooling/scripts in each package for quality checks:
   - Frontend: `npm run typecheck`, `npm run lint`, `npm run format`
@@ -227,13 +227,13 @@ High-level architecture for the QMCB prototype:
 │  - Builds UnitaryRequestDTO                                   │
 │  - Renders trial vs target truth tables                       │
 └───────────────▲───────────────────────────────────────────────┘
-                │  POST /simulate (JSON)
+                │  POST /api/simulate (JSON)
                 │
 ┌───────────────┴───────────────────────────────────────────────┐
 │                     FLASK API (qmcb-be)                        │
 ├───────────────────────────────────────────────────────────────┤
 │  API Layer                                                     │
-│  - `/simulate` endpoint                                        │
+│  - `/api/simulate` endpoint                                        │
 │  - Request validation and DTO mapping                          │
 │                                                                 │
 │  Controllers / Services                                        │
@@ -261,7 +261,7 @@ High-level architecture for the QMCB prototype:
 
 ```bash
 .
-├─ qmcb-be/        # Flask API (POST /simulate)
+├─ qmcb-be/        # Flask API (POST /api/simulate)
 ├─ qmcb-fe/        # Vite + React UI
 ├─ .gitignore
 └─ README.md       # This file
@@ -277,7 +277,7 @@ For detailed package-level documentation, see:
 ## Technologies Used
 
 - **Python 3.x**: Backend language for the Flask API.
-- **Flask**: Lightweight web framework exposing the `/simulate` endpoint.
+- **Flask**: Lightweight web framework exposing the `/api/simulate` endpoint.
 - **NumPy / quantum gate utilities**: For unitary and truth table computation (in the repositories layer).
 - **JavaScript / TypeScript**: Frontend application logic and DTOs.
 - **React + Vite**: Frontend framework and dev tooling.
