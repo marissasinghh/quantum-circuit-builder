@@ -3,6 +3,7 @@ from flask import request
 from app.settings import Config
 from app.controllers.simulate import simulate_unitaries
 from app.utils.response_builder import ResponseBuilder
+from app.utils.unitary_payload import validate_simulate_unitary_json
 from app.dto.response_dto import ResponseDTO
 from app.dto.unitary import UnitaryDTO
 import logging
@@ -26,6 +27,11 @@ class Simulate(Resource):
 
             if not unitary_info:
                 return ResponseBuilder.error("No JSON body provided", 400)
+
+            try:
+                validate_simulate_unitary_json(unitary_info)
+            except ValueError as err:
+                return ResponseBuilder.fail(str(err))
 
             logger.info("Processing unitary info into trial and target DTOs")
             trial_dto = UnitaryDTO(

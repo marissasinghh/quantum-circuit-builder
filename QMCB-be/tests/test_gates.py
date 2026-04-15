@@ -94,6 +94,27 @@ def test_gate_unitary_is_unitary(
     )
 
 
+@pytest.mark.parametrize(
+    "gate_name",
+    [Gate.RX.value, Gate.RY.value, Gate.RZ.value],
+)
+def test_rotation_gate_unitary_with_theta_is_unitary(gate_name: str) -> None:
+    """Rx/Ry/Rz through the mapper must be unitary when ``theta`` is supplied."""
+    theta = math.pi / 5
+    q0 = cirq.LineQubit(0)
+    op = CirqGateMapper.apply(gate_name, [0], q0, theta=theta)
+    U = cirq.unitary(cirq.Circuit(op))
+    n = U.shape[0]
+    product = np.conjugate(U.T) @ U
+    assert np.allclose(product, np.eye(n, dtype=np.complex128))
+
+
+def test_rx_without_theta_raises() -> None:
+    q0 = cirq.LineQubit(0)
+    with pytest.raises(ValueError, match="theta is required"):
+        CirqGateMapper.apply(Gate.RX.value, [0], q0)
+
+
 def test_hadamard_matrix_matches_paper_derived_form() -> None:
     """
     **What it does:** Builds H through `CirqGateMapper`, reads its 2×2 unitary U, and

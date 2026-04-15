@@ -9,7 +9,10 @@ class CirqGateMapper:
 
     @staticmethod
     def apply(
-        gate: str, qubit_order: Optional[list[int]] = None, *qubits: Qubit
+        gate: str,
+        qubit_order: Optional[list[int]] = None,
+        *qubits: Qubit,
+        theta: Optional[float] = None,
     ) -> Operation:
         """
         Apply the desired quantum gate to the provided qubit(s).
@@ -22,7 +25,7 @@ class CirqGateMapper:
         selected_qubits = [qubits[i] for i in qubit_order]
 
         print(
-            f"[DEBUG] Gate: {gate}, Qubit Order: {qubit_order}, "
+            f"[DEBUG] Gate: {gate}, theta: {theta!r}, Qubit Order: {qubit_order}, "
             f"Selected Qubits: {[str(q) for q in selected_qubits]}"
         )
 
@@ -39,10 +42,19 @@ class CirqGateMapper:
             return cirq.T(selected_qubits[0])
 
         elif gate == Gate.RX.value:
-            return cirq.rx(math.pi / 2)(selected_qubits[0]) 
+            if theta is None:
+                raise ValueError("theta is required for RX gate")
+            return cirq.rx(theta)(selected_qubits[0]) 
 
         elif gate == Gate.RY.value:
-            return cirq.ry(math.pi / 2)(selected_qubits[0])
+            if theta is None:
+                raise ValueError("theta is required for RY gate")
+            return cirq.ry(theta)(selected_qubits[0])
+
+        elif gate == Gate.RZ.value:
+            if theta is None:
+                raise ValueError("theta is required for RZ gate")
+            return cirq.rz(theta)(selected_qubits[0])
 
         elif gate == Gate.U.value:
             # Generic single-qubit gate (placeholder - needs parameters)

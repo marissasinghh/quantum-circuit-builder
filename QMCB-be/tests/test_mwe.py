@@ -79,6 +79,24 @@ def test_simulate_unitaries_api_shape_and_baseline(
     assert target["output"] == ["00", "10", "01", "11"]
 
 
+def test_simulate_unitaries_mixed_string_and_dict_gates() -> None:
+    """
+    End-to-end: ``gates`` may mix legacy strings and ``{"gate": ..., "theta"?}`` dicts;
+    wiring stays on ``qubit_order[i]`` for every index.
+    """
+    trial = UnitaryDTO(
+        number_of_qubits=2,
+        gates=["CNOT", {"gate": "H"}],
+        qubit_order=[[0, 1], [0]],
+    )
+    with patch("builtins.print"):
+        response, status = simulate_unitaries(trial, "SWAP", validate_target=False)
+    assert status == 200
+    trial_tt = response["trial_truth_table"]
+    assert set(trial_tt.keys()) == {"input", "output"}
+    assert trial_tt["input"] == ["|00>", "|01>", "|10>", "|11>"]
+
+
 def test_target_dto_matches_swap_library_metadata(target_swap_dto: UnitaryDTO) -> None:
     """
     **What it does:** Asserts helper-derived target ``UnitaryDTO`` matches the SWAP

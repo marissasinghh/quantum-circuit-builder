@@ -1,7 +1,7 @@
 import cirq
 from app.config.gates import CirqGateMapper
 from app.utils.helpers import index_to_letter
-from app.utils.types import Qubit, Circuit
+from app.utils.types import Qubit, Circuit, UnitaryGateEntry
 from app.utils.constants import Gate
 
 
@@ -34,25 +34,47 @@ class CircuitBuilder:
 
     @staticmethod
     def build_circuit_base(
-        gates: list[str], qubit_order: list[list[int]], qubits: list[Qubit]
+        gates: list[UnitaryGateEntry],
+        qubit_order: list[list[int]],
+        qubits: list[Qubit],
     ) -> Circuit:
         """
         Creates a circuit based on the order of gate operations for a specified
         number of qubits.
+
+        Each `gates[i]` is either a gate name string or `{"gate": "…", "theta": …}`.
+        Wiring for step `i` is always `qubit_order[i]`. For plain strings,
+        `theta` is omitted so `CirqGateMapper` uses `None` (non-rotation gates).
         """
+        if len(gates) != len(qubit_order):
+            raise ValueError(
+                "Gates and qubit_order must have the same length."
+                f"({len(gates)} vs {len(qubit_order)})."
+            )
+
         operations = []
 
-        for i in range(len(gates)):
+        for i, entry in enumerate(gates):
+            if isinstance(entry, str):
+                gate_name = entry
+                theta = None
+            else:
+                gate_name = entry["gate"]
+                theta = entry.get("theta")
 
-            print(f"Applying {gates[i]} for order {qubit_order[i]}")
-            operations.append(CirqGateMapper.apply(gates[i], qubit_order[i], *qubits))
+            print(f"Applying {gate_name} (theta={theta!r}) for order {qubit_order[i]}")
+            operations.append(
+                CirqGateMapper.apply(
+                    gate_name, qubit_order[i], *qubits, theta=theta
+                )
+            )
 
         return cirq.Circuit(operations)
 
     @staticmethod
     def construct_unitary_circuit(
         basis_state: list[int],
-        gates: list[str],
+        gates: list[UnitaryGateEntry],
         qubit_order: list[list[int]],
         qubits: list[Qubit],
     ) -> Circuit:

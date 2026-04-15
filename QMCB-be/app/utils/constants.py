@@ -27,6 +27,7 @@ class Gate(Enum):
     T = "T"
     RX = "RX"
     RY = "RY"
+    RZ = "RZ"
     U = "U"
     CNOT = "CNOT"
     CNOT_FLIPPED = "CNOT_FLIPPED"

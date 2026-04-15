@@ -22,9 +22,9 @@ class TargetUnitaryBuilder:
         for step in steps:
             gate = step["gate"]
             order = step["order"]
+            theta = step.get("theta")
 
-            # Apply gate with specified qubit order
-            operation = CirqGateMapper.apply(gate, order, *qubits)
+            operation = CirqGateMapper.apply(gate, order, *qubits, theta=theta)
             operations.append(operation)
 
         return cirq.Circuit(*operations)
