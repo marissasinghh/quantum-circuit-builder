@@ -8,7 +8,22 @@
 import type { PlacedGate, ControlTargetOrder, AnyQubitOrder } from "../types/global";
 import { isValidOrderFor } from "../config/gates";
 import { Gate } from "../types/global";
+import type { UnitaryGateEntry } from "../interfaces/unitary";
 import { DEFAULT_QUBIT_ORDER } from "./constants";
+
+/** When set on a placed RX/RY, the API expects `{"gate","theta"}` instead of a bare string. */
+function placedGateToUnitaryEntry(g: PlacedGate): UnitaryGateEntry {
+  if ("order" in g) {
+    return g.type;
+  }
+  if (
+    (g.type === Gate.RX || g.type === Gate.RY) &&
+    typeof g.theta === "number"
+  ) {
+    return { gate: g.type, theta: g.theta };
+  }
+  return g.type;
+}
 
 /** Return a new array sorted by column (ascending) */
 function sortByColumn(gates: PlacedGate[]) {
@@ -64,9 +79,9 @@ export function clear(): PlacedGate[] {
   return [];
 }
 
-/** Column-ordered names for the API request body */
-export function serializeGateNames(gates: PlacedGate[]): Gate[] {
-  return sortByColumn(gates).map((g) => g.type);
+/** Column-ordered `gates[]` for `UnitaryRequestDTO` (strings or `{ gate, theta }`). */
+export function serializeUnitaryGateEntries(gates: PlacedGate[]): UnitaryGateEntry[] {
+  return sortByColumn(gates).map(placedGateToUnitaryEntry);
 }
 
 /** Column-ordered qubit orders for the API request body */

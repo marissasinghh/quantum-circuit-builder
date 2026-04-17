@@ -57,6 +57,8 @@ export type PlacedSingleQubitGate = {
   type: SingleQubitGate;
   wire: SingleWire;
   column: number;
+  /** Rotation angle in radians (RX, RY); sent as `{"gate","theta"}` when set. */
+  theta?: number;
 };
 
 /** Two-qubit CNOT chip placed on the canvas. */

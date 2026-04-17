@@ -8,8 +8,19 @@
 import type { AnyQubitOrder } from "../types/global";
 import type { Gate } from "../types/global";
 
-/** One step: legacy string, or parameterized gate (theta in radians when present). */
-export type UnitaryGateEntry = Gate | { gate: string; theta?: number };
+/** Mirroring backend types. */
+export type ParameterizedGate = { gate: string; theta: number };
+export type UnitaryGateEntry = Gate | ParameterizedGate;
+
+export const isParameterizedGate = (entry: UnitaryGateEntry): entry is ParameterizedGate => {
+  return (
+    entry !== null &&
+    typeof entry === "object" &&
+    "gate" in entry &&
+    "theta" in entry &&
+    typeof (entry as ParameterizedGate).theta === "number"
+  );
+};
 
 export interface UnitaryRequestDTO {
   target_unitary: Gate;

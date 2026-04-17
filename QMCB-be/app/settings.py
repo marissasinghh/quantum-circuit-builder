@@ -4,13 +4,21 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _parse_cors_origins() -> str | list[str]:
+    """ALLOWED_ORIGINS: '*', empty/unset → wildcard; else comma-separated list."""
+    raw = getenv("ALLOWED_ORIGINS", "*").strip()
+    if not raw or raw == "*":
+        return "*"
+    origins = [o.strip() for o in raw.split(",") if o.strip()]
+    return origins if origins else "*"
+
+
 class Config:
     """
     Base configuration for Quantum Circuit Builder (QMC) Flask app.
     """
 
-    # CORS – allow all origins for now (planning to adjust for production)
-    ALLOWED_ORIGINS = getenv("ALLOWED_ORIGINS", "*")
+    ALLOWED_ORIGINS: str | list[str] = _parse_cors_origins()
 
     # API versioning
     API_VERSION = getenv("API_VERSION", "v1")

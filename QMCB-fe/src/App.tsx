@@ -38,7 +38,7 @@ export default function App() {
     setShowCompletionModal(false); // Reset modal when level changes
   });
 
-  const { mutation, rows, allCorrect, handleCheck } = useCircuitValidation(currentLevel, gates);
+  const { mutation, rows, allCorrect, handleCheck, validationError } = useCircuitValidation(currentLevel, gates);
 
   const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
 
@@ -99,7 +99,7 @@ export default function App() {
             <OutputTable
               rows={rows}
               isCorrect={allCorrect}
-              error={mutation.isError ? (mutation.error as Error) : null}
+              error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
             />
           </section>
         </main>
