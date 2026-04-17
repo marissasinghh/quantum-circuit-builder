@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QMCB — Simulate API: JSON → DTOs → Circuits</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --border: #d8dee9;
+      --text: #1c2333;
+      --muted: #5c6578;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --side: #f0fdf4;
+      --side-border: #86efac;
+      --code-bg: #0f172a;
+      --code-fg: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 3rem;
+    }
+    h1 {
+      font-size: 1.65rem;
+      font-weight: 650;
+      margin: 0 0 0.35rem;
+      letter-spacing: -0.02em;
+    }
+    .lede {
+      color: var(--muted);
+      max-width: 52rem;
+      margin-bottom: 1.75rem;
+    }
+    .grid-main {
+      display: grid;
+      grid-template-columns: 1fr min(340px, 34%);
+      gap: 1.25rem;
+      align-items: start;
+      margin-bottom: 2rem;
+    }
+    @media (max-width: 900px) {
+      .grid-main { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    }
+    .panel h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+    }
+    .side {
+      background: var(--side);
+      border-color: var(--side-border);
+    }
+    .side h2 { color: #166534; }
+    .side ul { margin: 0.4rem 0 0; padding-left: 1.2rem; }
+    .side li { margin: 0.35rem 0; }
+    .side .file {
+      font-family: ui-monospace, monospace;
+      font-size: 0.85rem;
+      color: #14532d;
+    }
+    .mini-flow {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: #fff;
+      border: 1px dashed var(--side-border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .mini-flow code { font-size: 0.82rem; }
+    .example {
+      margin: 1rem 0 0;
+      padding: 0.85rem 1rem;
+      background: var(--accent-soft);
+      border-radius: 8px;
+      font-size: 0.88rem;
+    }
+    .example strong { display: block; margin-bottom: 0.35rem; color: #1e40af; }
+    pre.json {
+      margin: 0.4rem 0 0;
+      padding: 0.75rem;
+      background: var(--code-bg);
+      color: var(--code-fg);
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+    h3.section {
+      font-size: 1.15rem;
+      margin: 2rem 0 1rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 2px solid var(--border);
+    }
+    .dto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .dto-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+    .dto-card h4 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+    .dto-card .path {
+      font-family: ui-monospace, monospace;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.65rem;
+    }
+    .dto-card dl {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+    .dto-card dt {
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+    .dto-card dt:first-child { margin-top: 0; }
+    .dto-card dd {
+      margin: 0.15rem 0 0 0;
+      color: var(--muted);
+    }
+    .lifecycle {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 0.65rem 0.75rem;
+      margin-top: 0.5rem;
+      font-size: 0.88rem;
+    }
+    .lifecycle strong { color: #92400e; }
+    pre.ascii {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      padding: 1rem 1.1rem;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 0.72rem;
+      line-height: 1.35;
+      margin: 0.75rem 0 0;
+    }
+    .footnote {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 1.5rem;
+    }
+
+    /* ----- PDF / print (Playwright & browser Print to PDF) ----- */
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+    @media print {
+      body {
+        background: #fff;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .wrap {
+        max-width: none;
+        padding: 0;
+        margin: 0;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.15rem;
+      }
+      .lede {
+        margin-bottom: 0.4rem;
+        font-size: 0.88rem;
+        line-height: 1.4;
+      }
+      .example {
+        margin-top: 0.35rem;
+        margin-bottom: 0.35rem;
+        padding: 0.45rem 0.55rem;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      pre.json {
+        font-size: 0.72rem;
+        padding: 0.5rem 0.6rem;
+      }
+
+      /* Stack columns; do NOT mark whole .panel as unbreakable — that caused blank pages */
+      .grid-main {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      .grid-main > .panel {
+        width: 100%;
+        max-width: none;
+        margin-bottom: 0.6rem;
+        padding: 0.65rem 0.75rem;
+      }
+      .grid-main > .panel > h2 {
+        margin-bottom: 0.35rem;
+        font-size: 0.95rem;
+      }
+
+      /* Mermaid: compact SVG, step-style edges attach at node boundaries; keep block on one page when it fits */
+      .mermaid {
+        display: block;
+        text-align: center;
+        overflow: visible;
+        margin: 0;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .mermaid svg {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: auto !important;
+      }
+
+      h3.section {
+        margin: 0.75rem 0 0.4rem;
+        break-after: avoid;
+        page-break-after: avoid;
+        font-size: 1.05rem;
+      }
+
+      /* All four DTO cards on one sheet: 2×2, tighter type */
+      .dto-print-wrap {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .dto-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.45rem;
+        align-items: stretch;
+      }
+      .dto-card {
+        width: auto;
+        max-width: none;
+        margin-bottom: 0;
+        padding: 0.45rem 0.55rem;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        font-size: 0.72rem;
+        line-height: 1.32;
+      }
+      .dto-card h4 {
+        font-size: 0.82rem;
+        margin-bottom: 0.25rem;
+      }
+      .dto-card .path {
+        font-size: 0.65rem;
+        margin-bottom: 0.35rem;
+      }
+      .dto-card dl {
+        font-size: 0.72rem;
+      }
+      .dto-card dt {
+        margin-top: 0.35rem;
+      }
+      .lifecycle {
+        font-size: 0.68rem;
+        padding: 0.4rem 0.45rem;
+        margin-top: 0.35rem;
+      }
+
+      /* ASCII block: keep on one page when it fits; slightly smaller type */
+      pre.ascii {
+        font-size: 0.62rem;
+        line-height: 1.3;
+        padding: 0.65rem 0.75rem;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .mini-flow,
+      .lifecycle {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .footnote {
+        margin-top: 0.75rem;
+        font-size: 0.78rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Simulate API: JSON → validation → DTOs → Cirq → response</h1>
+    <p class="lede">
+      This page shows how a <strong>POST /api/simulate</strong> body travels through the backend.
+      The <strong>level-definition</strong> shape (<code>GateStep</code> / <code>steps[]</code>) lives
+      <em>outside</em> this HTTP flow—it is used for the built-in <strong>target library</strong>, not for the trial circuit JSON.
+    </p>
+
+    <div class="example">
+      <strong>Example request body (includes <code>theta</code> on one gate)</strong>
+      <pre class="json">{
+  "number_of_qubits": 2,
+  "gates": ["H", { "gate": "RX", "theta": 1.2 }, "CNOT"],
+  "qubit_order": [[0], [1], [0, 1]],
+  "target_unitary": "SWAP"
+}</pre>
+      <span style="font-size:0.85rem;color:var(--muted);">Row <code>i</code>: <code>gates[i]</code> pairs with <code>qubit_order[i]</code> (H on q0, RX(1.2) on q1, CNOT 0→1).</span>
+    </div>
+
+    <h3 class="section">Flowchart + level definition (sidebar)</h3>
+    <div class="grid-main">
+      <div class="panel">
+        <h2>Main path: trial circuit from HTTP</h2>
+        <div id="flow-diagram" class="mermaid" aria-label="Simulate API flowchart"></div>
+        <p style="margin:0.75rem 0 0;font-size:0.85rem;color:var(--muted);">
+          <strong>Files:</strong>
+          <code>app/api/simulate.py</code> →
+          <code>app/utils/unitary_payload.py</code> →
+          <code>app/dto/unitary.py</code> →
+          <code>app/controllers/simulate.py</code> →
+          <code>app/services/circuit_builder.py</code> →
+          <code>app/config/gates.py</code> →
+          <code>app/services/simulator.py</code>.
+        </p>
+      </div>
+
+      <aside class="panel side">
+        <h2>Level definition — not in this request</h2>
+        <p style="margin:0 0 0.5rem;font-size:0.92rem;">
+          Canonical targets are authored as Python data with <strong>self-contained steps</strong>.
+          Each step includes <strong>order</strong> on the same object (no parallel <code>qubit_order</code> array).
+        </p>
+        <p class="file">app/utils/types.py — GateStep (TypedDict)</p>
+        <ul>
+          <li><code>gate</code> (string)</li>
+          <li><code>order</code> (list of qubit indices)</li>
+          <li><code>theta</code> optional — same meaning as in the HTTP dict gate</li>
+        </ul>
+        <p class="file" style="margin-top:0.75rem;">app/config/target_library.py</p>
+        <ul>
+          <li><code>TARGET_LIBRARY[name]</code> has <code>steps</code>, <code>num_qubits</code>, <code>expected_outputs</code>, …</li>
+        </ul>
+        <p class="file" style="margin-top:0.75rem;">app/services/target_builder.py</p>
+        <ul>
+          <li><code>TargetUnitaryBuilder.build(name, qubits)</code> loops <code>steps</code>, reads <code>gate</code>, <code>order</code>, <code>theta</code>, calls <code>CirqGateMapper.apply</code> (same mapper as the trial path).</li>
+        </ul>
+        <p class="file" style="margin-top:0.75rem;">app/utils/helpers.py</p>
+        <ul>
+          <li><code>build_target_truth_table</code> / related helpers use <code>TARGET_LIBRARY</code> when not building the circuit from scratch.</li>
+        </ul>
+        <div class="mini-flow">
+          <strong>Where it “shows up” in the simulate flow</strong><br />
+          The client sends <code>target_unitary: "SWAP"</code> (a <strong>string key</strong>).<br />
+          If <code>validate_target</code> is on, the backend builds the <strong>target circuit</strong> from
+          <code>TARGET_LIBRARY["SWAP"].steps</code> — that is the level-definition shape.<br />
+          The <strong>trial</strong> circuit never uses <code>steps[]</code>; it uses <code>gates</code> + <code>qubit_order</code> only.
+        </div>
+      </aside>
+    </div>
+
+    <h3 class="section">What each DTO holds (and how it changes)</h3>
+    <div class="dto-print-wrap">
+    <div class="dto-grid">
+      <div class="dto-card">
+        <h4>UnitaryDTO</h4>
+        <div class="path">app/dto/unitary.py</div>
+        <dl>
+          <dt>number_of_qubits</dt>
+          <dd>Positive integer — how many line qubits to allocate.</dd>
+          <dt>gates</dt>
+          <dd>List parallel to <code>qubit_order</code>. Each entry: a <strong>string</strong> (e.g. <code>"CNOT"</code>) or a <strong>dict</strong> <code>{"gate": "RX", "theta": 1.2}</code>. Nothing is “split out” later — the lists are passed through as-is.</dd>
+          <dt>qubit_order</dt>
+          <dd><code>gates[i]</code> is applied using <code>qubit_order[i]</code> (wiring for that row).</dd>
+        </dl>
+        <p style="margin:0.6rem 0 0;font-size:0.88rem;color:var(--muted);">
+          <strong>Not included:</strong> <code>target_unitary</code> from JSON is a separate string; it is not a field on this DTO.
+        </p>
+      </div>
+
+      <div class="dto-card">
+        <h4>TruthTableDTO</h4>
+        <div class="path">app/dto/truth_table.py</div>
+        <dl>
+          <dt>Structure</dt>
+          <dd><code>input: list[str]</code>, <code>output: list[str]</code> — parallel columns (same length when filled).</dd>
+        </dl>
+        <div class="lifecycle">
+          <strong>Created empty:</strong> <code>TruthTableDTO([], [])</code> for trial and for target at the start of <code>simulate_unitaries</code>.<br /><br />
+          <strong>Filled during simulation:</strong> each basis state run appends one row via <code>CircuitSimulator.simulate_and_update</code> (inputs like <code>|01⟩</code>, outputs from Cirq statevector notation).<br /><br />
+          <strong>Serialized for HTTP:</strong> <code>.to_dict()</code> → <code>{ "input": [...], "output": [...] }</code>.
+        </div>
+      </div>
+
+      <div class="dto-card">
+        <h4>Validation (no DTO)</h4>
+        <div class="path">app/utils/unitary_payload.py</div>
+        <dl>
+          <dt>validate_simulate_unitary_json</dt>
+          <dd>Checks the raw <strong>dict</strong>: required keys, list lengths, each gate string or <code>{"gate", "theta"?}</code>, numeric <code>theta</code>. Raises <code>ValueError</code> → API returns <code>ResponseBuilder.fail</code>. Does not construct a dataclass.</dd>
+        </dl>
+      </div>
+
+      <div class="dto-card">
+        <h4>Response payload (dict, not a DTO class)</h4>
+        <div class="path">controllers/simulate.py return value</div>
+        <dl>
+          <dt>Contents</dt>
+          <dd>Message, <code>trial_truth_table</code> and <code>target_truth_table</code> as dicts from <code>TruthTableDTO.to_dict()</code>, plus <code>validation_mode</code>.</dd>
+        </dl>
+      </div>
+    </div>
+    </div>
+
+    <h3 class="section">ASCII timeline (same path, file-oriented)</h3>
+    <pre class="ascii">CLIENT
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  app/api/simulate.py  ·  Simulate.post()                                │
+│    • unitary_info = request.get_json()          (plain dict)            │
+└─────────────────────────────────────────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  validate_simulate_unitary_json(unitary_info)                           │
+│    app/utils/unitary_payload.py                                          │
+│    • Still dict — no DTO. Raises ValueError if shape is wrong.           │
+└─────────────────────────────────────────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  UnitaryDTO(                                                             │
+│      unitary_info["number_of_qubits"],                                  │
+│      unitary_info["gates"],        ← list[str | {"gate","theta"?}]      │
+│      unitary_info["qubit_order"],                                       │
+│  )                          app/dto/unitary.py                           │
+│                                                                          │
+│  target_name = unitary_info["target_unitary"]   ← str, not in UnitaryDTO │
+└─────────────────────────────────────────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  simulate_unitaries(trial_dto, target_name, validate)                   │
+│    app/controllers/simulate.py                                           │
+│      • TruthTableDTO([], []) ×2  (trial + target) — empty, then filled   │
+│      • FOR each basis state:                                             │
+└─────────────────────────────────────────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  CircuitBuilder.construct_unitary_circuit(...)                          │
+│    app/services/circuit_builder.py                                       │
+│      • prepare_basis_state  → X gates for |1⟩ bits                      │
+│      • build_circuit_base(trial_dto.gates, trial_dto.qubit_order, …)     │
+│            i=0: "H"     → theta None                                     │
+│            i=1: dict    → gate "RX", theta 1.2                           │
+│            i=2: "CNOT"  → theta None                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  CirqGateMapper.apply(gate_name, qubit_order[i], *qubits, theta=…)      │
+│    app/config/gates.py                                                   │
+│      • RX + theta → cirq.rx(theta)(qubit)                                │
+└─────────────────────────────────────────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  CircuitSimulator.simulate_and_update(...)                               │
+│    app/services/simulator.py                                             │
+│      • Appends one row to TruthTableDTO (mutate in place)                │
+└─────────────────────────────────────────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Return { message, trial_truth_table, target_truth_table, … }           │
+│    truth_table DTOs → .to_dict() for JSON                                │
+└─────────────────────────────────────────────────────────────────────────┘</pre>
+
+    <p class="footnote">
+      Open this file in a browser (internet required once for the Mermaid CDN). If the diagram does not render, check that scripts are not blocked.
+    </p>
+  </div>
+  <script>
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "neutral",
+      securityLevel: "loose",
+      flowchart: {
+        curve: "stepAfter",
+        padding: 10,
+        nodeSpacing: 44,
+        rankSpacing: 72,
+        useMaxWidth: true,
+        htmlLabels: true
+      },
+      themeVariables: {
+        fontSize: "9px",
+        fontFamily: "Segoe UI, system-ui, sans-serif"
+      }
+    });
+    document.addEventListener("DOMContentLoaded", async () => {
+      const el = document.getElementById("flow-diagram");
+      if (!el) return;
+      const diagram = `flowchart TD
+  subgraph HTTP["① Flask"]
+    H1["app/api/simulate.py
+• request.get_json → dict
+• validate_simulate_unitary_json
+• dict only · no DTO"]
+    FAIL{"ValueError?"}
+    RB["ResponseBuilder.fail"]
+    H1 --> FAIL
+    FAIL -->|yes| RB
+  end
+
+  subgraph DTOs["② DTOs"]
+    UD["UnitaryDTO
+• fields: {number_of_qubits, gates, qubit_order}
+• each gate row: str or {gate, theta?} · wiring: qubit_order[i] for gates[i]
+• target-library GateStep (contrast): {gate, order, theta?}
+• app/dto/unitary.py · created after validate
+• travels: trial_dto → simulate_unitaries → CircuitBuilder"]
+    TN["target_unitary (not a DTO)
+• JSON field: {target_unitary: str}
+• not inside UnitaryDTO
+• travels: simulate_unitaries + TARGET_LIBRARY"]
+  end
+
+  subgraph CTRL["③ Controller"]
+    SU["simulate_unitaries(trial_dto, target_name, validate_target)
+• app/controllers/simulate.py"]
+  end
+
+  subgraph LOOP["④ Each basis state"]
+    IQ["initialize_qubit_sequence
+• helpers · LineQubits"]
+    TT["TruthTableDTO ×2
+• fields: {input, output}
+• app/dto/truth_table.py
+• created empty at start of simulate_unitaries
+• rows in simulate_and_update
+• to_dict() in JSON"]
+    CB["trial circuit
+• construct_unitary_circuit · basis + gates + qubit_order
+• build_circuit_base · θ from dict
+• CirqGateMapper.apply · θ
+• cirq.Circuit"]
+    SIM["simulate_and_update
+• append kets to TruthTableDTO"]
+  end
+
+  subgraph OUT["⑤ Response"]
+    RESP["HTTP JSON
+• dict
+• trial_truth_table + target_truth_table
+• TruthTableDTO.to_dict()"]
+  end
+
+  H1 --> TN
+  FAIL -->|no| UD
+  UD --> SU
+  TN --> SU
+  SU --> IQ
+  SU --> TT
+  SU --> CB
+  CB --> SIM
+  SIM --> RESP`;
+      try {
+        const { svg } = await mermaid.render("flow-diagram-svg", diagram);
+        el.innerHTML = svg;
+      } catch (err) {
+        el.textContent = "Could not render diagram: " + err;
+      }
+    });
+  </script>
+</body>
+</html>
