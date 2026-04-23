@@ -1,0 +1,88 @@
+
+==================================================
+  LEVEL: X  (1 qubit(s))
+==================================================
+  INPUT        DIRAC OUTPUT
+  ------------ ------------------------------
+[DEBUG] Gate: X, theta: None, Qubit Order: [0, 0], Selected Qubits: ['q(0)', 'q(0)']
+  |0>          '|1⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+  |1>          '|0⟩'
+
+==================================================
+  LEVEL: S  (1 qubit(s))
+==================================================
+  INPUT        DIRAC OUTPUT
+  ------------ ------------------------------
+[DEBUG] Gate: S, theta: None, Qubit Order: [0, 0], Selected Qubits: ['q(0)', 'q(0)']
+  |0>          '|0⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+  |1>          '1j|1⟩'
+
+==================================================
+  LEVEL: T  (1 qubit(s))
+==================================================
+  INPUT        DIRAC OUTPUT
+  ------------ ------------------------------
+[DEBUG] Gate: T, theta: None, Qubit Order: [0, 0], Selected Qubits: ['q(0)', 'q(0)']
+  |0>          '|0⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+  |1>          '(0.707+0.707j)|1⟩'
+
+==================================================
+  LEVEL: CNOT_FLIPPED  (2 qubit(s))
+==================================================
+  INPUT        DIRAC OUTPUT
+  ------------ ------------------------------
+[DEBUG] Gate: H, theta: None, Qubit Order: [0, 0], Selected Qubits: ['q(0)', 'q(0)']
+[DEBUG] Gate: H, theta: None, Qubit Order: [1, 1], Selected Qubits: ['q(1)', 'q(1)']
+[DEBUG] Gate: CNOT, theta: None, Qubit Order: [1, 0], Selected Qubits: ['q(1)', 'q(0)']
+[DEBUG] Gate: H, theta: None, Qubit Order: [0, 0], Selected Qubits: ['q(0)', 'q(0)']
+[DEBUG] Gate: H, theta: None, Qubit Order: [1, 1], Selected Qubits: ['q(1)', 'q(1)']
+  |00>         '|00⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(1)']
+  |01>         '|01⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+  |10>         '|11⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(1)']
+  |11>         '|10⟩'
+
+==================================================
+  LEVEL: CONTROLLED_Z  (2 qubit(s))
+==================================================
+  INPUT        DIRAC OUTPUT
+  ------------ ------------------------------
+[DEBUG] Gate: H, theta: None, Qubit Order: [1, 1], Selected Qubits: ['q(1)', 'q(1)']
+[DEBUG] Gate: CNOT, theta: None, Qubit Order: [0, 1], Selected Qubits: ['q(0)', 'q(1)']
+[DEBUG] Gate: H, theta: None, Qubit Order: [1, 1], Selected Qubits: ['q(1)', 'q(1)']
+  |00>         '|00⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(1)']
+  |01>         '|01⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+  |10>         '|10⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(1)']
+  |11>         '-1|11⟩'
+
+==================================================
+  LEVEL: SWAP  (2 qubit(s))
+==================================================
+  INPUT        DIRAC OUTPUT
+  ------------ ------------------------------
+[DEBUG] Gate: CNOT, theta: None, Qubit Order: [0, 1], Selected Qubits: ['q(0)', 'q(1)']
+[DEBUG] Gate: CNOT, theta: None, Qubit Order: [1, 0], Selected Qubits: ['q(1)', 'q(0)']
+[DEBUG] Gate: CNOT, theta: None, Qubit Order: [0, 1], Selected Qubits: ['q(0)', 'q(1)']
+  |00>         '|00⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(1)']
+  |01>         '|10⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+  |10>         '|01⟩'
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(0)']
+[DEBUG] Gate: X, theta: None, Qubit Order: [0], Selected Qubits: ['q(1)']
+  |11>         '|11⟩'
+
+==================================================
+  Done. Copy the repr() strings into target_library.py expected_outputs.
+==================================================
+

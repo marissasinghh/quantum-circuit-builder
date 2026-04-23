@@ -1,9 +1,57 @@
 from typing import Dict, Any
-from app.utils.constants import Gate, LEVEL2_QUBITS, TargetLibraryField, Basis
+from app.utils.constants import Basis, Gate, LEVEL1_QUBITS, LEVEL2_QUBITS, TargetLibraryField
 from app.utils.qubit_orders import Q0, Q1, C0_T1, C1_T0
 
 
 TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
+    # ========================
+    # LEVEL 1.0: X GATE
+    # ========================
+    Gate.X.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.STEPS.value: [
+            {
+                TargetLibraryField.GATE.value: Gate.X.value,
+                TargetLibraryField.ORDER.value: Q0,
+            },
+        ],
+        TargetLibraryField.EXPECTED_OUTPUTS.value: [
+            Basis.STATE_1.value,   # X|0⟩ = |1⟩
+            Basis.STATE_0.value,   # X|1⟩ = |0⟩
+        ],
+    },
+    # ========================
+    # LEVEL 1.1: S GATE
+    # ========================
+    Gate.S.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.STEPS.value: [
+            {
+                TargetLibraryField.GATE.value: Gate.S.value,
+                TargetLibraryField.ORDER.value: Q0,
+            },
+        ],
+        TargetLibraryField.EXPECTED_OUTPUTS.value: [
+            Basis.STATE_0.value,     # S|0⟩ = |0⟩
+            "1j|1⟩",   # S|1⟩ = i|1⟩
+        ],
+    },
+    # ========================
+    # LEVEL 1.2: T GATE
+    # ========================
+    Gate.T.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.STEPS.value: [
+            {
+                TargetLibraryField.GATE.value: Gate.T.value,
+                TargetLibraryField.ORDER.value: Q0,
+            },
+        ],
+        TargetLibraryField.EXPECTED_OUTPUTS.value: [
+            Basis.STATE_0.value,                   # T|0⟩ = |0⟩
+            "(0.707+0.707j)|1⟩",     # T|1⟩ = e^(iπ/4)|1⟩
+        ],
+    },
     # ========================
     # LEVEL 2.1: CNOT FLIPPED
     # ========================
@@ -32,10 +80,10 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
             },
         ],
         TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_00.value,
-            Basis.STATE_11.value,
-            Basis.STATE_10.value,
-            Basis.STATE_01.value,
+            Basis.STATE_00.value,   # |00⟩ → |00⟩
+            Basis.STATE_01.value,   # |01⟩ → |01⟩
+            Basis.STATE_11.value,   # |10⟩ → |11⟩
+            Basis.STATE_10.value,   # |11⟩ → |10⟩
         ],
     },
     # ========================
@@ -58,10 +106,10 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
             },
         ],
         TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_00.value,
-            Basis.STATE_01.value,
-            Basis.STATE_10.value,
-            Basis.STATE_11.value,
+            Basis.STATE_00.value,    # |00⟩ → |00⟩
+            Basis.STATE_01.value,    # |01⟩ → |01⟩
+            Basis.STATE_10.value,    # |10⟩ → |10⟩
+            "-1|11⟩",  # |11⟩ → -|11⟩  (CZ adds phase -1 to |11⟩)
         ],
     },
     # =================
@@ -84,10 +132,10 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
             },
         ],
         TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_00.value,
-            Basis.STATE_10.value,
-            Basis.STATE_01.value,
-            Basis.STATE_11.value,
+            Basis.STATE_00.value,   # |00⟩ → |00⟩
+            Basis.STATE_10.value,   # |01⟩ → |10⟩
+            Basis.STATE_01.value,   # |10⟩ → |01⟩
+            Basis.STATE_11.value,   # |11⟩ → |11⟩
         ],
     },
 }

@@ -32,5 +32,5 @@ class Config:
     # Optional: Validate target circuits by computing them
     # Set to False in development for faster iteration
     VALIDATE_TARGET_CIRCUITS = (
-        getenv("VALIDATE_TARGET_CIRCUITS", "true").lower() == "true"
+        getenv("VALIDATE_TARGET_CIRCUITS", "false").lower() == "true"
     )

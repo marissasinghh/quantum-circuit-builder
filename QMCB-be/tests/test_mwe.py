@@ -75,8 +75,10 @@ def test_simulate_unitaries_api_shape_and_baseline(
     assert trial["output"] == ["|00⟩", "|10⟩", "|01⟩", "|11⟩"]
 
     target = response["target_truth_table"]
-    assert target["input"] == ["00", "01", "10", "11"]
-    assert target["output"] == ["00", "10", "01", "11"]
+    # Inputs are ket-formatted by build_target_truth_table to match the trial side.
+    assert target["input"] == ["|00>", "|01>", "|10>", "|11>"]
+    # Outputs are Dirac-notation strings stored in TARGET_LIBRARY expected_outputs.
+    assert target["output"] == ["|00⟩", "|10⟩", "|01⟩", "|11⟩"]
 
 
 def test_simulate_unitaries_mixed_string_and_dict_gates() -> None:

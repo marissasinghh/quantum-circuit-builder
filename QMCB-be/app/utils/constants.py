@@ -2,22 +2,25 @@ from enum import Enum
 
 
 class Basis(Enum):
-    STATE_00 = "00"
-    STATE_01 = "01"
-    STATE_10 = "10"
-    STATE_11 = "11"
+    STATE_0 = "|0⟩"
+    STATE_1 = "|1⟩"
+    STATE_00 = "|00⟩"
+    STATE_01 = "|01⟩"
+    STATE_10 = "|10⟩"
+    STATE_11 = "|11⟩"
+    STATE_000 = "|000⟩"
+    STATE_001 = "|001⟩"
+    STATE_010 = "|010⟩"
+    STATE_011 = "|011⟩"
+    STATE_100 = "|100⟩"
+    STATE_101 = "|101⟩"
+    STATE_110 = "|110⟩"
+    STATE_111 = "|111⟩"
 
 
+LEVEL1_QUBITS = 1
 LEVEL2_QUBITS = 2
-TWO_QUBIT_INPUTS = [
-    Basis.STATE_00.value,
-    Basis.STATE_01.value,
-    Basis.STATE_10.value,
-    Basis.STATE_11.value,
-]
-
 LEVEL3_QUBITS = 3
-THREE_QUBIT_INPUTS = ["000", "001", "010", "011", "100", "101", "110", "111"]
 
 
 class Gate(Enum):

@@ -2,7 +2,7 @@ import cirq
 from app.config.gates import CirqGateMapper
 from app.config.target_library import TARGET_LIBRARY
 from app.utils.types import Qubit, Operation, Result, WavefunctionResult
-from app.utils.constants import Gate, TargetLibraryField, TWO_QUBIT_INPUTS
+from app.utils.constants import Gate, TargetLibraryField
 from app.dto.truth_table import TruthTableDTO
 
 
@@ -108,16 +108,19 @@ def build_target_truth_table(
 ) -> None:
     """
     Builds the truth table for a target circuit using stored expected output values.
+    Inputs are formatted as ket notation (e.g. '|0>', '|01>') to match the trial side.
+    Outputs are the pre-computed Dirac notation strings stored in TARGET_LIBRARY.
     """
     if target_name not in TARGET_LIBRARY:
         raise ValueError(f"Target '{target_name}' not found in TARGET_LIBRARY")
 
     target_info = TARGET_LIBRARY[target_name]
-    inputs = TWO_QUBIT_INPUTS
+    n_qubits = target_info[TargetLibraryField.NUM_QUBITS.value]
+    basis_states = generate_basis_states(n_qubits)
     outputs = target_info[TargetLibraryField.EXPECTED_OUTPUTS.value]
 
-    for inp, out in zip(inputs, outputs):
-        target_truth_table.input.append(inp)
+    for state, out in zip(basis_states, outputs):
+        target_truth_table.input.append(format_ket(state))
         target_truth_table.output.append(out)
 
     return None
