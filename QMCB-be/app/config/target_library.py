@@ -53,6 +53,23 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         ],
     },
     # ========================
+    # LEVEL 1.3: H GATE
+    # ========================
+    Gate.H.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.STEPS.value: [
+            {
+                TargetLibraryField.GATE.value: Gate.H.value,
+                TargetLibraryField.ORDER.value: Q0,
+            },
+        ],
+        # Strings from Cirq dirac_notation(..., decimals=3); verified via simulator.
+        TargetLibraryField.EXPECTED_OUTPUTS.value: [
+            "0.707|0⟩ + 0.707|1⟩",   # H|0⟩ = (|0⟩+|1⟩)/√2
+            "0.707|0⟩ - 0.707|1⟩",   # H|1⟩ = (|0⟩-|1⟩)/√2
+        ],
+    },
+    # ========================
     # LEVEL 2.1: CNOT FLIPPED
     # ========================
     Gate.CNOT_FLIPPED.value: {

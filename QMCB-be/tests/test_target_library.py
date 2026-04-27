@@ -14,7 +14,7 @@ This is the bridge test between the two halves of the level system:
 - New levels added to TARGET_LIBRARY are automatically picked up — no edits needed here.
 
 Cross-reference (Nielsen & Chuang):
-  Single-qubit gates tested: X (§1.3.1 p.17), S (§1.3.1 p.18), T (§1.3.1 p.18)
+  Single-qubit gates tested: X, H, S, T (§1.3.1 p.17–18)
   Two-qubit gates tested:    CNOT (§1.3.6 p.21), CZ (§1.3.6), SWAP (§1.3.6)
 
 Run from the QMCB-be folder:

@@ -128,6 +128,29 @@ class TestRxEquivalences:
             "Expected them to be equal up to global phase."
         )
 
+    def test_rx_half_pi_rz_half_pi_rx_half_pi_equals_h(self, q: cirq.LineQubit) -> None:
+        """
+        ``Rx(π/2) · Rz(π/2) · Rx(π/2)`` ≡ ``H`` up to global phase.
+
+        This mirrors the student-facing decomposition target: the exact matrix can differ
+        by a global phase, but physical action on states should match Hadamard.
+        """
+
+        # Left-to-right circuit application order:
+        # first Rx(π/2), then Rz(π/2), then Rx(π/2).
+        decomp = cirq.Circuit(
+            cirq.rx(np.pi / 2)(q),
+            cirq.rz(np.pi / 2)(q),
+            cirq.rx(np.pi / 2)(q),
+        )
+        u_decomp = cirq.unitary(decomp)
+        u_h = unitary_of(cirq.H, q)
+
+        assert equivalent_up_to_global_phase(u_decomp, u_h), (
+            f"Decomposition unitary:\n{u_decomp}\n\nH gate unitary:\n{u_h}\n"
+            "Expected Rx(π/2)·Rz(π/2)·Rx(π/2) to equal H up to global phase."
+        )
+
 
 class TestUnitaryIsUnitary:
     """
