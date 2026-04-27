@@ -93,9 +93,16 @@ def simulate_unitaries(
     print("Target Circuit Results:")
     print(target_truth_table_dto)
 
+    trial_dict = trial_truth_table_dto.to_dict()
+    target_dict = target_truth_table_dto.to_dict()
+
+    # True when every output row of the student's circuit matches the target.
+    all_match = trial_dict["output"] == target_dict["output"]
+
     return {
         "message": "Successfully simulated circuits.",
-        "trial_truth_table": trial_truth_table_dto.to_dict(),
-        "target_truth_table": target_truth_table_dto.to_dict(),
+        "trial_truth_table": trial_dict,
+        "target_truth_table": target_dict,
+        "all_match": all_match,
         "validation_mode": validate_target,
     }, 200
