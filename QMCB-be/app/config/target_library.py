@@ -9,6 +9,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     # ========================
     Gate.X.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.X.value,
@@ -25,6 +26,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     # ========================
     Gate.S.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.S.value,
@@ -41,6 +43,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     # ========================
     Gate.T.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.T.value,
@@ -57,6 +60,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     # ========================
     Gate.H.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.H.value,
@@ -70,10 +74,39 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         ],
     },
     # ========================
+    # LEVEL 1.4: RX GATE
+    # ========================
+    Gate.RX.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: True,
+        TargetLibraryField.STEPS.value: [
+            {
+                TargetLibraryField.GATE.value: Gate.RX.value,
+                TargetLibraryField.ORDER.value: Q0,
+            },
+        ],
+        # No Expected Outputs for parameterized gates
+    },
+    # ========================
+    # LEVEL 1.5: RY GATE
+    # ========================
+    Gate.RY.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: True,
+        TargetLibraryField.STEPS.value: [
+            {
+                TargetLibraryField.GATE.value: Gate.RY.value,
+                TargetLibraryField.ORDER.value: Q0,
+            },
+        ],
+        # No Expected Outputs for parameterized gates
+    },
+    # ========================
     # LEVEL 2.1: CNOT FLIPPED
     # ========================
     Gate.CNOT_FLIPPED.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.H.value,
@@ -108,6 +141,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     # ========================
     Gate.CONTROLLED_Z.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.H.value,
@@ -134,6 +168,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     # =================
     Gate.SWAP.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.CNOT.value,

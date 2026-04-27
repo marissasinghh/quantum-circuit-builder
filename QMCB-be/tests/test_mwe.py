@@ -5,6 +5,16 @@ Controller smoke tests (formerly ``testing/mwe.py``).
 does after building a ``UnitaryDTO``—without Flask or HTTP. This is the fastest way
 to confirm the trial/target truth-table contract still holds when the pipeline changes.
 
+Two categories of test live here:
+
+1. **Fixed targets (e.g. SWAP)** — target has pre-stored ``expected_outputs``; the
+   controller reads those directly when ``validate_target=False``.
+
+2. **Parameterized targets (e.g. RX, RY)** — no pre-stored outputs; the controller
+   always simulates the target circuit live using the student's submitted theta.
+   When the student submits the exact target gate at the same angle, trial outputs
+   must equal target outputs exactly.
+
 Run from the QMCB-be folder:
     python -m pytest tests/test_mwe.py -v
 """
@@ -97,6 +107,63 @@ def test_simulate_unitaries_mixed_string_and_dict_gates() -> None:
     trial_tt = response["trial_truth_table"]
     assert set(trial_tt.keys()) == {"input", "output"}
     assert trial_tt["input"] == ["|00>", "|01>", "|10>", "|11>"]
+
+
+@pytest.mark.parametrize(
+    "gate_name,target_name",
+    [
+        ("RX", "RX"),
+        ("RY", "RY"),
+    ],
+)
+def test_parameterized_target_trial_matches_target_when_theta_identical(
+    gate_name: str, target_name: str
+) -> None:
+    """
+    **What it does:** Submits a single parameterized gate (RX or RY) at a fixed theta
+    as the student's trial, with the same gate name as the target. Because the student
+    submitted the exact target gate at the exact same angle, the controller must build
+    the target circuit using that theta (extracted from the trial gates) and the
+    resulting wavefunction outputs must be identical row-by-row.
+
+    **What it is for:** End-to-end regression for the parameterized target path in
+    ``simulate_unitaries``:
+    - ``is_target_parameterized`` returns True → ``simulate_target_live`` is forced True
+      even with ``validate_target=False``.
+    - ``extract_theta_from_trial`` correctly pulls theta from a dict gate entry.
+    - ``TargetUnitaryBuilder.build`` receives and applies the same theta.
+    - Trial and target truth tables match when the student is correct.
+
+    **Why validate_target=False:** Tests that the parameterized path overrides the
+    stored-output shortcut; if the flag were ignored, target outputs would be empty
+    or raise a KeyError (no ``expected_outputs`` in the library entry).
+    """
+    theta = 1.0  # arbitrary non-trivial angle; neither 0 nor π/2
+
+    trial = UnitaryDTO(
+        number_of_qubits=1,
+        gates=[{"gate": gate_name, "theta": theta}],
+        qubit_order=[[0]],
+    )
+
+    with patch("builtins.print"):
+        response, status = simulate_unitaries(trial, target_name, validate_target=False)
+
+    assert status == 200
+
+    trial_tt = response["trial_truth_table"]
+    target_tt = response["target_truth_table"]
+
+    # Both sides must have the same two basis inputs (|0>, |1> for one qubit).
+    assert trial_tt["input"] == ["|0>", "|1>"]
+    assert target_tt["input"] == ["|0>", "|1>"]
+
+    # Because the student submitted the exact target gate at the same theta,
+    # every wavefunction output string must match.
+    assert trial_tt["output"] == target_tt["output"], (
+        f"{gate_name}(theta={theta}): trial outputs {trial_tt['output']!r} "
+        f"do not match target outputs {target_tt['output']!r}"
+    )
 
 
 def test_target_dto_matches_swap_library_metadata(target_swap_dto: UnitaryDTO) -> None:

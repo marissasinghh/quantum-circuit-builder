@@ -1,3 +1,4 @@
+from typing import Optional
 import cirq
 from app.config.target_library import TARGET_LIBRARY
 from app.config.gates import CirqGateMapper
@@ -8,7 +9,7 @@ from app.utils.constants import Gate
 class TargetUnitaryBuilder:
 
     @staticmethod
-    def build(name: str, qubits: list[Qubit]) -> Circuit:
+    def build(name: str, qubits: list[Qubit], theta: Optional[float] = None) -> Circuit:
         """Build target unitary circuit from TARGET_LIBRARY definition."""
 
         if name not in TARGET_LIBRARY:
@@ -22,9 +23,8 @@ class TargetUnitaryBuilder:
         for step in steps:
             gate = step["gate"]
             order = step["order"]
-            theta = step.get("theta")
-
-            operation = CirqGateMapper.apply(gate, order, *qubits, theta=theta)
+            step_theta = theta if theta is not None else step.get("theta")
+            operation = CirqGateMapper.apply(gate, order, *qubits, theta=step_theta)
             operations.append(operation)
 
         return cirq.Circuit(*operations)

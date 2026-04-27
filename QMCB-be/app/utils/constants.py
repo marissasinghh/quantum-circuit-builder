@@ -43,6 +43,7 @@ class TargetLibraryField(Enum):
     STEPS = "steps"
     GATE = "gate"
     ORDER = "order"
+    PARAMETERIZED = "parameterized"
     EXPECTED_OUTPUTS = "expected_outputs"
 
 

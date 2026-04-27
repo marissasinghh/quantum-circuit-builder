@@ -5,6 +5,8 @@ from app.utils.helpers import (
     generate_basis_states,
     initialize_qubit_sequence,
     build_target_truth_table,
+    is_target_parameterized,
+    extract_theta_from_trial,
 )
 from app.dto.unitary import UnitaryDTO
 from app.dto.truth_table import TruthTableDTO
@@ -35,8 +37,17 @@ def simulate_unitaries(
     trial_truth_table_dto = TruthTableDTO([], [])
     target_truth_table_dto = TruthTableDTO([], [])
 
-    # Build target truth table if not validating target
-    if not validate_target:
+    # Parameterized targets (RX, RY) have no pre-stored expected_outputs —
+    # their output depends on the student's theta, so we must always simulate live.
+    # Fixed targets (SWAP, H, …) use stored outputs unless the caller forces validation.
+    parameterized = is_target_parameterized(target_name)
+    simulate_target_live = validate_target or parameterized
+
+    # For parameterized targets, pull the angle the student submitted.
+    theta = extract_theta_from_trial(trial_dto.gates, target_name) if parameterized else None
+
+    # Fixed targets with no live validation: read expected_outputs straight from the library.
+    if not simulate_target_live:
         logging.info("Skipping target circuit validation - Using stored outputs.")
         build_target_truth_table(target_name, target_truth_table_dto)
 
@@ -57,10 +68,12 @@ def simulate_unitaries(
             trial_circuit, qubits, state, trial_truth_table_dto, decimals=3
         )
 
-        if validate_target:
+        if simulate_target_live:
             logging.info("Computing target circuit for validation")
 
-            target_circuit_base = TargetUnitaryBuilder.build(target_name, qubits)
+            # Pass theta so parameterized targets (RX, RY) use the student's angle.
+            # Fixed targets ignore theta (it stays None and target_builder skips it).
+            target_circuit_base = TargetUnitaryBuilder.build(target_name, qubits, theta=theta)
             target_circuit = (
                 CircuitBuilder.prepare_basis_state(state, qubits) + target_circuit_base
             )

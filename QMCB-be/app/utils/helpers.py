@@ -1,7 +1,8 @@
+from typing import Optional
 import cirq
 from app.config.gates import CirqGateMapper
 from app.config.target_library import TARGET_LIBRARY
-from app.utils.types import Qubit, Operation, Result, WavefunctionResult
+from app.utils.types import Qubit, Operation, Result, UnitaryGateEntry, WavefunctionResult
 from app.utils.constants import Gate, TargetLibraryField
 from app.dto.truth_table import TruthTableDTO
 
@@ -32,6 +33,26 @@ def set_qubit_to_1(qubit: Qubit) -> Operation:
     Prepares the |1> basis state for a qubit.
     """
     return CirqGateMapper.apply(Gate.X.value, None, qubit)
+
+
+def is_target_parameterized(target_name: str) -> bool:
+    """
+    Return True if the TARGET_LIBRARY entry requires a runtime theta.
+    """
+    info = TARGET_LIBRARY.get(target_name, {})
+    return bool(info.get(TargetLibraryField.PARAMETERIZED.value, False))
+
+
+def extract_theta_from_trial(
+    gates: list[UnitaryGateEntry], gate_name: str) -> Optional[float]:
+    """
+    Return the theta from the first dict gate in the student's list
+    that matches gate_name (e.g. "RX").  Returns None if not found.
+    """
+    for entry in gates:
+        if isinstance(entry, dict) and entry.get("gate") == gate_name:
+            return entry.get("theta")
+    return None
 
 
 def get_target_gates(target_name: str) -> list[str]:
@@ -86,7 +107,7 @@ def format_ket(bits: list[int]) -> str:
     the corresponding basis ket.
     """
     return "|" + list_to_joint_string(bits) + ">"
-
+    
 
 def extract_wavefunction(number_of_qubits: int, result: WavefunctionResult) -> str:
     """

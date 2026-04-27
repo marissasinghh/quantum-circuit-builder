@@ -66,6 +66,10 @@ class TestTargetLibraryOutputs:
         """
 
         level_def = TARGET_LIBRARY[level_name]
+        
+        if level_def.get(TargetLibraryField.PARAMETERIZED.value, False):
+            pytest.skip(f"{level_name} is parameterized — tested separately")
+        
         n_qubits = level_def[TargetLibraryField.NUM_QUBITS.value]
         expected_outputs = level_def[TargetLibraryField.EXPECTED_OUTPUTS.value]
         qubits = initialize_qubit_sequence(n_qubits)
