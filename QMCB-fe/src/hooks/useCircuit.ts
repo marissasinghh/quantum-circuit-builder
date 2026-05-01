@@ -48,6 +48,10 @@ export function useCircuit() {
     setGates((prev) => prev.map((g) => (g.id === id && "order" in g ? { ...g, order } : g)));
   }, []);
 
+  const setGateTheta = useCallback((id: string, theta: number) => {
+    setGates((prev) => prev.map((g) => (g.id === id && "wire" in g ? { ...g, theta } : g)));
+  }, []);
+
   /** Remove a chip by id. */
   const removeGate = useCallback((id: string) => {
     setGates((prev) => prev.filter((g) => g.id !== id).map((g, i) => ({ ...g, column: i })));
@@ -56,5 +60,5 @@ export function useCircuit() {
   /** Clear the circuit. */
   const clearAll = useCallback(() => setGates([]), []);
 
-  return { gates, addTwoQubitGate, addSingleQubitGate, setGateOrder, removeGate, clearAll };
+  return { gates, addTwoQubitGate, addSingleQubitGate, setGateOrder, setGateTheta, removeGate, clearAll };
 }

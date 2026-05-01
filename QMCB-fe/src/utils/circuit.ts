@@ -11,13 +11,13 @@ import { Gate } from "../types/global";
 import type { UnitaryGateEntry } from "../interfaces/unitary";
 import { DEFAULT_QUBIT_ORDER } from "./constants";
 
-/** When set on a placed RX/RY, the API expects `{"gate","theta"}` instead of a bare string. */
+/** When set on a placed RX/RY/RZ, the API expects `{"gate","theta"}` instead of a bare string. */
 function placedGateToUnitaryEntry(g: PlacedGate): UnitaryGateEntry {
   if ("order" in g) {
     return g.type;
   }
   if (
-    (g.type === Gate.RX || g.type === Gate.RY) &&
+    (g.type === Gate.RX || g.type === Gate.RY || g.type === Gate.RZ) &&
     typeof g.theta === "number"
   ) {
     return { gate: g.type, theta: g.theta };

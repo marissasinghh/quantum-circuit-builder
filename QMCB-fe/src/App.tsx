@@ -26,7 +26,7 @@ import { getNextLevel } from "./config/levels";
 
 export default function App() {
   // State management via custom hooks
-  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, clearAll } =
+  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, clearAll } =
     useCircuit();
 
   // Modal state
@@ -93,6 +93,7 @@ export default function App() {
               numberOfQubits={currentLevel.number_of_qubits}
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
+              onSetGateTheta={setGateTheta}
               onCheck={handleCheck}
               onClear={handleClear}
               isChecking={mutation.isPending}

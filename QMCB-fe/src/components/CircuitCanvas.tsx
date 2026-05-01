@@ -12,6 +12,7 @@ interface CircuitCanvasProps {
   numberOfQubits: number;
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
+  onSetGateTheta: (id: string, theta: number) => void;
   onCheck: () => void;
   onClear: () => void;
   isChecking: boolean;
@@ -20,11 +21,22 @@ interface CircuitCanvasProps {
 // Set of all 2-qubit gates
 const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTROLLED_Z, Gate.SWAP]);
 
+// Gates that require a theta (rotation angle) from the student
+const PARAMETERIZED_GATES = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
+
+const THETA_PRESETS = [
+  { label: "π/4", value: Math.PI / 4 },
+  { label: "π/2", value: Math.PI / 2 },
+  { label: "π",   value: Math.PI },
+  { label: "2π",  value: 2 * Math.PI },
+] as const;
+
 export function CircuitCanvas({
   gates,
   numberOfQubits,
   onRemoveGate,
   onSetGateOrder,
+  onSetGateTheta,
   onCheck,
   onClear,
   isChecking,
@@ -132,10 +144,11 @@ export function CircuitCanvas({
 
         {gates.map((g, idx) => {
           const isTwoQubit = TWO_QUBIT_GATES.has(g.type);
+          const isParameterized = !isTwoQubit && PARAMETERIZED_GATES.has(g.type);
           const orders = isTwoQubit ? allowedOrdersFor(g.type as Gate) : [];
 
           return (
-            <div key={g.id} className="flex items-center gap-3 border rounded-lg px-3 py-2">
+            <div key={g.id} className="flex flex-wrap items-center gap-3 border rounded-lg px-3 py-2">
               <div className="text-sm font-medium w-32">{g.type}</div>
 
               {isTwoQubit && "order" in g && (
@@ -162,6 +175,32 @@ export function CircuitCanvas({
 
               {!isTwoQubit && "wire" in g && (
                 <div className="text-xs text-gray-500">wire: {g.wire}</div>
+              )}
+
+              {isParameterized && "wire" in g && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  <label className="text-xs text-gray-500">θ (rad):</label>
+                  <input
+                    type="number"
+                    step="0.001"
+                    placeholder="radians"
+                    className="border rounded px-1 py-0.5 text-sm w-24"
+                    value={g.theta !== undefined ? g.theta : ""}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val)) onSetGateTheta(g.id, val);
+                    }}
+                  />
+                  {THETA_PRESETS.map(({ label, value }) => (
+                    <button
+                      key={label}
+                      onClick={() => onSetGateTheta(g.id, value)}
+                      className="px-1.5 py-0.5 text-xs border rounded hover:bg-gray-100"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               )}
 
               <span className="text-xs text-gray-500">col {idx}</span>
