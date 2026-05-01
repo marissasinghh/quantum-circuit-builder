@@ -47,11 +47,22 @@ def extract_theta_from_trial(
     gates: list[UnitaryGateEntry], gate_name: str) -> Optional[float]:
     """
     Return the theta from the first dict gate in the student's list
-    that matches gate_name (e.g. "RX").  Returns None if not found.
+    that matches gate_name (e.g. "RX").
+
+    Special case — RY target: the canonical synthesis uses
+    Rz(-π/2)·Rx(θ)·Rz(π/2) with no RY gate present, so if no RY
+    gate is found we fall back to the student's RX gate theta, which
+    represents the Ry rotation angle the student chose.
     """
     for entry in gates:
         if isinstance(entry, dict) and entry.get("gate") == gate_name:
             return entry.get("theta")
+
+    if gate_name == Gate.RY.value:
+        for entry in gates:
+            if isinstance(entry, dict) and entry.get("gate") == Gate.RX.value:
+                return entry.get("theta")
+
     return None
 
 

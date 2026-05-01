@@ -3,7 +3,7 @@
  */
 
 import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
-import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph } from "./GateDesign";
+import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, RZGlyph, UGlyph } from "./GateDesign";
 import { DroppableStrip } from "./DragAndDropWrappers";
 import { allowedOrdersFor } from "../config/gates";
 
@@ -119,10 +119,12 @@ export function CircuitCanvas({
                         return <RXGlyph width={SQ_W + 6} height={SQ_H} />;
                       case Gate.RY:
                         return <RYGlyph width={SQ_W + 6} height={SQ_H} />;
+                      case Gate.RZ:
+                        return <RZGlyph width={SQ_W + 12} height={SQ_H} />;
                       case Gate.U:
                         return <UGlyph width={SQ_W} height={SQ_H} />;
                       default:
-                        return <HGlyph width={SQ_W} height={SQ_H} />; // Fallback
+                        return <HGlyph width={SQ_W} height={SQ_H} />;
                     }
                   })()}
                 </g>

@@ -1,5 +1,3 @@
-import React from "react";
-
 interface LevelCompleteModalProps {
   isOpen: boolean;
   onRepeat: () => void;
@@ -31,7 +29,7 @@ export function LevelCompleteModal({
 
           {/* Message */}
           <p className="text-gray-600 mb-6">
-            Congratulations! You've successfully built the target circuit.
+            Congratulations! You&apos;ve successfully built the target circuit.
           </p>
 
           {/* Buttons */}

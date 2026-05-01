@@ -38,7 +38,7 @@ export function OutputTable({ rows, isCorrect, error }: OutputTableProps) {
               <th className="border px-2 py-1 text-left">Input</th>
               <th className="border px-2 py-1 text-left">Trial Output</th>
               <th className="border px-2 py-1 text-left">Target Output</th>
-              <th className="border px-2 py-1 text-left">✓</th>
+              <th className="border px-2 py-1 text-left">Match</th>
             </tr>
           </thead>
           <tbody>

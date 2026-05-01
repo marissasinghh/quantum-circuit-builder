@@ -12,14 +12,15 @@ import type { PlacedGate } from "../types/global";
 import { Gate } from "../types/global";
 
 /** Gates that require a theta angle before the backend can apply them. */
-const REQUIRES_THETA = new Set<Gate>([Gate.RX, Gate.RY, Gate.U]);
+const REQUIRES_THETA = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 
 export function useCircuitValidation(currentLevel: LevelDefinition, gates: PlacedGate[]) {
   const mutation = useMutation({ mutationFn: simulateUnitary });
   const [validationError, setValidationError] = useState<Error | null>(null);
 
   const rows = mutation.data ? toTruthRows(mutation.data) : null;
-  const allCorrect = rows?.every((r) => r.ok) ?? false;
+  // Require non-empty rows: [].every(...) vacuously returns true in JS
+  const allCorrect = !!rows && rows.length > 0 && rows.every((r) => r.ok);
 
   const handleCheck = () => {
     if (gates.length === 0) return;
@@ -34,7 +35,7 @@ export function useCircuitValidation(currentLevel: LevelDefinition, gates: Place
     if (missingTheta.length > 0) {
       const names = [...new Set(missingTheta.map((g) => g.type))].join(", ");
       setValidationError(
-        new Error(`${names} requires a rotation angle (θ). Angle input not yet available — remove it to check the circuit.`)
+        new Error(`${names}: please set a rotation angle (θ) using the preset buttons or the input field on the gate.`)
       );
       return;
     }

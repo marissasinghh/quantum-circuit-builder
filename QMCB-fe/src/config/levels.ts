@@ -38,7 +38,9 @@ export const X_LEVEL: LevelDefinition = {
   toolbox: [Gate.RZ, Gate.RX] as const,
 
   canonical: [
+    { gate: Gate.RZ, order: Q0, theta: Math.PI / 2 },
     { gate: Gate.RX, order: Q0, theta: Math.PI },
+    { gate: Gate.RZ, order: Q0, theta: Math.PI / 2 },
   ],
 
   expectedTruth: {
@@ -48,7 +50,7 @@ export const X_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "The X gate flips |0⟩ to |1⟩ and |1⟩ to |0⟩ — the quantum equivalent of a classical NOT. Using Rz and Rx, synthesize a circuit whose unitary matches X exactly. Hint: a single Rx rotation at the right angle is all you need.",
+  description: "The X gate flips |0⟩ to |1⟩ and |1⟩ to |0⟩ — the quantum equivalent of a classical NOT. Using Rz and Rx, synthesize a circuit whose unitary matches X exactly. Hint: a bare Rx(π) won't match due to global phase — you need to sandwich it between two Rz rotations.",
 } as const;
 
 // ========================
