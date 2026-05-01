@@ -4,11 +4,13 @@
 
 export enum Gate {
   // 1-qubit gates
+  X = "X",
   S = "S",
   T = "T",
   H = "H",
   RX = "RX",
   RY = "RY",
+  RZ = "RZ", 
   U = "U",
 
   // 2-qubit gates
@@ -25,7 +27,7 @@ export enum Gate {
 }
 
 /** All single-qubit gates available in the toolbox */
-export type SingleQubitGate = Gate.H | Gate.T | Gate.S | Gate.RX | Gate.RY | Gate.U;
+export type SingleQubitGate = Gate.X | Gate.S | Gate.T | Gate.H | Gate.RX | Gate.RY | Gate.RZ | Gate.U;
 
 /** All two-qubit gates available in the toolbox */
 export type TwoQubitGate =
@@ -49,6 +51,7 @@ export type ControlTargetOrder = readonly [0, 1] | readonly [1, 0];
 export type GateStep = {
   gate: Gate;
   order: AnyQubitOrder;
+  theta?: number;
 };
 
 /** Single-qubit chip placed on a specific wire. */

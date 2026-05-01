@@ -17,7 +17,7 @@ export interface LevelDefinition {
    */
   canonical?: readonly GateStep[];
 
-  expectedTruth: TruthTableDTO;
+  expectedTruth?: TruthTableDTO;
   uiMaxGates?: number;
   description?: string;
 }

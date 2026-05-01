@@ -6,6 +6,8 @@ import type { ControlTargetOrder, AnyQubitOrder } from "../types/global";
 import { Gate } from "../types/global";
 
 export const MAX_GATES = 10;
+
+export const LEVEL1_QUBITS = 1 as const;
 export const LEVEL2_QUBITS = 2 as const;
 
 // =====================
@@ -31,13 +33,31 @@ export const ALLOWED_QUBIT_ORDERS: readonly ControlTargetOrder[] = [C0_T1, C1_T0
 export const DEFAULT_QUBIT_ORDER: ControlTargetOrder = C0_T1;
 
 // ========================
+// BASIS STATES - 1 QUBITS
+// ========================`
+
+export const BASIS_0 = "|0⟩" as const;
+export const BASIS_1 = "|1⟩" as const;
+
+export const ONE_QUBIT_INPUTS = [BASIS_0, BASIS_1] as const;
+
+// ====================================
+// SIMULATOR OUTPUT STRINGS - 1 QUBIT
+// ====================================
+
+export const S_OUT_1  = "1j|1⟩" as const;
+export const T_OUT_1  = "(0.707+0.707j)|1⟩" as const;
+export const H_OUT_0  = "0.707|0⟩ + 0.707|1⟩" as const;
+export const H_OUT_1  = "0.707|0⟩ - 0.707|1⟩" as const;
+
+// ========================
 // BASIS STATES - 2 QUBITS
 // ========================
 
-export const BASIS_00 = "00" as const;
-export const BASIS_01 = "01" as const;
-export const BASIS_10 = "10" as const;
-export const BASIS_11 = "11" as const;
+export const BASIS_00 = "|00⟩" as const;
+export const BASIS_01 = "|01⟩" as const;
+export const BASIS_10 = "|10⟩" as const;
+export const BASIS_11 = "|11⟩" as const;
 
 export const TWO_QUBIT_INPUTS = [BASIS_00, BASIS_01, BASIS_10, BASIS_11] as const;
 
