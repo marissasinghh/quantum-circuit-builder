@@ -3,7 +3,7 @@
  */
 
 import { Gate } from "../types/global";
-import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph } from "./GateDesign";
+import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph } from "./GateDesign";
 import { DraggableTool } from "./DragAndDropWrappers";
 
 interface ToolboxProps {
@@ -49,14 +49,19 @@ const GATE_CONFIG = {
     toolId: "tool-h",
   },
   [Gate.RX]: {
-    component: <RXGlyph width={64} height={44} />,
+    component: <RXGlyph width={76} height={44} />,
     label: "Rx(θ)",
     toolId: "tool-rx",
   },
   [Gate.RY]: {
-    component: <RYGlyph width={64} height={44} />,
+    component: <RYGlyph width={76} height={44} />,
     label: "Ry(θ)",
     toolId: "tool-ry",
+  },
+  [Gate.RZ]: {
+    component: <RZGlyph width={76} height={44} />,
+    label: "Rz(θ)",
+    toolId: "tool-rz",
   },
   [Gate.U]: {
     component: <UGlyph width={64} height={44} />,

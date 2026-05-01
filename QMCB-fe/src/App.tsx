@@ -19,7 +19,7 @@ import { Toolbox } from "./components/Toolbox";
 import { CircuitCanvas } from "./components/CircuitCanvas";
 import { OutputTable } from "./components/OutputTable";
 import { LevelCompleteModal } from "./components/LevelCompleteModal";
-import { CNOTGlyph, HGlyph, TGlyph } from "./components/GateDesign";
+import { CNOTGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph } from "./components/GateDesign";
 
 // Utils
 import { getNextLevel } from "./config/levels";
@@ -110,6 +110,11 @@ export default function App() {
           {activeId === "tool-cnot" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
           {activeId === "tool-h" && <HGlyph width={64} height={44} />}
           {activeId === "tool-t" && <TGlyph width={76} height={44} />}
+          {activeId === "tool-s" && <SGlyph width={76} height={44} />}
+          {activeId === "tool-rx" && <RXGlyph width={76} height={44} />}
+          {activeId === "tool-ry" && <RYGlyph width={76} height={44} />}
+          {activeId === "tool-rz" && <RZGlyph width={76} height={44} />}
+          {activeId === "tool-u" && <UGlyph width={64} height={44} />}
         </DragOverlay>
       </DndContext>
 

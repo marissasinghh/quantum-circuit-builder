@@ -35,8 +35,13 @@ export function isValidOrderFor(gate: Gate, order: ControlTargetOrder): boolean 
 export function arityFor(gate: Gate): 1 | 2 {
   switch (gate) {
     case Gate.CNOT:
+    case Gate.CNOT_FLIPPED:
+    case Gate.CONTROLLED_Z:
+    case Gate.SWAP:
+    case Gate.CONTROLLED_H:
+    case Gate.CONTROLLED_U:
       return 2;
     default:
-      return 2; // adjust when adding single-qubit gates
+      return 1;
   }
 }

@@ -17,6 +17,7 @@ const TOOL_TO_GATE: Record<string, Gate> = {
   "tool-s": Gate.S,
   "tool-rx": Gate.RX,
   "tool-ry": Gate.RY,
+  "tool-rz": Gate.RZ,
   "tool-u": Gate.U,
 };
 

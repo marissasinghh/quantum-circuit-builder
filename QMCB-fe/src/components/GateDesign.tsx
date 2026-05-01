@@ -173,3 +173,7 @@ export function RYGlyph(props: { width?: number; height?: number }) {
 export function UGlyph(props: { width?: number; height?: number }) {
   return <GateBlock label="U" {...props} />;
 }
+
+export function RZGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="Rz(θ)" {...props} />;
+}
