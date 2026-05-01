@@ -90,6 +90,7 @@ export default function App() {
           <section className="space-y-6">
             <CircuitCanvas
               gates={gates}
+              numberOfQubits={currentLevel.number_of_qubits}
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
               onCheck={handleCheck}

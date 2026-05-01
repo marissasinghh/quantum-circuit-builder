@@ -9,6 +9,7 @@ import { allowedOrdersFor } from "../config/gates";
 
 interface CircuitCanvasProps {
   gates: PlacedGate[];
+  numberOfQubits: number;
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
   onCheck: () => void;
@@ -21,6 +22,7 @@ const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTRO
 
 export function CircuitCanvas({
   gates,
+  numberOfQubits,
   onRemoveGate,
   onSetGateOrder,
   onCheck,
@@ -30,12 +32,17 @@ export function CircuitCanvas({
   // Canvas geometry
   const COL_W = 90;
   const PAD_X = 100;
+  const WIRE_TOP_PAD = 80;
+  const WIRE_SPACING = 80;
+  const WIRE_BOTTOM_PAD = 90;
   const CANVAS_W = Math.max(600, PAD_X * 2 + Math.max(1, gates.length) * COL_W);
-  const CANVAS_H = 250;
-  const yA = 80;
-  const yB = 160;
+  const CANVAS_H = WIRE_TOP_PAD + (numberOfQubits - 1) * WIRE_SPACING + WIRE_BOTTOM_PAD;
+
+  // One Y coordinate per qubit wire — wireYs[0] is the top wire, wireYs[n-1] is the bottom
+  const wireYs = Array.from({ length: numberOfQubits }, (_, i) => WIRE_TOP_PAD + i * WIRE_SPACING);
+
   const CNOT_W = 80;
-  const CNOT_H = yB - yA + 24;
+  const CNOT_H = WIRE_SPACING + 24; // spans two adjacent wires
   const SQ_W = 54;
   const SQ_H = 38;
 
@@ -44,23 +51,24 @@ export function CircuitCanvas({
       <h2 className="text-2xl font-semibold mb-4">Circuit</h2>
 
       <div className="relative border rounded-xl p-3 bg-gray-50 overflow-x-auto">
-        {/* Droppable strips */}
-        <DroppableStrip id="drop-wire-a" top={yA - 28} height={56} />
-        <DroppableStrip id="drop-wire-b" top={yB - 28} height={56} />
+        {/* Droppable strips — one per qubit, centered on each wire */}
+        {wireYs.map((y, i) => (
+          <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 28} height={56} />
+        ))}
 
         {/* SVG canvas */}
         <svg width={CANVAS_W} height={CANVAS_H} className="block">
           {/* Wire labels */}
-          <text x={8} y={yA + 4} fontSize={14} fill="#374151">
-            |a⟩
-          </text>
-          <text x={8} y={yB + 4} fontSize={14} fill="#374151">
-            |b⟩
-          </text>
+          {wireYs.map((y, i) => (
+            <text key={i} x={8} y={y + 4} fontSize={14} fill="#374151">
+              {`|q${i}⟩`}
+            </text>
+          ))}
 
           {/* Wires */}
-          <line x1={PAD_X} y1={yA} x2={CANVAS_W - PAD_X} y2={yA} stroke="#9CA3AF" strokeWidth={2} />
-          <line x1={PAD_X} y1={yB} x2={CANVAS_W - PAD_X} y2={yB} stroke="#9CA3AF" strokeWidth={2} />
+          {wireYs.map((y, i) => (
+            <line key={i} x1={PAD_X} y1={y} x2={CANVAS_W - PAD_X} y2={y} stroke="#9CA3AF" strokeWidth={2} />
+          ))}
 
           {/* Placed gates */}
           {gates.map((g, i) => {
@@ -75,7 +83,7 @@ export function CircuitCanvas({
               }
               
               return (
-                <g key={g.id} transform={`translate(${xCenter - CNOT_W / 2}, ${yA - 12})`}>
+                <g key={g.id} transform={`translate(${xCenter - CNOT_W / 2}, ${wireYs[0] - 12})`}>
                   <GlyphComponent order={g.order} width={CNOT_W} height={CNOT_H} />
                 </g>
               );
@@ -83,7 +91,7 @@ export function CircuitCanvas({
 
             // Handle single-qubit gates
             if ("wire" in g) {
-              const y = g.wire === 0 ? yA : yB;
+              const y = wireYs[g.wire];
               const x = xCenter - SQ_W / 2;
               return (
                 <g key={g.id} transform={`translate(${x}, ${y - SQ_H / 2})`}>

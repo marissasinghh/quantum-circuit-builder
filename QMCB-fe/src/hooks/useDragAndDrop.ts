@@ -35,9 +35,10 @@ export function useDragAndDrop(
       const overId = event.over?.id ? String(event.over.id) : undefined;
       if (!overId) return;
 
-      // Determine which wire was dropped on
-      const wire = overId === "drop-wire-a" ? 0 : overId === "drop-wire-b" ? 1 : null;
-      if (wire === null) return;
+      // Determine which wire was dropped on by parsing "drop-wire-N" → N
+      const wireMatch = overId.match(/^drop-wire-(\d+)$/);
+      if (!wireMatch) return;
+      const wire = parseInt(wireMatch[1], 10) as 0 | 1;
 
       // Get gate type from tool ID
       const gateType = TOOL_TO_GATE[id];
