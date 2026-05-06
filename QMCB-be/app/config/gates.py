@@ -31,6 +31,9 @@ class CirqGateMapper:
 
         if gate == Gate.X.value:
             return cirq.X(selected_qubits[0])
+        
+        elif gate == Gate.SQRT_X.value:
+            return cirq.X(selected_qubits[0])**0.5
 
         elif gate == Gate.H.value:
             return cirq.H(selected_qubits[0])

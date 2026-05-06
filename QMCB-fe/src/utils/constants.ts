@@ -65,7 +65,7 @@ export const TWO_QUBIT_INPUTS = [BASIS_00, BASIS_01, BASIS_10, BASIS_11] as cons
 // GATE CONSTANTS
 // ===============
 
-export const SINGLE_QUBIT_GATES = [Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY, Gate.U] as const;
+export const SINGLE_QUBIT_GATES = [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY, Gate.U] as const;
 
 /** Type helper: extract the union type from the array */
 export type SingleQubitGate = (typeof SINGLE_QUBIT_GATES)[number]; // Gate.S | Gate.T | ...

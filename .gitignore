@@ -31,3 +31,6 @@ dist/
 Thumbs.db
 .idea/
 .vscode/
+
+# --- Local docs / exports ---
+weekly_summaries/

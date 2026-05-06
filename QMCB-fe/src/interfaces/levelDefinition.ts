@@ -20,4 +20,6 @@ export interface LevelDefinition {
   expectedTruth?: TruthTableDTO;
   uiMaxGates?: number;
   description?: string;
+  hint1?: string;
+  hint2?: string;
 }

@@ -25,6 +25,7 @@ LEVEL3_QUBITS = 3
 
 class Gate(Enum):
     X = "X"
+    SQRT_X = "SQRT_X"   
     H = "H"
     S = "S"
     T = "T"

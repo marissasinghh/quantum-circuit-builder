@@ -5,6 +5,7 @@
 export enum Gate {
   // 1-qubit gates
   X = "X",
+  SQRT_X = "SQRT_X",
   S = "S",
   T = "T",
   H = "H",

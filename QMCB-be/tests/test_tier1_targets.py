@@ -89,8 +89,13 @@ class TestXTarget:
     """
 
     def test_correct_circuit_matches(self) -> None:
-        """Student submits X → all outputs match the X target."""
-        response, status = _run(_single(Gate.X.value), "X")
+        """Student submits SQRT_X then SQRT_X → all outputs match the X target."""
+        trial = UnitaryDTO(
+            number_of_qubits=1,
+            gates=[Gate.SQRT_X.value, Gate.SQRT_X.value],
+            qubit_order=[[0], [0]],
+        )
+        response, status = _run(trial, "X")
         assert status == 200
         assert response["all_match"] is True
         assert response["trial_truth_table"]["output"] == ["|1⟩", "|0⟩"]
