@@ -8,6 +8,8 @@ import { Gate, type TwoQubitGate, type SingleQubitGate } from "../types/global";
 
 // Map drag tool IDs to gate types
 const TOOL_TO_GATE: Record<string, Gate> = {
+  "tool-x": Gate.X,
+  "tool-sqrt-x": Gate.SQRT_X,
   "tool-cnot": Gate.CNOT,
   "tool-cnot-flipped": Gate.CNOT_FLIPPED,
   "tool-cz": Gate.CONTROLLED_Z,

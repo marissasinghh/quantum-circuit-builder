@@ -14,7 +14,11 @@ import { Gate } from "../types/global";
 /** Gates that require a theta angle before the backend can apply them. */
 const REQUIRES_THETA = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 
-export function useCircuitValidation(currentLevel: LevelDefinition, gates: PlacedGate[]) {
+export function useCircuitValidation(
+  currentLevel: LevelDefinition,
+  gates: PlacedGate[],
+  randomSeed?: number
+) {
   const mutation = useMutation({ mutationFn: simulateUnitary });
   const [validationError, setValidationError] = useState<Error | null>(null);
 
@@ -41,7 +45,7 @@ export function useCircuitValidation(currentLevel: LevelDefinition, gates: Place
     }
 
     setValidationError(null);
-    const body = buildRequestFromLevel(currentLevel, gates);
+    const body = buildRequestFromLevel(currentLevel, gates, randomSeed);
     mutation.mutate(body);
   };
 

@@ -14,13 +14,15 @@ import { serializeOrders, serializeUnitaryGateEntries } from "../utils/circuit";
 /** Build the POST body from the level's static info + student's gates. */
 export function buildRequestFromLevel(
   level: LevelDefinition,
-  gates: PlacedGate[]
+  gates: PlacedGate[],
+  seed?: number
 ): UnitaryRequestDTO {
   return {
     target_unitary: level.target_unitary,
     number_of_qubits: level.number_of_qubits,
     gates: serializeUnitaryGateEntries(gates),
     qubit_order: serializeOrders(gates),
+    ...(seed !== undefined && { seed }),
   };
 }
 

@@ -32,6 +32,7 @@ import numpy as np
 import pytest
 
 from app.controllers.simulate import simulate_unitaries
+from app.controllers.random_unitary import angles_from_seed, generate_random_unitary_response
 from app.dto.unitary import UnitaryDTO
 from app.utils.constants import Gate
 
@@ -301,3 +302,151 @@ class TestRyTarget:
         ry_half_pi_outputs = ["0.707|0⟩ + 0.707|1⟩", "-0.707|0⟩ + 0.707|1⟩"]
         assert response["trial_truth_table"]["output"] == ry_quarter_pi_outputs
         assert response["trial_truth_table"]["output"] != ry_half_pi_outputs
+
+
+# ── Level 1.6: Random Unitary ─────────────────────────────────────────────────
+
+
+def _run_random_u(trial: UnitaryDTO, seed: int):
+    """Call simulate_unitaries for a RANDOM_U target with print suppressed."""
+    with patch("builtins.print"):
+        return simulate_unitaries(trial, "RANDOM_U", seed=seed)
+
+
+class TestRandomUnitaryLevel:
+    """
+    Level 1.6: random single-qubit unitary challenge.
+
+    Three kinds of checks live here:
+
+    1. Shape / format: truth table has exactly 2 rows; outputs are valid
+       Dirac-notation ket strings.
+    2. Reproducibility: same seed → identical truth table on repeated calls.
+    3. Randomness sanity: two unseeded calls return different truth tables
+       (probabilistic — the chance of collision across 2^31 seeds is negligible).
+    4. Controller-path integration: ZXZ circuit with seed-derived angles
+       passes all_match; an unrelated gate fails.
+
+    We never assert a specific truth-table string because the output is
+    random by design.
+    """
+
+    # ── Shape and format ──────────────────────────────────────────────────────
+
+    def test_truth_table_has_exactly_two_rows(self) -> None:
+        """Generated truth table has one row per single-qubit basis state."""
+        with patch("builtins.print"):
+            data = generate_random_unitary_response()
+        tt = data["truth_table"]
+        assert len(tt["input"]) == 2, "Expected 2 input rows (|0⟩ and |1⟩)"
+        assert len(tt["output"]) == 2, "Expected 2 output rows"
+
+    def test_output_strings_are_valid_quantum_states(self) -> None:
+        """
+        Each output is a non-empty Dirac-notation ket string.
+
+        Valid examples: '|0⟩', '0.707|0⟩ + 0.707|1⟩', '0.924|0⟩ - 0.383j|1⟩'.
+        We check the necessary conditions: non-empty, contains ket bracket ⟩,
+        and references at least one of |0⟩ or |1⟩.
+        """
+        with patch("builtins.print"):
+            data = generate_random_unitary_response()
+        for s in data["truth_table"]["output"]:
+            assert isinstance(s, str) and len(s) > 0, f"Output must be a non-empty string, got: {s!r}"
+            assert "⟩" in s, f"Expected Dirac ket notation (⟩), got: {s!r}"
+            assert "|0⟩" in s or "|1⟩" in s, f"Expected |0⟩ or |1⟩ in output, got: {s!r}"
+
+    def test_session_id_is_a_non_negative_integer(self) -> None:
+        """Returned session_id is a valid integer seed for client-side storage."""
+        with patch("builtins.print"):
+            data = generate_random_unitary_response()
+        assert isinstance(data["session_id"], int)
+        assert data["session_id"] >= 0
+
+    def test_num_rotation_gates_hint_is_three(self) -> None:
+        """Hint value always reports 3 (ZXZ decomposition has three rotation gates)."""
+        with patch("builtins.print"):
+            data = generate_random_unitary_response()
+        assert data["num_rotation_gates"] == 3
+
+    # ── Reproducibility ───────────────────────────────────────────────────────
+
+    def test_same_seed_reproduces_identical_truth_table(self) -> None:
+        """
+        Calling with the same seed twice must return the same truth table.
+        This guarantees that a student who refreshes the page sees the same target.
+        """
+        with patch("builtins.print"):
+            data1 = generate_random_unitary_response(seed=42)
+            data2 = generate_random_unitary_response(seed=42)
+        assert data1["truth_table"]["output"] == data2["truth_table"]["output"]
+        assert data1["session_id"] == data2["session_id"] == 42
+
+    def test_different_seeds_produce_different_truth_tables(self) -> None:
+        """Distinct seeds produce distinct targets (basic collision check)."""
+        with patch("builtins.print"):
+            data1 = generate_random_unitary_response(seed=1)
+            data2 = generate_random_unitary_response(seed=2)
+        assert data1["truth_table"]["output"] != data2["truth_table"]["output"], (
+            "Seeds 1 and 2 returned identical truth tables — "
+            "seed-to-angle derivation may be broken."
+        )
+
+    def test_two_unseeded_calls_produce_different_truth_tables(self) -> None:
+        """
+        Probabilistic sanity check: two fresh (unseeded) calls must not return
+        the same unitary.
+
+        The probability of a collision across 2^31 possible seeds is negligible.
+        If this fails, random generation is almost certainly broken (e.g. fixed
+        seed or constant angles).
+        """
+        with patch("builtins.print"):
+            data1 = generate_random_unitary_response()
+            data2 = generate_random_unitary_response()
+        assert data1["truth_table"]["output"] != data2["truth_table"]["output"], (
+            "Two unseeded calls returned identical truth tables — "
+            "random generation appears broken."
+        )
+
+    # ── Controller-path integration ───────────────────────────────────────────
+
+    def test_zxz_circuit_with_seed_angles_matches_random_u_target(self) -> None:
+        """
+        ZXZ circuit built from seed-derived angles → all_match True.
+
+        This is the canonical solution path: angles_from_seed gives the exact
+        alpha/beta/gamma used to build the target, so the identical Rz·Rx·Rz
+        circuit should produce a perfectly matching truth table.
+        """
+        seed = 12345
+        alpha, beta, gamma = angles_from_seed(seed)
+        trial = UnitaryDTO(
+            number_of_qubits=1,
+            gates=[
+                {"gate": Gate.RZ.value, "theta": alpha},
+                {"gate": Gate.RX.value, "theta": beta},
+                {"gate": Gate.RZ.value, "theta": gamma},
+            ],
+            qubit_order=[[0], [0], [0]],
+        )
+        response, status = _run_random_u(trial, seed=seed)
+        assert status == 200
+        assert response["all_match"] is True
+
+    def test_wrong_circuit_does_not_match_random_u_target(self) -> None:
+        """
+        H gate submitted against a RANDOM_U target → all_match False.
+
+        H is the identity-adjacent gate least likely to accidentally match a
+        generic random unitary. We use a fixed seed for determinism.
+        """
+        seed = 99999
+        trial = UnitaryDTO(
+            number_of_qubits=1,
+            gates=[Gate.H.value],
+            qubit_order=[[0]],
+        )
+        response, status = _run_random_u(trial, seed=seed)
+        assert status == 200
+        assert response["all_match"] is False

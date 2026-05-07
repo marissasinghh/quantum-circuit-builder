@@ -40,9 +40,10 @@ class Simulate(Resource):
                 unitary_info["qubit_order"],
             )
             target_name = unitary_info["target_unitary"]
+            seed = unitary_info.get("seed")
 
             response = simulate_unitaries(
-                trial_dto, target_name, Config.VALIDATE_TARGET_CIRCUITS
+                trial_dto, target_name, Config.VALIDATE_TARGET_CIRCUITS, seed=seed
             )
 
             return response

@@ -11,8 +11,10 @@ export enum Gate {
   H = "H",
   RX = "RX",
   RY = "RY",
-  RZ = "RZ", 
+  RZ = "RZ",
   U = "U",
+  // Sentinel for Level 1.6: target is a random unitary generated server-side.
+  RANDOM_U = "RANDOM_U",
 
   // 2-qubit gates
   CNOT = "CNOT",
@@ -28,7 +30,7 @@ export enum Gate {
 }
 
 /** All single-qubit gates available in the toolbox */
-export type SingleQubitGate = Gate.X | Gate.S | Gate.T | Gate.H | Gate.RX | Gate.RY | Gate.RZ | Gate.U;
+export type SingleQubitGate = Gate.X | Gate.SQRT_X | Gate.S | Gate.T | Gate.H | Gate.RX | Gate.RY | Gate.RZ | Gate.U;
 
 /** All two-qubit gates available in the toolbox */
 export type TwoQubitGate =

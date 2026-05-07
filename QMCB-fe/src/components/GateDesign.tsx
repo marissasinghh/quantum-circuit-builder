@@ -177,3 +177,72 @@ export function UGlyph(props: { width?: number; height?: number }) {
 export function RZGlyph(props: { width?: number; height?: number }) {
   return <GateBlock label="Rz(θ)" {...props} />;
 }
+
+export function XGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="X" {...props} />;
+}
+
+/**
+ * √X glyph: the radical symbol is drawn as an SVG polyline so it does not
+ * depend on system-font support for U+221A (the Windows system font ships
+ * with an incomplete glyph that drops the overline). The "X" letter is
+ * rendered separately at the same font size as every other GateBlock-based
+ * glyph so the placed gate visually matches its siblings.
+ */
+export function SqrtXGlyph({
+  width = 54,
+  height = 38,
+}: {
+  width?: number;
+  height?: number;
+}) {
+  const rx = 8;
+
+  // X letter centered horizontally in the box.
+  const xCenterX = width * 0.5;
+
+  // √ shape — overline width matches the rendered width of "X" at fontSize=14
+  // (≈ 18% of a 54px box). The hook + diagonal sit immediately to the left.
+  const overlineY = height * 0.24;
+  const dipStartX = width * 0.22;
+  const dipStartY = height * 0.61;
+  const dipBotX = width * 0.30;
+  const dipBotY = height * 0.79;
+  const upStrokeTopX = width * 0.41;
+  const overlineEndX = width * 0.59;
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="√X">
+      <rect
+        x={1}
+        y={1}
+        width={width - 2}
+        height={height - 2}
+        rx={rx}
+        ry={rx}
+        fill="white"
+        stroke="#111827"
+        strokeWidth={2}
+      />
+      <polyline
+        points={`${dipStartX},${dipStartY} ${dipBotX},${dipBotY} ${upStrokeTopX},${overlineY} ${overlineEndX},${overlineY}`}
+        fill="none"
+        stroke="#111827"
+        strokeWidth={1.35}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <text
+        x={xCenterX}
+        y="62%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto"
+        fontSize={14}
+        fill="#111827"
+      >
+        X
+      </text>
+    </svg>
+  );
+}

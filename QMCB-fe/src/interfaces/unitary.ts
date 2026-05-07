@@ -27,4 +27,6 @@ export interface UnitaryRequestDTO {
   number_of_qubits: number;
   gates: UnitaryGateEntry[];
   qubit_order: AnyQubitOrder[];
+  /** Seed for Level 1.6 random-unitary grading. Omitted for all other levels. */
+  seed?: number;
 }

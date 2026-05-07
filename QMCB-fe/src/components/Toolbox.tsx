@@ -3,7 +3,7 @@
  */
 
 import { Gate } from "../types/global";
-import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph } from "./GateDesign";
+import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph, XGlyph, SqrtXGlyph } from "./GateDesign";
 import { DraggableTool } from "./DragAndDropWrappers";
 
 interface ToolboxProps {
@@ -13,6 +13,16 @@ interface ToolboxProps {
 
 // Map gate types to their visual components and display info
 const GATE_CONFIG = {
+  [Gate.X]: {
+    component: <XGlyph width={64} height={44} />,
+    label: "X",
+    toolId: "tool-x",
+  },
+  [Gate.SQRT_X]: {
+    component: <SqrtXGlyph width={64} height={44} />,
+    label: "√X",
+    toolId: "tool-sqrt-x",
+  },
   [Gate.CNOT]: {
     component: <CNOTGlyph order={[0, 1]} width={84} height={64} />,
     label: "CNOT",
@@ -92,7 +102,6 @@ export function Toolbox({ availableGates }: ToolboxProps) {
           return (
             <div key={gate} className="flex flex-col items-center">
               <DraggableTool id={config.toolId}>{config.component}</DraggableTool>
-              <div className="mt-1 text-sm">{config.label}</div>
             </div>
           );
         })}

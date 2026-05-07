@@ -10,6 +10,7 @@ import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { useCircuit } from "./hooks/useCircuit";
 import { useLevelSelection } from "./hooks/useLevelSelection";
 import { useCircuitValidation } from "./hooks/useCircuitValidation";
+import { useRandomUnitary } from "./hooks/useRandomUnitary";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
 
 // Components
@@ -19,10 +20,11 @@ import { Toolbox } from "./components/Toolbox";
 import { CircuitCanvas } from "./components/CircuitCanvas";
 import { OutputTable } from "./components/OutputTable";
 import { LevelCompleteModal } from "./components/LevelCompleteModal";
-import { CNOTGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph } from "./components/GateDesign";
+import { CNOTGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph, XGlyph, SqrtXGlyph } from "./components/GateDesign";
 
 // Utils
 import { getNextLevel } from "./config/levels";
+import { Gate } from "./types/global";
 
 export default function App() {
   // State management via custom hooks
@@ -38,7 +40,15 @@ export default function App() {
     setShowCompletionModal(false); // Reset modal when level changes
   });
 
-  const { mutation, rows, allCorrect, handleCheck, validationError } = useCircuitValidation(currentLevel, gates);
+  const isRandomLevel = currentLevel.target_unitary === Gate.RANDOM_U;
+  const { query: randomUnitaryQuery, generateNew: generateNewUnitary, seed: randomSeed } =
+    useRandomUnitary(isRandomLevel);
+
+  const { mutation, rows, allCorrect, handleCheck, validationError } = useCircuitValidation(
+    currentLevel,
+    gates,
+    randomSeed
+  );
 
   const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
 
@@ -52,6 +62,11 @@ export default function App() {
   const handleClear = () => {
     clearAll();
     mutation.reset();
+  };
+
+  const handleNewUnitary = () => {
+    generateNewUnitary();
+    handleClear();
   };
 
   const handleRepeat = () => {
@@ -82,7 +97,11 @@ export default function App() {
         <main className="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Task + Toolbox */}
           <section className="space-y-6">
-            <TaskCard level={currentLevel} />
+            <TaskCard
+              level={currentLevel}
+              dynamicTruth={isRandomLevel ? randomUnitaryQuery.data?.truth_table : undefined}
+              onNewUnitary={isRandomLevel ? handleNewUnitary : undefined}
+            />
             <Toolbox availableGates={currentLevel.toolbox} activeId={activeId} />
           </section>
 
@@ -108,6 +127,8 @@ export default function App() {
 
         {/* Drag overlay */}
         <DragOverlay>
+          {activeId === "tool-x" && <XGlyph width={64} height={44} />}
+          {activeId === "tool-sqrt-x" && <SqrtXGlyph width={64} height={44} />}
           {activeId === "tool-cnot" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
           {activeId === "tool-h" && <HGlyph width={64} height={44} />}
           {activeId === "tool-t" && <TGlyph width={76} height={44} />}

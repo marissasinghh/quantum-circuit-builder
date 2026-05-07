@@ -32,5 +32,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Cursor IDE (local only; do not publish to GitHub)
+.cursor/
+.cursorrules
+
 # --- Local docs / exports ---
 weekly_summaries/

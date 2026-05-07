@@ -171,6 +171,23 @@ export const RY_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
+// LEVEL 1.6: RANDOM UNITARY
+// ========================
+export const RANDOM_U_LEVEL: LevelDefinition = {
+  target_unitary: Gate.RANDOM_U,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY] as const,
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "A random single-qubit unitary has been generated for you. Synthesize a circuit whose " +
+    "truth table matches it exactly. Use any combination of your unlocked gates.",
+  hint1: "Any single-qubit unitary can be decomposed into at most three rotation gates (ZXZ decomposition).",
+  hint2: "Try Rz(α) · Rx(β) · Rz(γ) — adjust the three angles until the outputs match.",
+} as const;
+
+// ========================
 // LEVEL 2.1: CNOT FLIPPED
 // ========================
 export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
@@ -261,6 +278,7 @@ export const LEVEL_ORDER: readonly LevelDefinition[] = [
   H_LEVEL,
   RX_LEVEL,
   RY_LEVEL,
+  RANDOM_U_LEVEL,
   // Tier 2 — two-qubit gates
   CNOT_FLIPPED_LEVEL,
   CONTROLLED_Z_LEVEL,
