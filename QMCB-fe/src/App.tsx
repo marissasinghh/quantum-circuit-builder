@@ -9,6 +9,7 @@ import { DndContext, DragOverlay } from "@dnd-kit/core";
 // Hooks
 import { useCircuit } from "./hooks/useCircuit";
 import { useLevelSelection } from "./hooks/useLevelSelection";
+import { useLevelProgress } from "./hooks/useLevelProgress";
 import { useCircuitValidation } from "./hooks/useCircuitValidation";
 import { useRandomUnitary } from "./hooks/useRandomUnitary";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
@@ -31,6 +32,8 @@ export default function App() {
   const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, clearAll } =
     useCircuit();
 
+  const { unlockedGates, markLevelComplete } = useLevelProgress();
+
   // Modal state
   const [showCompletionModal, setShowCompletionModal] = React.useState(false);
 
@@ -52,12 +55,13 @@ export default function App() {
 
   const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
 
-  // Show completion modal when solution is correct
+  // Show completion modal and persist progress when solution is correct
   React.useEffect(() => {
     if (allCorrect && rows && rows.length > 0) {
       setShowCompletionModal(true);
+      markLevelComplete(currentLevel);
     }
-  }, [allCorrect, rows]);
+  }, [allCorrect, rows, markLevelComplete, currentLevel]);
 
   const handleClear = () => {
     clearAll();
@@ -102,7 +106,7 @@ export default function App() {
               dynamicTruth={isRandomLevel ? randomUnitaryQuery.data?.truth_table : undefined}
               onNewUnitary={isRandomLevel ? handleNewUnitary : undefined}
             />
-            <Toolbox availableGates={currentLevel.toolbox} activeId={activeId} />
+            <Toolbox availableGates={unlockedGates} activeId={activeId} />
           </section>
 
           {/* Right: Circuit + Output */}
