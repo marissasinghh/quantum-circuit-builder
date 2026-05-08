@@ -3,7 +3,7 @@
  * All UI rendering delegated to focused components.
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 
 // Hooks
@@ -26,6 +26,8 @@ import { CNOTGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph, X
 // Utils
 import { getNextLevel } from "./config/levels";
 import { Gate } from "./types/global";
+import { gateSequenceToBlochState } from "./utils/blochMath";
+import { BlochSphere } from "./components/BlochSphere";
 
 export default function App() {
   // State management via custom hooks
@@ -54,6 +56,8 @@ export default function App() {
   );
 
   const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
+
+  const blochState = useMemo(() => gateSequenceToBlochState(gates), [gates]);
 
   // Show completion modal and persist progress when solution is correct
   React.useEffect(() => {
@@ -121,6 +125,9 @@ export default function App() {
               onClear={handleClear}
               isChecking={mutation.isPending}
             />
+            {currentLevel.number_of_qubits === 1 && (
+              <BlochSphere theta={blochState.theta} phi={blochState.phi} />
+            )}
             <OutputTable
               rows={rows}
               isCorrect={allCorrect}
