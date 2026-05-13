@@ -21,12 +21,16 @@ class Simulate(Resource):
         """
         Simulates trial unitary and returns truth table.
         """
+        unitary_info = None
         try:
-            unitary_info = request.get_json()
-            logger.info(f"Trying to simulate trial unitary: {unitary_info}")
+            # silent=True: invalid UTF-8 / malformed JSON → None (avoid BadRequest + NameError in except)
+            unitary_info = request.get_json(silent=True)
+            if not isinstance(unitary_info, dict):
+                return ResponseBuilder.fail(
+                    "Request body must be a valid JSON object.",
+                )
 
-            if not unitary_info:
-                return ResponseBuilder.error("No JSON body provided", 400)
+            logger.info(f"Trying to simulate trial unitary: {unitary_info}")
 
             try:
                 validate_simulate_unitary_json(unitary_info)
@@ -51,8 +55,8 @@ class Simulate(Resource):
         except Exception as e:
             return ResponseBuilder.error(
                 message=(
-                    f"Unexpected error occured when simulating circuit,"
-                    f" Unitary Info: {unitary_info}"
+                    "Unexpected error occured when simulating circuit,"
+                    f" Unitary Info: {unitary_info!r}"
                 ),
                 data=ResponseDTO(error=str(e)),
             )
