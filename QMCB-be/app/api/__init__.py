@@ -6,7 +6,7 @@ api = Api(
     title="Quantum Circuit Builder API",
     version="1.0",
     prefix="/api",
-    doc="/docs",
+    doc="/api/docs",
     description="API for simulating quantum circuits",
 )
 
