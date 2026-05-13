@@ -2,6 +2,7 @@
  * Circuit Canvas: contains SVG visualization and gate controls.
  */
 
+import { useEffect, useRef } from "react";
 import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
 import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, RZGlyph, UGlyph, XGlyph, SqrtXGlyph } from "./GateDesign";
 import { DroppableStrip } from "./DragAndDropWrappers";
@@ -57,6 +58,27 @@ export function CircuitCanvas({
   const CNOT_H = WIRE_SPACING + 24; // spans two adjacent wires
   const SQ_W = 54;
   const SQ_H = 38;
+  const thetaDebounceTimers = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(thetaDebounceTimers.current).forEach((timerId) => {
+        window.clearTimeout(timerId);
+      });
+    };
+  }, []);
+
+  const onSliderThetaChange = (id: string, theta: number) => {
+    const existingTimer = thetaDebounceTimers.current[id];
+    if (existingTimer !== undefined) {
+      window.clearTimeout(existingTimer);
+    }
+
+    thetaDebounceTimers.current[id] = window.setTimeout(() => {
+      onSetGateTheta(id, theta);
+      delete thetaDebounceTimers.current[id];
+    }, 100);
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow p-5">
@@ -186,6 +208,18 @@ export function CircuitCanvas({
               {isParameterized && "wire" in g && (
                 <div className="flex items-center gap-1 flex-wrap">
                   <label className="text-xs text-gray-500">θ (rad):</label>
+                  <input
+                    type="range"
+                    min={0}
+                    max={Math.PI}
+                    step={0.01}
+                    className="w-32"
+                    value={g.theta ?? 0}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      if (!isNaN(val)) onSliderThetaChange(g.id, val);
+                    }}
+                  />
                   <input
                     type="number"
                     step="0.001"
