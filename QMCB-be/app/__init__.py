@@ -6,13 +6,16 @@ from app.settings import Config
 logger = logging.getLogger(__name__)
 
 
-def create_app(config: Config) -> Flask:
+def create_app(config=None) -> Flask:
     """
     Create and configure the Flask application.
 
     CORS is applied in ``app.main`` *after* ``api.init_app`` so OPTIONS preflight
     on RESTX routes always gets ``Access-Control-Allow-*`` headers.
     """
+
+    if config is None:
+            config = Config()
 
     app = Flask(__name__)
     app.config.from_object(config)
