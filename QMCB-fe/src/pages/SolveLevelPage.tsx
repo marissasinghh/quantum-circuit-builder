@@ -38,7 +38,7 @@ export default function SolveLevelPage() {
 
   if (!currentLevel) return <Navigate to="/levels" replace />;
 
-  return <SolveLevelContent currentLevel={currentLevel} />;
+  return <SolveLevelContent key={currentLevel.target_unitary} currentLevel={currentLevel} />;
 }
 
 function SolveLevelContent({ currentLevel }: { currentLevel: LevelDefinition }) {
@@ -89,7 +89,10 @@ function SolveLevelContent({ currentLevel }: { currentLevel: LevelDefinition }) 
 
   const handleNextLevel = () => {
     const next = getNextLevel(currentLevel);
-    if (next) navigate("/level/" + next.target_unitary);
+    if (next) {
+      setShowCompletionModal(false);
+      navigate("/level/" + next.target_unitary);
+    }
   };
 
   const handleLevelSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
