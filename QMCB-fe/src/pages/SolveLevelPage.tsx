@@ -1,0 +1,182 @@
+import React, { useMemo } from "react";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+
+import { useCircuit } from "../hooks/useCircuit";
+import { useLevelProgress } from "../hooks/useLevelProgress";
+import { useCircuitValidation } from "../hooks/useCircuitValidation";
+import { useRandomUnitary } from "../hooks/useRandomUnitary";
+import { useDragAndDrop } from "../hooks/useDragAndDrop";
+
+import { TaskCard } from "../components/TaskCard";
+import { Toolbox } from "../components/Toolbox";
+import { CircuitCanvas } from "../components/CircuitCanvas";
+import { OutputTable } from "../components/OutputTable";
+import { LevelCompleteModal } from "../components/LevelCompleteModal";
+import { BlochSphere } from "../components/BlochSphere";
+import {
+  CNOTGlyph,
+  HGlyph,
+  TGlyph,
+  SGlyph,
+  RXGlyph,
+  RYGlyph,
+  UGlyph,
+  RZGlyph,
+  XGlyph,
+  SqrtXGlyph,
+} from "../components/GateDesign";
+
+import { LEVEL_ORDER, getNextLevel } from "../config/levels";
+import { Gate } from "../types/global";
+import { gateSequenceToBlochState } from "../utils/blochMath";
+import type { LevelDefinition } from "../interfaces/levelDefinition";
+
+export default function SolveLevelPage() {
+  const { id } = useParams<{ id: string }>();
+  const currentLevel = LEVEL_ORDER.find((l) => l.target_unitary === id) ?? null;
+
+  if (!currentLevel) return <Navigate to="/levels" replace />;
+
+  return <SolveLevelContent currentLevel={currentLevel} />;
+}
+
+function SolveLevelContent({ currentLevel }: { currentLevel: LevelDefinition }) {
+  const navigate = useNavigate();
+
+  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, clearAll } =
+    useCircuit();
+
+  const { unlockedGates, markLevelComplete } = useLevelProgress();
+
+  const [showCompletionModal, setShowCompletionModal] = React.useState(false);
+
+  const isRandomLevel = currentLevel.target_unitary === Gate.RANDOM_U;
+  const { query: randomUnitaryQuery, generateNew: generateNewUnitary, seed: randomSeed } =
+    useRandomUnitary(isRandomLevel);
+
+  const { mutation, rows, allCorrect, handleCheck, validationError } = useCircuitValidation(
+    currentLevel,
+    gates,
+    randomSeed
+  );
+
+  const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
+
+  const blochState = useMemo(() => gateSequenceToBlochState(gates), [gates]);
+
+  React.useEffect(() => {
+    if (allCorrect && rows && rows.length > 0) {
+      setShowCompletionModal(true);
+      markLevelComplete(currentLevel);
+    }
+  }, [allCorrect, rows, markLevelComplete, currentLevel]);
+
+  const handleClear = () => {
+    clearAll();
+    mutation.reset();
+  };
+
+  const handleNewUnitary = () => {
+    generateNewUnitary();
+    handleClear();
+  };
+
+  const handleRepeat = () => {
+    handleClear();
+    setShowCompletionModal(false);
+  };
+
+  const handleNextLevel = () => {
+    const next = getNextLevel(currentLevel);
+    if (next) navigate("/level/" + next.target_unitary);
+  };
+
+  const handleLevelSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    navigate("/level/" + e.target.value);
+  };
+
+  return (
+    <div>
+      <DndContext
+        onDragStart={(e) => setActiveId(String(e.active.id))}
+        onDragCancel={() => setActiveId(null)}
+        onDragEnd={(e) => {
+          setActiveId(null);
+          onDragEnd(e);
+        }}
+      >
+        <main className="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Task + Toolbox */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-2 text-sm">
+              <label htmlFor="level-select" className="text-gray-600 font-medium">
+                Level:
+              </label>
+              <select
+                id="level-select"
+                className="border rounded px-2 py-1 text-sm"
+                value={currentLevel.target_unitary}
+                onChange={handleLevelSelect}
+              >
+                {LEVEL_ORDER.map((level) => (
+                  <option key={level.target_unitary} value={level.target_unitary}>
+                    {level.target_unitary}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <TaskCard
+              level={currentLevel}
+              dynamicTruth={isRandomLevel ? randomUnitaryQuery.data?.truth_table : undefined}
+              onNewUnitary={isRandomLevel ? handleNewUnitary : undefined}
+            />
+            <Toolbox availableGates={unlockedGates} activeId={activeId} />
+          </section>
+
+          {/* Right: Circuit + Output */}
+          <section className="space-y-6">
+            <CircuitCanvas
+              gates={gates}
+              numberOfQubits={currentLevel.number_of_qubits}
+              onRemoveGate={removeGate}
+              onSetGateOrder={setGateOrder}
+              onSetGateTheta={setGateTheta}
+              onCheck={handleCheck}
+              onClear={handleClear}
+              isChecking={mutation.isPending}
+            />
+            {currentLevel.number_of_qubits === 1 && (
+              <BlochSphere theta={blochState.theta} phi={blochState.phi} />
+            )}
+            <OutputTable
+              rows={rows}
+              isCorrect={allCorrect}
+              error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
+            />
+          </section>
+        </main>
+
+        <DragOverlay>
+          {activeId === "tool-x" && <XGlyph width={64} height={44} />}
+          {activeId === "tool-sqrt-x" && <SqrtXGlyph width={64} height={44} />}
+          {activeId === "tool-cnot" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
+          {activeId === "tool-h" && <HGlyph width={64} height={44} />}
+          {activeId === "tool-t" && <TGlyph width={76} height={44} />}
+          {activeId === "tool-s" && <SGlyph width={76} height={44} />}
+          {activeId === "tool-rx" && <RXGlyph width={76} height={44} />}
+          {activeId === "tool-ry" && <RYGlyph width={76} height={44} />}
+          {activeId === "tool-rz" && <RZGlyph width={76} height={44} />}
+          {activeId === "tool-u" && <UGlyph width={64} height={44} />}
+        </DragOverlay>
+      </DndContext>
+
+      <LevelCompleteModal
+        isOpen={showCompletionModal}
+        onRepeat={handleRepeat}
+        onNext={handleNextLevel}
+        hasNextLevel={getNextLevel(currentLevel) !== null}
+      />
+    </div>
+  );
+}

@@ -2,51 +2,21 @@
  * App header: contains navigation links.
  */
 
-import { LEVEL_ORDER } from "../config/levels";
-import type { LevelDefinition } from "../interfaces/levelDefinition";
+import { Link } from "react-router-dom";
 
-interface AppHeaderProps {
-  currentLevel: LevelDefinition;
-  onLevelChange: (level: LevelDefinition) => void;
-}
-
-export function AppHeader({ currentLevel, onLevelChange }: AppHeaderProps) {
+export function AppHeader() {
   return (
     <header className="border-b bg-white">
       <nav className="mx-auto max-w-6xl px-4 py-3 flex gap-6 text-sm font-medium items-center">
-        <span className="text-gray-900 font-semibold">Quantum Circuit Builder</span>
-
-        {/* Level Selector */}
-        <div className="flex items-center gap-2">
-          <label htmlFor="level-select" className="text-gray-600">
-            Level:
-          </label>
-          <select
-            id="level-select"
-            className="border rounded px-2 py-1 text-sm"
-            value={currentLevel.target_unitary}
-            onChange={(e) => {
-              const selectedGate = e.target.value;
-              const selectedLevel = LEVEL_ORDER.find((level) => level.target_unitary === selectedGate);
-              if (selectedLevel) {
-                onLevelChange(selectedLevel);
-              }
-            }}
-          >
-            {LEVEL_ORDER.map((level) => (
-              <option key={level.target_unitary} value={level.target_unitary}>
-                {level.target_unitary}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <a className="text-gray-500 hover:text-gray-900 ml-auto" href="#">
+        <Link to="/levels" className="text-gray-900 font-semibold">
+          Quantum Circuit Builder
+        </Link>
+        <Link className="text-gray-500 hover:text-gray-900 ml-auto" to="/settings">
           Settings
-        </a>
-        <a className="text-gray-500 hover:text-gray-900" href="#">
+        </Link>
+        <Link className="text-gray-500 hover:text-gray-900" to="/about">
           About
-        </a>
+        </Link>
       </nav>
     </header>
   );
