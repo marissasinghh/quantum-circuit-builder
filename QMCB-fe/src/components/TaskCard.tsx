@@ -2,6 +2,7 @@
  * Task Card: displays current level's task description and expected truth table.
  */
 
+import { useState } from "react";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO } from "../interfaces/truthTable";
 
@@ -20,8 +21,14 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
-  // Prefer dynamicTruth (Level 1.6) over the static expectedTruth.
   const truth = dynamicTruth ?? level.expectedTruth;
+  const [shownHint, setShownHint] = useState<1 | 2 | null>(null);
+
+  function toggleHint(n: 1 | 2) {
+    setShownHint((prev) => (prev === n ? null : n));
+  }
+
+  const hintText = shownHint === 1 ? level.hint1 : shownHint === 2 ? level.hint2 : null;
 
   return (
     <div className="bg-white rounded-2xl shadow p-5">
@@ -63,6 +70,44 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
           </p>
         )}
       </div>
+
+      {/* ── Hints ─────────────────────────────────────────────────────────── */}
+      {(level.hint1 || level.hint2) && (
+        <div className="mt-4 border-t pt-3">
+          <div className="flex gap-2">
+            {level.hint1 && (
+              <button
+                onClick={() => toggleHint(1)}
+                className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                  shownHint === 1
+                    ? "bg-amber-100 border-amber-400 text-amber-800"
+                    : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
+                }`}
+              >
+                💡 Hint 1
+              </button>
+            )}
+            {level.hint2 && (
+              <button
+                onClick={() => toggleHint(2)}
+                className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                  shownHint === 2
+                    ? "bg-amber-100 border-amber-400 text-amber-800"
+                    : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
+                }`}
+              >
+                💡 Hint 2
+              </button>
+            )}
+          </div>
+
+          {hintText && (
+            <p className="mt-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-relaxed">
+              {hintText}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

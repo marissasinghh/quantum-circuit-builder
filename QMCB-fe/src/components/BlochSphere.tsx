@@ -1,18 +1,11 @@
 /**
  * BlochSphere — SVG Bloch sphere with a proper 3D orthographic projection.
  *
- * Camera: azimuth −60°, elevation 30° (QuTiP / textbook standard).
- * All elements (axes, great circles, arrow) share a single project(x,y,z)
- * function so every state — including the −Y equator produced by SQRT_X|0⟩ —
- * is displayed at the correct position on the sphere surface.
- *
- * Cardinal states:
- *   |0⟩  → north pole (+Z, top)
- *   |1⟩  → south pole (−Z, bottom)
- *   |+⟩  → equator +X (lower-right)
- *   |−⟩  → equator −X (upper-left)
- *   |i⟩  → equator +Y (upper-right, into screen)
- *   |−i⟩ → equator −Y (lower-left, out of screen) ← SQRT_X|0⟩
+ * Camera: azimuth +30°, elevation 30° (textbook / Nielsen-Chuang standard).
+ * Axis orientation matches the reference diagram:
+ *   +z  up          |0⟩ north pole, |1⟩ south pole
+ *   +y  screen-right  |i⟩ right,     |−i⟩ left
+ *   +x  toward viewer |+⟩ lower-left, |−⟩  upper-right
  */
 
 import React from "react";
@@ -25,14 +18,14 @@ interface BlochSphereProps {
 // ---------------------------------------------------------------------------
 // Canvas and sphere geometry
 // ---------------------------------------------------------------------------
-const SIZE = 240;
-const CX = SIZE / 2; // 120
-const CY = SIZE / 2; // 120
+const SIZE = 260;
+const CX = SIZE / 2; // 130
+const CY = SIZE / 2; // 130
 const R = 82;
 
 // ---------------------------------------------------------------------------
 // 3D orthographic projection
-// Camera azimuth AZ = −60°, elevation EL = 30°.
+// Camera azimuth AZ = +30°, elevation EL = 30°.
 //
 // We derive two orthonormal screen-space basis vectors:
 //   Right (R*): horizontal screen axis, positive = screen-right
@@ -42,22 +35,25 @@ const R = 82;
 //   SVG x = CX + R · dot((x,y,z), right)
 //   SVG y = CY − R · dot((x,y,z), up)
 // ---------------------------------------------------------------------------
-const AZ = -Math.PI / 3; // −60°
+const AZ =  Math.PI / 6; // +30°
 const EL =  Math.PI / 6; //  30°
 
-const RX = -Math.sin(AZ); // = sin(60°) ≈ 0.866
-const RY =  Math.cos(AZ); // = cos(60°) = 0.5
-// RZ = 0
+// Screen-right basis vector: perpendicular to view dir, in XY plane
+const RX = -Math.sin(AZ); // = −sin(30°) = −0.5  →  +x maps to screen-left (toward viewer)
+const RY =  Math.cos(AZ); // =  cos(30°) ≈  0.866 →  +y maps to screen-right
 
-const UX = -Math.sin(EL) * Math.cos(AZ); // ≈ −0.25
-const UY = -Math.sin(EL) * Math.sin(AZ); // ≈  0.433
+// Screen-up basis vector: perpendicular to view dir and Right
+const UX = -Math.sin(EL) * Math.cos(AZ); // ≈ −0.433
+const UY = -Math.sin(EL) * Math.sin(AZ); // = −0.25
 const UZ =  Math.cos(EL);                // ≈  0.866
 
-// View direction into the screen (away from camera), used for depth cueing.
-// DVi = cos(EL)·cos(AZ), cos(EL)·sin(AZ), sin(EL)
-const DVX = Math.cos(EL) * Math.cos(AZ); // ≈  0.433
-const DVY = Math.cos(EL) * Math.sin(AZ); // ≈ −0.75
-const DVZ = Math.sin(EL);                // =  0.5
+// Depth-test vector: camera position direction from scene centre.
+// Negated relative to the "view into screen" convention so that
+// front: dot(point, DV) ≤ 0 correctly identifies the +x/+y/+z hemisphere
+// as the front-facing (solid) side.
+const DVX = -Math.cos(EL) * Math.cos(AZ); // ≈ −0.75
+const DVY = -Math.cos(EL) * Math.sin(AZ); // ≈ −0.433
+const DVZ = -Math.sin(EL);               // = −0.5
 
 /** Project a 3D unit-sphere point to SVG screen coordinates. */
 function project(x: number, y: number, z: number): { x: number; y: number } {
@@ -70,11 +66,8 @@ function project(x: number, y: number, z: number): { x: number; y: number } {
 /**
  * Build two SVG path strings for one great circle on the unit sphere.
  *
- * dot(point, viewDir) ≤ 0  →  point faces the camera (front, solid line)
- * dot(point, viewDir) >  0  →  point faces away   (back,  dashed line)
- *
- * Each path is a collection of M/L segments; gaps naturally separate the
- * front and back arcs without any extra arc math.
+ * dot(point, DV) ≤ 0  →  point faces the camera (front, solid line)
+ * dot(point, DV) >  0  →  point faces away   (back,  dashed line)
  */
 function makeCirclePaths(
   axis: "xy" | "xz" | "yz",
@@ -118,17 +111,18 @@ function makeCirclePaths(
 
 // Pre-compute great-circle paths once at module load (they are view-static).
 const EQUATOR  = makeCirclePaths("xy"); // z = 0 plane
-const MERID_XZ = makeCirclePaths("xz"); // y = 0 plane (through +X/−X poles)
-const MERID_YZ = makeCirclePaths("yz"); // x = 0 plane (through +Y/−Y poles)
+const MERID_XZ = makeCirclePaths("xz"); // y = 0 plane (through |+⟩/|−⟩ poles)
+const MERID_YZ = makeCirclePaths("yz"); // x = 0 plane (through |i⟩/|−i⟩ poles)
 
 // ---------------------------------------------------------------------------
-// Colour palette — muted so the arrow is always the focal point
+// Colour palette
 // ---------------------------------------------------------------------------
 const SPHERE_STROKE = "#6B7280"; // gray-500
 const CIRCLE_BACK   = "#D1D5DB"; // gray-300 — back arcs (dashed)
 const CIRCLE_FRONT  = "#9CA3AF"; // gray-400 — front arcs (solid)
 const AXIS_STROKE   = "#D1D5DB"; // gray-300
 const LABEL_MAIN    = "#374151"; // gray-700 — all state labels
+const LABEL_AXIS    = "#6B7280"; // gray-500 — small axis letters
 const ARROW_COLOR   = "#10B981"; // emerald-500
 const DOT_COLOR     = "#10B981";
 
@@ -150,11 +144,14 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   const arrowAngleDeg = (Math.atan2(tip.y - CY, tip.x - CX) * 180) / Math.PI;
 
   // -------------------------------------------------------------------------
-  // Axis endpoints (A · R beyond the unit sphere) and label positions (L · R)
+  // Axis endpoints and label positions
+  // A  = axis line extent beyond unit sphere
+  // L  = state-label placement radius
+  // LA = axis-letter placement radius (at arrow tip)
   // -------------------------------------------------------------------------
-  const A  = 1.18; // axis line extent
-  const L  = 1.32; // state-label placement
-  const LA = 1.50; // axis-letter placement (sits at arrow tip)
+  const A  = 1.18;
+  const L  = 1.32;
+  const LA = 1.50;
 
   const axZpos = project(0, 0,  A);
   const axZneg = project(0, 0, -A);
@@ -164,12 +161,18 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   const axYneg = project(0, -A, 0);
 
   // State labels
-  const lbZpos = project(0, 0,  L); // |0⟩ — top
-  const lbZneg = project(0, 0, -L); // |1⟩ — bottom
-  const lbXpos = project( L, 0, 0); // |+⟩ — lower-right
-  const lbXneg = project(-L, 0, 0); // |−⟩ — upper-left
-  const lbYpos = project(0,  L, 0); // |i⟩ — upper-right (into screen)
-  const lbYneg = project(0, -L, 0); // |−i⟩ — lower-left (out of screen)
+  // +z → |0⟩ top-centre
+  // −z → |1⟩ bottom-centre
+  // +x → |+⟩ lower-left  (toward viewer)
+  // −x → |−⟩ upper-right
+  // +y → |i⟩ far right
+  // −y → |−i⟩ far left
+  const lbZpos = project(0, 0,  L);
+  const lbZneg = project(0, 0, -L);
+  const lbXpos = project( L, 0, 0);
+  const lbXneg = project(-L, 0, 0);
+  const lbYpos = project(0,  L, 0);
+  const lbYneg = project(0, -L, 0);
 
   // Axis letter tips
   const ltZ = project(0, 0,  LA);
@@ -191,7 +194,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         viewBox={`0 0 ${SIZE} ${SIZE}`}
         aria-label={`Bloch sphere: theta=${thetaDeg}°, phi=${phiDeg}°`}
       >
-        {/* ── 1. Axis lines (behind all other elements) ─────────────────── */}
+        {/* ── 1. Axis lines ──────────────────────────────────────────────── */}
         <line x1={axZneg.x} y1={axZneg.y} x2={axZpos.x} y2={axZpos.y}
               stroke={AXIS_STROKE} strokeWidth={1} />
         <line x1={axXneg.x} y1={axXneg.y} x2={axXpos.x} y2={axXpos.y}
@@ -199,7 +202,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         <line x1={axYneg.x} y1={axYneg.y} x2={axYpos.x} y2={axYpos.y}
               stroke={AXIS_STROKE} strokeWidth={1} />
 
-        {/* ── 2. Back arcs of great circles (dashed, before sphere outline) */}
+        {/* ── 2. Back arcs (dashed) ──────────────────────────────────────── */}
         <path d={EQUATOR.back}  fill="none" stroke={CIRCLE_BACK} strokeWidth={1} strokeDasharray="4 3" />
         <path d={MERID_XZ.back} fill="none" stroke={CIRCLE_BACK} strokeWidth={1} strokeDasharray="4 3" />
         <path d={MERID_YZ.back} fill="none" stroke={CIRCLE_BACK} strokeWidth={1} strokeDasharray="4 3" />
@@ -207,80 +210,76 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         {/* ── 3. Sphere silhouette ──────────────────────────────────────── */}
         <circle cx={CX} cy={CY} r={R} fill="none" stroke={SPHERE_STROKE} strokeWidth={1.5} />
 
-        {/* ── 4. Front arcs of great circles (solid, on top of outline) ─── */}
+        {/* ── 4. Front arcs (solid) ──────────────────────────────────────── */}
         <path d={EQUATOR.front}  fill="none" stroke={CIRCLE_FRONT} strokeWidth={1} />
         <path d={MERID_XZ.front} fill="none" stroke={CIRCLE_FRONT} strokeWidth={1} />
         <path d={MERID_YZ.front} fill="none" stroke={CIRCLE_FRONT} strokeWidth={1} />
 
         {/* ── 5. Axis labels ────────────────────────────────────────────── */}
 
-        {/* --- Z axis --- */}
-        {/* "z" letter at arrow tip */}
+        {/* --- Z axis (up) --- */}
         <text x={ltZ.x + 4} y={ltZ.y}
-              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_MAIN}
+              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_AXIS}
               textAnchor="start" dominantBaseline="middle">
           z
         </text>
-        {/* |0⟩ state label */}
-        <text x={lbZpos.x + 5} y={lbZpos.y}
+        {/* |0⟩ — top, centred */}
+        <text x={lbZpos.x} y={lbZpos.y - 4}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
-              textAnchor="start" dominantBaseline="middle">
+              textAnchor="middle" dominantBaseline="auto">
           |0⟩
         </text>
-        {/* |1⟩ state label */}
-        <text x={lbZneg.x + 5} y={lbZneg.y}
+        {/* |1⟩ — bottom, centred */}
+        <text x={lbZneg.x} y={lbZneg.y + 4}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
-              textAnchor="start" dominantBaseline="middle">
+              textAnchor="middle" dominantBaseline="hanging">
           |1⟩
         </text>
 
-        {/* --- X axis --- */}
-        {/* "x" letter at arrow tip */}
-        <text x={ltX.x + 4} y={ltX.y}
-              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_MAIN}
-              textAnchor="start" dominantBaseline="middle">
+        {/* --- X axis (toward viewer, lower-left) --- */}
+        <text x={ltX.x - 3} y={ltX.y + 10}
+              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_AXIS}
+              textAnchor="middle" dominantBaseline="hanging">
           x
         </text>
-        {/* |+⟩ lower-right */}
-        <text x={lbXpos.x + 4} y={lbXpos.y}
-              fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
-              textAnchor="start" dominantBaseline="middle">
-          |+⟩
-        </text>
-        {/* |−⟩ upper-left */}
-        <text x={lbXneg.x - 4} y={lbXneg.y}
+        {/* |+⟩ — lower-left, text to the left of the point */}
+        <text x={lbXpos.x - 4} y={lbXpos.y}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="end" dominantBaseline="middle">
+          |+⟩
+        </text>
+        {/* |−⟩ — upper-right, text to the right */}
+        <text x={lbXneg.x + 4} y={lbXneg.y}
+              fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
+              textAnchor="start" dominantBaseline="middle">
           |−⟩
         </text>
 
-        {/* --- Y axis --- */}
-        {/* "y" letter at arrow tip */}
+        {/* --- Y axis (right) --- */}
         <text x={ltY.x + 4} y={ltY.y}
-              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_MAIN}
+              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_AXIS}
               textAnchor="start" dominantBaseline="middle">
           y
         </text>
-        {/* |i⟩ upper-right (into screen) */}
+        {/* |i⟩ — far right, text to the right */}
         <text x={lbYpos.x + 4} y={lbYpos.y}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="start" dominantBaseline="middle">
           |i⟩
         </text>
-        {/* |−i⟩ lower-left (out of screen) */}
+        {/* |−i⟩ — far left, text anchored left of the point */}
         <text x={lbYneg.x - 4} y={lbYneg.y}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="end" dominantBaseline="middle">
           |−i⟩
         </text>
 
-        {/* ── 6. State arrow (always rendered on top) ───────────────────── */}
+        {/* ── 6. State arrow ────────────────────────────────────────────── */}
         <line
           x1={CX} y1={CY}
           x2={tip.x} y2={tip.y}
           stroke={ARROW_COLOR} strokeWidth={2.5} strokeLinecap="round"
         />
-        {/* Arrowhead triangle, rotated to align with the shaft direction */}
         <polygon
           points="-6,-4 6,-4 0,6"
           fill={ARROW_COLOR}
