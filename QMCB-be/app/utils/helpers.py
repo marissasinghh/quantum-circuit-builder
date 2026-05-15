@@ -53,7 +53,7 @@ def extract_theta_from_trial(
     gate, so if no RX gate is found we fall back to the student's RZ gate
     theta, which is the rotation angle the student chose.
 
-    Fallback — RY target: the canonical Rz(π/2)·Rx(θ)·Rz(-π/2) has no RY
+    Fallback — RY target: the canonical Rz(-π/2)·Rx(θ)·Rz(π/2) has no RY
     gate, so we fall back to the student's RX gate theta.
     """
     for entry in gates:

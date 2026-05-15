@@ -158,9 +158,9 @@ export const RY_LEVEL: LevelDefinition = {
   toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX] as const,
 
   canonical: [
-    { gate: Gate.RZ, order: Q0, theta: Math.PI / 2 },
-    { gate: Gate.RX, order: Q0 },
     { gate: Gate.RZ, order: Q0, theta: -Math.PI / 2 },
+    { gate: Gate.RX, order: Q0 },
+    { gate: Gate.RZ, order: Q0, theta: Math.PI / 2 },
   ],
 
   uiMaxGates: MAX_GATES,
