@@ -27,8 +27,7 @@ const CX   = SIZE / 2; // 150
 const CY   = SIZE / 2; // 150
 const R    = 90;        // sphere radius in SVG pixels
 
-const DIST_LABEL = R + 26; // state labels: always 26 px beyond sphere silhouette
-const DIST_AXIS  = R + 8;  // axis letters: just beyond sphere surface
+const DIST_LABEL = R + 14; // state labels: 14 px beyond sphere silhouette
 
 // ---------------------------------------------------------------------------
 // 3D orthographic projection — azimuth +30°, elevation 30°
@@ -139,8 +138,8 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   const tip = project(bx, by, bz);
   const arrowAngleDeg = (Math.atan2(tip.y - CY, tip.x - CX) * 180) / Math.PI;
 
-  // Axis endpoints (just beyond sphere)
-  const A = 1.15;
+  // Axis endpoints — exactly at sphere surface so lines stop at the equatorial cross-sections
+  const A = 1.0;
   const axZpos = project(0, 0,  A);
   const axZneg = project(0, 0, -A);
   const axXpos = project( A, 0, 0);
@@ -156,10 +155,11 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   const lbYpos = projectOutward(0,  1, 0, DIST_LABEL); // |i⟩ right
   const lbYneg = projectOutward(0, -1, 0, DIST_LABEL); // |−i⟩ left
 
-  // Axis letters — just beyond sphere surface, inside state labels
-  const ltZ = projectOutward(0, 0,  1, DIST_AXIS);
-  const ltX = projectOutward( 1, 0, 0, DIST_AXIS);
-  const ltY = projectOutward(0,  1, 0, DIST_AXIS);
+  // Axis letters — placed at each positive axis endpoint (sphere surface),
+  // nudged slightly sideways so they sit beside the axis line rather than on it.
+  const ltZtip = project(0, 0,  1); // north pole projected point
+  const ltXtip = project( 1, 0, 0); // +x equatorial point
+  const ltYtip = project(0,  1, 0); // +y equatorial point
 
   const thetaDeg = ((theta * 180) / Math.PI).toFixed(1);
   const phiDeg   = (((phi   * 180) / Math.PI) % 360).toFixed(1);
@@ -196,28 +196,27 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
 
         {/* ── 5. Labels ── */}
 
-        {/* Z axis */}
-        <text x={ltZ.x + 4} y={ltZ.y} fontSize={9} fontFamily={FONT} fontStyle="italic"
-              fill={LABEL_AXIS} textAnchor="start" dominantBaseline="middle">z</text>
+        {/* Z axis — +z label at north-pole tip, nudged right */}
+        <text x={ltZtip.x + 6} y={ltZtip.y - 2} fontSize={9} fontFamily={FONT} fontStyle="italic"
+              fill={LABEL_AXIS} textAnchor="start" dominantBaseline="auto">+z</text>
         <text x={lbZpos.x} y={lbZpos.y - 3} fontSize={11} fontFamily={FONT} fontWeight={600}
               fill={LABEL_MAIN} textAnchor="middle" dominantBaseline="auto">|0⟩</text>
         <text x={lbZneg.x} y={lbZneg.y + 3} fontSize={11} fontFamily={FONT} fontWeight={600}
               fill={LABEL_MAIN} textAnchor="middle" dominantBaseline="hanging">|1⟩</text>
 
-        {/* X axis — toward viewer (lower-left) */}
-        <text x={ltX.x - 3} y={ltX.y + 8} fontSize={9} fontFamily={FONT} fontStyle="italic"
-              fill={LABEL_AXIS} textAnchor="middle" dominantBaseline="hanging">x</text>
+        {/* X axis — +x label at equatorial cross-section tip (lower-left), nudged below */}
+        <text x={ltXtip.x - 2} y={ltXtip.y + 10} fontSize={9} fontFamily={FONT} fontStyle="italic"
+              fill={LABEL_AXIS} textAnchor="middle" dominantBaseline="hanging">+x</text>
         <text x={lbXpos.x - 4} y={lbXpos.y} fontSize={11} fontFamily={FONT} fontWeight={600}
               fill={LABEL_MAIN} textAnchor="end" dominantBaseline="middle">|+⟩</text>
         <text x={lbXneg.x + 4} y={lbXneg.y} fontSize={11} fontFamily={FONT} fontWeight={600}
               fill={LABEL_MAIN} textAnchor="start" dominantBaseline="middle">|−⟩</text>
 
-        {/* Y axis — right */}
-        <text x={ltY.x + 4} y={ltY.y} fontSize={9} fontFamily={FONT} fontStyle="italic"
-              fill={LABEL_AXIS} textAnchor="start" dominantBaseline="middle">y</text>
+        {/* Y axis — +y label at equatorial cross-section tip (right), nudged above */}
+        <text x={ltYtip.x + 4} y={ltYtip.y - 8} fontSize={9} fontFamily={FONT} fontStyle="italic"
+              fill={LABEL_AXIS} textAnchor="start" dominantBaseline="auto">+y</text>
         <text x={lbYpos.x + 4} y={lbYpos.y} fontSize={11} fontFamily={FONT} fontWeight={600}
               fill={LABEL_MAIN} textAnchor="start" dominantBaseline="middle">|i⟩</text>
-        {/* |−i⟩ is on the far-left; anchor start so text extends right into safe space */}
         <text x={lbYneg.x - 4} y={lbYneg.y} fontSize={11} fontFamily={FONT} fontWeight={600}
               fill={LABEL_MAIN} textAnchor="end" dominantBaseline="middle">|−i⟩</text>
 

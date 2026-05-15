@@ -25,12 +25,10 @@ const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTRO
 const PARAMETERIZED_GATES = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 
 const THETA_PRESETS = [
-  { label: "-π",   value: -Math.PI },
-  { label: "-π/2", value: -Math.PI / 2 },
-  { label: "π/4",  value: Math.PI / 4 },
-  { label: "π/2",  value: Math.PI / 2 },
-  { label: "π",    value: Math.PI },
-  { label: "2π",   value: 2 * Math.PI },
+  { label: "π/4", value: Math.PI / 4 },
+  { label: "π/2", value: Math.PI / 2 },
+  { label: "π",   value: Math.PI },
+  { label: "2π",  value: 2 * Math.PI },
 ] as const;
 
 export function CircuitCanvas({
@@ -210,6 +208,13 @@ export function CircuitCanvas({
                       if (!isNaN(val)) onSetGateTheta(g.id, val);
                     }}
                   />
+                  <button
+                    onClick={() => onSetGateTheta(g.id, -(g.theta ?? 0))}
+                    title="Negate angle"
+                    className="px-1.5 py-0.5 text-xs border rounded hover:bg-gray-100 font-bold text-gray-600"
+                  >
+                    ±
+                  </button>
                   {THETA_PRESETS.map(({ label, value }) => (
                     <button
                       key={label}
@@ -219,13 +224,6 @@ export function CircuitCanvas({
                       {label}
                     </button>
                   ))}
-                  <button
-                    onClick={() => onSetGateTheta(g.id, -(g.theta ?? 0))}
-                    title="Negate angle"
-                    className="px-1.5 py-0.5 text-xs border rounded hover:bg-gray-100 font-bold text-gray-600"
-                  >
-                    ±
-                  </button>
                 </div>
               )}
 
