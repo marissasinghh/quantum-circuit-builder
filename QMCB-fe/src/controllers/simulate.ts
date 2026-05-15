@@ -34,6 +34,9 @@ export function toTruthRows(res: SimulationResponseDTO) {
     input: inp,
     trial: t.output[i],
     target: target.output[i],
-    ok: t.output[i] === target.output[i],
+    // Use the backend's authoritative verdict so rows are marked correct when
+    // the circuit matches up to global phase (all_match=true) even if the
+    // Dirac-notation strings differ (e.g. H canonical Rz·SQRT_X·Rz).
+    ok: res.all_match || t.output[i] === target.output[i],
   }));
 }

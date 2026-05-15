@@ -23,8 +23,9 @@ export function useCircuitValidation(
   const [validationError, setValidationError] = useState<Error | null>(null);
 
   const rows = mutation.data ? toTruthRows(mutation.data) : null;
-  // Require non-empty rows: [].every(...) vacuously returns true in JS
-  const allCorrect = !!rows && rows.length > 0 && rows.every((r) => r.ok);
+  // Use the backend's authoritative all_match flag rather than deriving correctness
+  // from per-row string comparison, which fails when circuits match up to global phase.
+  const allCorrect = mutation.data?.all_match === true;
 
   const handleCheck = () => {
     if (gates.length === 0) return;
