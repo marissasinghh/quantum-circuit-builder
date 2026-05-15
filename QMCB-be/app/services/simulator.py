@@ -8,20 +8,29 @@ from app.utils.types import Circuit, Qubit
 class CircuitSimulator:
 
     # ---------- wavefunction path (no measurement) ----------
+
+    @staticmethod
+    def _simulate(
+        circuit: Circuit, qubits: list[Qubit], decimals: int = 3
+    ) -> tuple[str, np.ndarray]:
+        """
+        Single simulation call. Returns (dirac_string, state_vector).
+        Internal helper so the public methods don't duplicate simulator overhead.
+        """
+        sim = cirq.Simulator()
+        result = sim.simulate(circuit, qubit_order=qubits)
+        sv = result.final_state_vector.copy()
+        return cirq.dirac_notation(sv, decimals=decimals), sv
+
     @staticmethod
     def simulate_wavefunction(
         circuit: Circuit, qubits: list[Qubit], *, decimals: int = 3
     ) -> str:
         """
         Deterministically simulate and return the final state as a Dirac-notation string.
+        Public interface — returns string only for backward compatibility with tests.
         """
-        sim = cirq.Simulator()
-        # Pass qubit_order to fix basis ordering in the pretty string:
-        result = sim.simulate(circuit, qubit_order=qubits)
-        formatted_psi = cirq.dirac_notation(
-            result.final_state_vector, decimals=decimals
-        )
-        return formatted_psi
+        return CircuitSimulator._simulate(circuit, qubits, decimals)[0]
 
     @staticmethod
     def wavefunction_truth_table(
@@ -79,17 +88,16 @@ class CircuitSimulator:
         *,
         decimals: int = 3,
         input_as_ket: bool = True,
-    ) -> None:
+    ) -> np.ndarray:
         """
-        Single-call wrapper: simulate the wavefunction and record a truth-table row.
+        Single-call wrapper: simulate the wavefunction, record a truth-table row,
+        and return the raw state vector for global-phase comparison in the controller.
         """
-        output = CircuitSimulator.simulate_wavefunction(
-            circuit, qubits, decimals=decimals
-        )
+        output, sv = CircuitSimulator._simulate(circuit, qubits, decimals)
         print("Circuit successully ran...")
         CircuitSimulator.wavefunction_truth_table(
             state, truth_table, output, input_as_ket=input_as_ket
         )
         print("Truth table updated...")
 
-        return None
+        return sv

@@ -34,22 +34,42 @@ import type { LevelDefinition } from "../interfaces/levelDefinition";
 
 export default function SolveLevelPage() {
   const { id } = useParams<{ id: string }>();
+  const [showCompletionModal, setShowCompletionModal] = React.useState(false);
+
+  // Explicitly close modal whenever the level id changes in the URL
+  React.useEffect(() => {
+    setShowCompletionModal(false);
+  }, [id]);
+
   const currentLevel = LEVEL_ORDER.find((l) => l.target_unitary === id) ?? null;
 
   if (!currentLevel) return <Navigate to="/levels" replace />;
 
-  return <SolveLevelContent key={currentLevel.target_unitary} currentLevel={currentLevel} />;
+  return (
+    <SolveLevelContent
+      key={currentLevel.target_unitary}
+      currentLevel={currentLevel}
+      showCompletionModal={showCompletionModal}
+      setShowCompletionModal={setShowCompletionModal}
+    />
+  );
 }
 
-function SolveLevelContent({ currentLevel }: { currentLevel: LevelDefinition }) {
+function SolveLevelContent({
+  currentLevel,
+  showCompletionModal,
+  setShowCompletionModal,
+}: {
+  currentLevel: LevelDefinition;
+  showCompletionModal: boolean;
+  setShowCompletionModal: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const navigate = useNavigate();
 
   const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, clearAll } =
     useCircuit();
 
   const { unlockedGates, markLevelComplete } = useLevelProgress();
-
-  const [showCompletionModal, setShowCompletionModal] = React.useState(false);
 
   const isRandomLevel = currentLevel.target_unitary === Gate.RANDOM_U;
   const { query: randomUnitaryQuery, generateNew: generateNewUnitary, seed: randomSeed } =
