@@ -219,6 +219,13 @@ export function CircuitCanvas({
                       {label}
                     </button>
                   ))}
+                  <button
+                    onClick={() => onSetGateTheta(g.id, -(g.theta ?? 0))}
+                    title="Negate angle"
+                    className="px-1.5 py-0.5 text-xs border rounded hover:bg-gray-100 font-bold text-gray-600"
+                  >
+                    ±
+                  </button>
                 </div>
               )}
 

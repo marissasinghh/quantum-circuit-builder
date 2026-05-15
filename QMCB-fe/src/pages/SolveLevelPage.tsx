@@ -146,7 +146,7 @@ function SolveLevelContent({
         }}
       >
         <main className="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Task + Toolbox */}
+          {/* Left: Task + Toolbox + Circuit Canvas */}
           <section className="space-y-6">
             <div className="flex items-center gap-2 text-sm">
               <label htmlFor="level-select" className="text-gray-600 font-medium">
@@ -171,13 +171,6 @@ function SolveLevelContent({
               onNewUnitary={isRandomLevel ? handleNewUnitary : undefined}
             />
             <Toolbox availableGates={unlockedGates} activeId={activeId} />
-            {currentLevel.number_of_qubits === 1 && (
-              <BlochSphere theta={blochState.theta} phi={blochState.phi} />
-            )}
-          </section>
-
-          {/* Right: Circuit + Output */}
-          <section className="space-y-6">
             <CircuitCanvas
               gates={gates}
               numberOfQubits={currentLevel.number_of_qubits}
@@ -188,6 +181,15 @@ function SolveLevelContent({
               onClear={handleClear}
               isChecking={mutation.isPending}
             />
+          </section>
+
+          {/* Right: Bloch Sphere (top) + Output */}
+          <section className="space-y-6">
+            {currentLevel.number_of_qubits === 1 && (
+              <div className="flex justify-center">
+                <BlochSphere theta={blochState.theta} phi={blochState.phi} />
+              </div>
+            )}
             <OutputTable
               rows={rows}
               isCorrect={allCorrect}
