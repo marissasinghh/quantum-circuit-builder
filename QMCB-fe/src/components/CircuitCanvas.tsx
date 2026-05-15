@@ -25,10 +25,12 @@ const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTRO
 const PARAMETERIZED_GATES = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 
 const THETA_PRESETS = [
-  { label: "π/4", value: Math.PI / 4 },
-  { label: "π/2", value: Math.PI / 2 },
-  { label: "π",   value: Math.PI },
-  { label: "2π",  value: 2 * Math.PI },
+  { label: "-π",   value: -Math.PI },
+  { label: "-π/2", value: -Math.PI / 2 },
+  { label: "π/4",  value: Math.PI / 4 },
+  { label: "π/2",  value: Math.PI / 2 },
+  { label: "π",    value: Math.PI },
+  { label: "2π",   value: 2 * Math.PI },
 ] as const;
 
 export function CircuitCanvas({
@@ -187,7 +189,7 @@ export function CircuitCanvas({
                   <label className="text-xs text-gray-500">θ (rad):</label>
                   <input
                     type="range"
-                    min={0}
+                    min={-2 * Math.PI}
                     max={2 * Math.PI}
                     step={0.01}
                     className="w-32"
