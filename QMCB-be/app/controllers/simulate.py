@@ -169,10 +169,13 @@ def simulate_unitaries(
     # Primary comparison: exact string match.
     all_match = trial_dict["output"] == target_dict["output"]
 
-    # Fallback: if strings differ for a fixed non-parameterized target, check whether
-    # the trial circuit implements the same unitary up to a global phase (e.g. the H
-    # canonical Rz·SQRT_X·Rz produces e^(iπ/4)·H — physically correct but strings differ).
-    if not all_match and not is_random_u and not parameterized:
+    # Fallback: if strings differ, check whether the trial circuit implements the same
+    # unitary up to a global phase.  This covers both fixed targets (e.g. H canonical
+    # Rz·SQRT_X·Rz → e^(iπ/4)·H) and parameterized targets (e.g. RX canonical
+    # H·Rz(θ)·H → e^(iθ/2)·Rx(θ), where the phase-gate Rz convention introduces a
+    # θ-dependent but state-independent global phase).  Random-unitary levels are
+    # excluded because their target is freshly seeded per request.
+    if not all_match and not is_random_u:
         if target_vectors:
             # Live-simulated target vectors already collected above.
             all_match = _match_up_to_global_phase(trial_vectors, target_vectors)

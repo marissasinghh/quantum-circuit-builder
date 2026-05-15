@@ -49,14 +49,21 @@ def extract_theta_from_trial(
     Return the theta from the first dict gate in the student's list
     that matches gate_name (e.g. "RX").
 
-    Special case — RY target: the canonical synthesis uses
-    Rz(-π/2)·Rx(θ)·Rz(π/2) with no RY gate present, so if no RY
-    gate is found we fall back to the student's RX gate theta, which
-    represents the Ry rotation angle the student chose.
+    Fallback — RX target: the canonical synthesis H·Rz(θ)·H contains no RX
+    gate, so if no RX gate is found we fall back to the student's RZ gate
+    theta, which is the rotation angle the student chose.
+
+    Fallback — RY target: the canonical Rz(π/2)·Rx(θ)·Rz(-π/2) has no RY
+    gate, so we fall back to the student's RX gate theta.
     """
     for entry in gates:
         if isinstance(entry, dict) and entry.get("gate") == gate_name:
             return entry.get("theta")
+
+    if gate_name == Gate.RX.value:
+        for entry in gates:
+            if isinstance(entry, dict) and entry.get("gate") == Gate.RZ.value:
+                return entry.get("theta")
 
     if gate_name == Gate.RY.value:
         for entry in gates:
