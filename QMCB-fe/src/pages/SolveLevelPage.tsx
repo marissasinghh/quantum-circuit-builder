@@ -1,6 +1,13 @@
 import React, { useMemo } from "react";
 import { useParams, Navigate, useNavigate } from "react-router-dom";
-import { DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 
 import { useCircuit } from "../hooks/useCircuit";
 import { useLevelProgress } from "../hooks/useLevelProgress";
@@ -83,6 +90,14 @@ function SolveLevelContent({
 
   const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
 
+  // Mouse/stylus: start drag after 8 px of movement (prevents accidental drags on click).
+  // Touch: start drag after 100 ms — short enough to feel instant, long enough not to
+  // swallow scroll gestures on the rest of the page.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } }),
+  );
+
   const blochState = useMemo(() => gateSequenceToBlochState(gates), [gates]);
 
   React.useEffect(() => {
@@ -122,6 +137,7 @@ function SolveLevelContent({
   return (
     <div>
       <DndContext
+        sensors={sensors}
         onDragStart={(e) => setActiveId(String(e.active.id))}
         onDragCancel={() => setActiveId(null)}
         onDragEnd={(e) => {
