@@ -128,8 +128,7 @@ const SPHERE_STROKE = "#6B7280"; // gray-500
 const CIRCLE_BACK   = "#D1D5DB"; // gray-300 — back arcs (dashed)
 const CIRCLE_FRONT  = "#9CA3AF"; // gray-400 — front arcs (solid)
 const AXIS_STROKE   = "#D1D5DB"; // gray-300
-const LABEL_MAIN    = "#374151"; // gray-700 — Z and X labels
-const LABEL_Y       = "#9CA3AF"; // gray-400 — Y labels (depth axis, secondary)
+const LABEL_MAIN    = "#374151"; // gray-700 — all state labels
 const ARROW_COLOR   = "#10B981"; // emerald-500
 const DOT_COLOR     = "#10B981";
 
@@ -153,8 +152,9 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   // -------------------------------------------------------------------------
   // Axis endpoints (A · R beyond the unit sphere) and label positions (L · R)
   // -------------------------------------------------------------------------
-  const A = 1.18; // axis line extent
-  const L = 1.32; // label placement
+  const A  = 1.18; // axis line extent
+  const L  = 1.32; // state-label placement
+  const LA = 1.50; // axis-letter placement (sits at arrow tip)
 
   const axZpos = project(0, 0,  A);
   const axZneg = project(0, 0, -A);
@@ -163,15 +163,21 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   const axYpos = project(0,  A, 0);
   const axYneg = project(0, -A, 0);
 
+  // State labels
   const lbZpos = project(0, 0,  L); // |0⟩ — top
   const lbZneg = project(0, 0, -L); // |1⟩ — bottom
-  const lbXpos = project( L, 0, 0); // +X  — lower-right
-  const lbXneg = project(-L, 0, 0); // −X  — upper-left
-  const lbYpos = project(0,  L, 0); // +Y  — upper-right (into screen)
-  const lbYneg = project(0, -L, 0); // −Y  — lower-left  (out of screen)
+  const lbXpos = project( L, 0, 0); // |+⟩ — lower-right
+  const lbXneg = project(-L, 0, 0); // |−⟩ — upper-left
+  const lbYpos = project(0,  L, 0); // |i⟩ — upper-right (into screen)
+  const lbYneg = project(0, -L, 0); // |−i⟩ — lower-left (out of screen)
 
-  const thetaDeg = Math.round((theta * 180) / Math.PI);
-  const phiDeg   = Math.round((phi   * 180) / Math.PI) % 360;
+  // Axis letter tips
+  const ltZ = project(0, 0,  LA);
+  const ltX = project( LA, 0, 0);
+  const ltY = project(0,  LA, 0);
+
+  const thetaDeg = ((theta * 180) / Math.PI).toFixed(1);
+  const phiDeg   = (((phi   * 180) / Math.PI) % 360).toFixed(1);
 
   return (
     <div className="flex flex-col items-center gap-1">
@@ -207,41 +213,65 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         <path d={MERID_YZ.front} fill="none" stroke={CIRCLE_FRONT} strokeWidth={1} />
 
         {/* ── 5. Axis labels ────────────────────────────────────────────── */}
-        {/* |0⟩ top */}
+
+        {/* --- Z axis --- */}
+        {/* "z" letter at arrow tip */}
+        <text x={ltZ.x + 4} y={ltZ.y}
+              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_MAIN}
+              textAnchor="start" dominantBaseline="middle">
+          z
+        </text>
+        {/* |0⟩ state label */}
         <text x={lbZpos.x + 5} y={lbZpos.y}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="start" dominantBaseline="middle">
           |0⟩
         </text>
-        {/* |1⟩ bottom */}
+        {/* |1⟩ state label */}
         <text x={lbZneg.x + 5} y={lbZneg.y}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="start" dominantBaseline="middle">
           |1⟩
         </text>
-        {/* +X lower-right */}
+
+        {/* --- X axis --- */}
+        {/* "x" letter at arrow tip */}
+        <text x={ltX.x + 4} y={ltX.y}
+              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_MAIN}
+              textAnchor="start" dominantBaseline="middle">
+          x
+        </text>
+        {/* |+⟩ lower-right */}
         <text x={lbXpos.x + 4} y={lbXpos.y}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="start" dominantBaseline="middle">
-          +X
+          |+⟩
         </text>
-        {/* −X upper-left */}
+        {/* |−⟩ upper-left */}
         <text x={lbXneg.x - 4} y={lbXneg.y}
               fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="end" dominantBaseline="middle">
-          −X
+          |−⟩
         </text>
-        {/* +Y upper-right (into screen) */}
-        <text x={lbYpos.x + 4} y={lbYpos.y}
-              fontSize={9} fontFamily={FONT} fill={LABEL_Y}
+
+        {/* --- Y axis --- */}
+        {/* "y" letter at arrow tip */}
+        <text x={ltY.x + 4} y={ltY.y}
+              fontSize={9} fontFamily={FONT} fontStyle="italic" fill={LABEL_MAIN}
               textAnchor="start" dominantBaseline="middle">
-          +Y
+          y
         </text>
-        {/* −Y lower-left (out of screen) */}
+        {/* |i⟩ upper-right (into screen) */}
+        <text x={lbYpos.x + 4} y={lbYpos.y}
+              fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
+              textAnchor="start" dominantBaseline="middle">
+          |i⟩
+        </text>
+        {/* |−i⟩ lower-left (out of screen) */}
         <text x={lbYneg.x - 4} y={lbYneg.y}
-              fontSize={9} fontFamily={FONT} fill={LABEL_Y}
+              fontSize={11} fontFamily={FONT} fontWeight={600} fill={LABEL_MAIN}
               textAnchor="end" dominantBaseline="middle">
-          −Y
+          |−i⟩
         </text>
 
         {/* ── 6. State arrow (always rendered on top) ───────────────────── */}

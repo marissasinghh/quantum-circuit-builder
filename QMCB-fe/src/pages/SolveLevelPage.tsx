@@ -95,7 +95,7 @@ function SolveLevelContent({
   // swallow scroll gestures on the rest of the page.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 0, tolerance: 10 } }),
   );
 
   const blochState = useMemo(() => gateSequenceToBlochState(gates), [gates]);
@@ -171,6 +171,9 @@ function SolveLevelContent({
               onNewUnitary={isRandomLevel ? handleNewUnitary : undefined}
             />
             <Toolbox availableGates={unlockedGates} activeId={activeId} />
+            {currentLevel.number_of_qubits === 1 && (
+              <BlochSphere theta={blochState.theta} phi={blochState.phi} />
+            )}
           </section>
 
           {/* Right: Circuit + Output */}
@@ -185,9 +188,6 @@ function SolveLevelContent({
               onClear={handleClear}
               isChecking={mutation.isPending}
             />
-            {currentLevel.number_of_qubits === 1 && (
-              <BlochSphere theta={blochState.theta} phi={blochState.phi} />
-            )}
             <OutputTable
               rows={rows}
               isCorrect={allCorrect}
