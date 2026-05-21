@@ -37,6 +37,7 @@ class Gate(Enum):
     CNOT_FLIPPED = "CNOT_FLIPPED"
     CONTROLLED_Z = "CONTROLLED_Z"
     SWAP = "SWAP"
+    CONTROLLED_H = "CONTROLLED_H"
 
 
 class TargetLibraryField(Enum):
