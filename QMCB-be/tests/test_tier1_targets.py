@@ -31,10 +31,11 @@ import cirq
 import numpy as np
 import pytest
 
-from app.controllers.simulate import simulate_unitaries
-from app.controllers.random_unitary import angles_from_seed, generate_random_unitary_response
+from app.controllers.random_unitary import generate_random_unitary_response
 from app.dto.unitary import UnitaryDTO
 from app.utils.constants import Gate
+from app.utils.euler_angles import angles_from_seed
+from tests.simulate_helpers import run_simulate
 
 
 # ── Helpers (copied from test_parameterized_gates.py pattern) ─────────────────
@@ -69,10 +70,9 @@ def q() -> cirq.LineQubit:
     return cirq.LineQubit(0)
 
 
-def _run(trial: UnitaryDTO, target_name: str, *, validate_target: bool = True):
+def _run(trial: UnitaryDTO, target_name: str, *, validate_target: bool = True, seed: int | None = None):
     """Call simulate_unitaries with print suppressed; return (response, status)."""
-    with patch("builtins.print"):
-        return simulate_unitaries(trial, target_name, validate_target=validate_target)
+    return run_simulate(trial, target_name, validate_target=validate_target, seed=seed)
 
 
 def _single(gate_entry, order=None) -> UnitaryDTO:
@@ -309,8 +309,7 @@ class TestRyTarget:
 
 def _run_random_u(trial: UnitaryDTO, seed: int):
     """Call simulate_unitaries for a RANDOM_U target with print suppressed."""
-    with patch("builtins.print"):
-        return simulate_unitaries(trial, "RANDOM_U", seed=seed)
+    return run_simulate(trial, Gate.RANDOM_U.value, seed=seed)
 
 
 class TestRandomUnitaryLevel:

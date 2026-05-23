@@ -34,6 +34,9 @@ class UnitaryGateDict(TypedDict):
 
     gate: str
     theta: NotRequired[float]
+    alpha: NotRequired[float]
+    beta: NotRequired[float]
+    gamma: NotRequired[float]
 
 
 UnitaryGateEntry = Union[str, UnitaryGateDict]

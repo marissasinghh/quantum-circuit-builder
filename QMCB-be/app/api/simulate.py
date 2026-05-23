@@ -3,9 +3,8 @@ from flask import request
 from app.settings import Config
 from app.controllers.simulate import simulate_unitaries
 from app.utils.response_builder import ResponseBuilder
-from app.utils.unitary_payload import validate_simulate_unitary_json
+from app.utils.unitary_payload import parse_simulate_request_json
 from app.dto.response_dto import ResponseDTO
-from app.dto.unitary import UnitaryDTO
 import logging
 
 
@@ -23,7 +22,6 @@ class Simulate(Resource):
         """
         unitary_info = None
         try:
-            # silent=True: invalid UTF-8 / malformed JSON → None (avoid BadRequest + NameError in except)
             unitary_info = request.get_json(silent=True)
             if not isinstance(unitary_info, dict):
                 return ResponseBuilder.fail(
@@ -33,21 +31,14 @@ class Simulate(Resource):
             logger.info(f"Trying to simulate trial unitary: {unitary_info}")
 
             try:
-                validate_simulate_unitary_json(unitary_info)
+                simulate_request = parse_simulate_request_json(unitary_info)
             except ValueError as err:
                 return ResponseBuilder.fail(str(err))
 
-            logger.info("Processing unitary info into trial and target DTOs")
-            trial_dto = UnitaryDTO(
-                unitary_info["number_of_qubits"],
-                unitary_info["gates"],
-                unitary_info["qubit_order"],
-            )
-            target_name = unitary_info["target_unitary"]
-            seed = unitary_info.get("seed")
+            logger.info("Processing unitary info into SimulateRequestDTO")
 
             response = simulate_unitaries(
-                trial_dto, target_name, Config.VALIDATE_TARGET_CIRCUITS, seed=seed
+                simulate_request, Config.VALIDATE_TARGET_CIRCUITS
             )
 
             return response

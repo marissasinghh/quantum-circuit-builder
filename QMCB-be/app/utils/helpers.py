@@ -35,16 +35,7 @@ def set_qubit_to_1(qubit: Qubit) -> Operation:
     return CirqGateMapper.apply(Gate.X.value, None, qubit)
 
 
-def is_target_parameterized(target_name: str) -> bool:
-    """
-    Return True if the TARGET_LIBRARY entry requires a runtime theta.
-    """
-    info = TARGET_LIBRARY.get(target_name, {})
-    return bool(info.get(TargetLibraryField.PARAMETERIZED.value, False))
-
-
-def extract_theta_from_trial(
-    gates: list[UnitaryGateEntry], gate_name: str) -> Optional[float]:
+def extract_theta_from_trial(    gates: list[UnitaryGateEntry], gate_name: str) -> Optional[float]:
     """
     Return the theta from the first dict gate in the student's list
     that matches gate_name (e.g. "RX").

@@ -32,6 +32,17 @@ export const ALLOWED_QUBIT_ORDERS: readonly ControlTargetOrder[] = [C0_T1, C1_T0
 /** Default order when a chip is dropped onto the canvas */
 export const DEFAULT_QUBIT_ORDER: ControlTargetOrder = C0_T1;
 
+/** Mirrors backend TargetParameterMode — how target circuit angles are resolved. */
+export enum ParameterMode {
+  FIXED = "fixed",
+  TRIAL_THETA = "trial_theta",
+  SEED_ZXZ = "seed_zxz",
+  TRIAL_ZXZ = "trial_zxz",
+}
+
+/** sessionStorage key for Level 1.6 random-unitary seed persistence. */
+export const RANDOM_UNITARY_SEED_KEY = "qmcb-random-unitary-seed";
+
 // ========================
 // BASIS STATES - 1 QUBITS
 // ========================`

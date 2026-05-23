@@ -24,9 +24,9 @@ from unittest.mock import patch
 
 import pytest
 
-from app.controllers.simulate import simulate_unitaries
 from app.dto.unitary import UnitaryDTO
 from app.utils.constants import Gate
+from tests.simulate_helpers import run_simulate
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -34,8 +34,7 @@ from app.utils.constants import Gate
 
 def _run(trial: UnitaryDTO, target_name: str, *, validate_target: bool = True):
     """Call simulate_unitaries with print suppressed; return (response, status)."""
-    with patch("builtins.print"):
-        return simulate_unitaries(trial, target_name, validate_target=validate_target)
+    return run_simulate(trial, target_name, validate_target=validate_target)
 
 
 def _two(gates: list, orders: list) -> UnitaryDTO:

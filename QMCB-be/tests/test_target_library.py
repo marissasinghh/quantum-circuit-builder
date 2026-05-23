@@ -29,7 +29,11 @@ from app.config.target_library import TARGET_LIBRARY
 from app.services.circuit_builder import CircuitBuilder
 from app.services.simulator import CircuitSimulator
 from app.services.target_builder import TargetUnitaryBuilder
-from app.utils.constants import TargetLibraryField
+from app.services.target_parameter_resolver import (
+    get_parameter_mode,
+    resolved_for_library_simulation,
+)
+from app.utils.constants import TargetLibraryField, TargetParameterMode
 from app.utils.helpers import generate_basis_states, initialize_qubit_sequence
 
 
@@ -66,17 +70,20 @@ class TestTargetLibraryOutputs:
         """
 
         level_def = TARGET_LIBRARY[level_name]
-        
-        if level_def.get(TargetLibraryField.PARAMETERIZED.value, False):
-            pytest.skip(f"{level_name} is parameterized — tested separately")
-        
+
+        if get_parameter_mode(level_name) != TargetParameterMode.FIXED:
+            pytest.skip(f"{level_name} is not fixed — tested separately")
+
+        if TargetLibraryField.EXPECTED_OUTPUTS.value not in level_def:
+            pytest.skip(f"{level_name} has no stored expected_outputs")
+
         n_qubits = level_def[TargetLibraryField.NUM_QUBITS.value]
         expected_outputs = level_def[TargetLibraryField.EXPECTED_OUTPUTS.value]
         qubits = initialize_qubit_sequence(n_qubits)
         basis_states = generate_basis_states(n_qubits)
 
-        # Build the reference circuit once; basis-state prep is prepended per row.
-        target_circuit_base = TargetUnitaryBuilder.build(level_name, qubits)
+        resolved = resolved_for_library_simulation(level_name)
+        target_circuit_base = TargetUnitaryBuilder.build(level_name, qubits, resolved)
 
         for state, expected in zip(basis_states, expected_outputs):
             prep = CircuitBuilder.prepare_basis_state(state, qubits)

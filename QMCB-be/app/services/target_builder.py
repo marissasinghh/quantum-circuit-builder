@@ -1,29 +1,39 @@
-from typing import Optional
 import cirq
 from app.config.target_library import TARGET_LIBRARY
 from app.config.gates import CirqGateMapper
+from app.services.target_parameter_resolver import ResolvedTargetParams
 from app.utils.types import Qubit, Circuit
-from app.utils.constants import Gate
+from app.utils.constants import Gate, TargetLibraryField
 
 
 class TargetUnitaryBuilder:
 
     @staticmethod
-    def build(name: str, qubits: list[Qubit], theta: Optional[float] = None) -> Circuit:
-        """Build target unitary circuit from TARGET_LIBRARY definition."""
+    def build(
+        name: str,
+        qubits: list[Qubit],
+        resolved: ResolvedTargetParams,
+    ) -> Circuit:
+        """Build target unitary circuit from TARGET_LIBRARY steps and resolved thetas."""
 
         if name not in TARGET_LIBRARY:
             raise ValueError(f"Unknown target unitary: {name}")
 
         level_def = TARGET_LIBRARY[name]
-        steps = level_def["steps"]
+        steps = level_def[TargetLibraryField.STEPS.value]
 
-        # Build circuit from gate steps
+        if len(resolved.step_thetas) != len(steps):
+            raise ValueError(
+                f"Resolved theta count ({len(resolved.step_thetas)}) does not match "
+                f"step count ({len(steps)}) for target {name!r}."
+            )
+
         operations = []
-        for step in steps:
-            gate = step["gate"]
-            order = step["order"]
-            step_theta = theta if theta is not None else step.get("theta")
+        for i, step in enumerate(steps):
+            gate = step[TargetLibraryField.GATE.value]
+            order = step[TargetLibraryField.ORDER.value]
+            resolved_theta = resolved.step_thetas[i]
+            step_theta = resolved_theta if resolved_theta is not None else step.get("theta")
             operation = CirqGateMapper.apply(gate, order, *qubits, theta=step_theta)
             operations.append(operation)
 

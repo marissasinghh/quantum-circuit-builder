@@ -8,8 +8,22 @@
 import type { AnyQubitOrder } from "../types/global";
 import type { Gate } from "../types/global";
 
+/** Optional runtime target parameters (seed for RANDOM_U; future multi-angle fields). */
+export interface TargetParamsDTO {
+  seed?: number;
+  alpha?: number;
+  beta?: number;
+  gamma?: number;
+}
+
 /** Mirroring backend types. */
-export type ParameterizedGate = { gate: string; theta: number };
+export type ParameterizedGate = {
+  gate: string;
+  theta?: number;
+  alpha?: number;
+  beta?: number;
+  gamma?: number;
+};
 export type UnitaryGateEntry = Gate | ParameterizedGate;
 
 export const isParameterizedGate = (entry: UnitaryGateEntry): entry is ParameterizedGate => {
@@ -17,8 +31,7 @@ export const isParameterizedGate = (entry: UnitaryGateEntry): entry is Parameter
     entry !== null &&
     typeof entry === "object" &&
     "gate" in entry &&
-    "theta" in entry &&
-    typeof (entry as ParameterizedGate).theta === "number"
+    typeof (entry as ParameterizedGate).gate === "string"
   );
 };
 
@@ -27,6 +40,8 @@ export interface UnitaryRequestDTO {
   number_of_qubits: number;
   gates: UnitaryGateEntry[];
   qubit_order: AnyQubitOrder[];
-  /** Seed for Level 1.6 random-unitary grading. Omitted for all other levels. */
+  /** Flat compat: seed for seed-driven levels (maps to TargetParamsDTO.seed). */
   seed?: number;
+  /** Optional nested target params (future wire format). */
+  target_params?: TargetParamsDTO;
 }

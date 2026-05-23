@@ -1,92 +1,79 @@
 import math
 from typing import Dict, Any
-from app.utils.constants import Basis, Gate, LEVEL1_QUBITS, LEVEL2_QUBITS, TargetLibraryField
+from app.utils.constants import (
+    Basis,
+    Gate,
+    LEVEL1_QUBITS,
+    LEVEL2_QUBITS,
+    TargetLibraryField,
+    TargetParameterMode,
+)
 from app.utils.qubit_orders import Q0, Q1, C0_T1, C1_T0
+
+
+def _fixed_level(
+    num_qubits: int,
+    steps: list[dict],
+    expected_outputs: list[str],
+    allow_global_phase: bool = True,
+) -> Dict[str, Any]:
+    return {
+        TargetLibraryField.NUM_QUBITS.value: num_qubits,
+        TargetLibraryField.PARAMETERIZED.value: False,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.FIXED.value,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: allow_global_phase,
+        TargetLibraryField.STEPS.value: steps,
+        TargetLibraryField.EXPECTED_OUTPUTS.value: expected_outputs,
+    }
 
 
 TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     # ========================
     # LEVEL 1.0: X GATE
     # ========================
-    Gate.X.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.X.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-        ],
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_1.value,   # X|0⟩ = |1⟩
-            Basis.STATE_0.value,   # X|1⟩ = |0⟩
-        ],
-    },
+    Gate.X.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.X.value, TargetLibraryField.ORDER.value: Q0}],
+        [Basis.STATE_1.value, Basis.STATE_0.value],
+    ),
     # ========================
     # LEVEL 1.1: S GATE
     # ========================
-    Gate.S.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.S.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-        ],
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_0.value,     # S|0⟩ = |0⟩
-            "1j|1⟩",   # S|1⟩ = i|1⟩
-        ],
-    },
+    Gate.S.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.S.value, TargetLibraryField.ORDER.value: Q0}],
+        [Basis.STATE_0.value, "1j|1⟩"],
+    ),
     # ========================
     # LEVEL 1.2: T GATE
     # ========================
-    Gate.T.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.T.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-        ],
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_0.value,                   # T|0⟩ = |0⟩
-            "(0.707+0.707j)|1⟩",     # T|1⟩ = e^(iπ/4)|1⟩
-        ],
-    },
+    Gate.T.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.T.value, TargetLibraryField.ORDER.value: Q0}],
+        [Basis.STATE_0.value, "(0.707+0.707j)|1⟩"],
+    ),
     # ========================
     # LEVEL 1.3: H GATE
     # ========================
-    Gate.H.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.H.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-        ],
-        # Strings from Cirq dirac_notation(..., decimals=3); verified via simulator.
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            "0.707|0⟩ + 0.707|1⟩",   # H|0⟩ = (|0⟩+|1⟩)/√2
-            "0.707|0⟩ - 0.707|1⟩",   # H|1⟩ = (|0⟩-|1⟩)/√2
-        ],
-    },
+    Gate.H.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q0}],
+        ["0.707|0⟩ + 0.707|1⟩", "0.707|0⟩ - 0.707|1⟩"],
+    ),
     # ========================
     # LEVEL 1.4: RX GATE
     # ========================
     Gate.RX.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
         TargetLibraryField.PARAMETERIZED.value: True,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_THETA.value,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.RX.value,
                 TargetLibraryField.ORDER.value: Q0,
             },
         ],
-        # No Expected Outputs for parameterized gates
     },
     # ========================
     # LEVEL 1.5: RY GATE
@@ -94,110 +81,88 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     Gate.RY.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
         TargetLibraryField.PARAMETERIZED.value: True,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_THETA.value,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.RY.value,
                 TargetLibraryField.ORDER.value: Q0,
             },
         ],
-        # No Expected Outputs for parameterized gates
+    },
+    # ========================
+    # LEVEL 1.6: RANDOM UNITARY
+    # ========================
+    Gate.RANDOM_U.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: True,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.SEED_ZXZ.value,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: False,
+        TargetLibraryField.STEPS.value: [
+            {TargetLibraryField.GATE.value: Gate.RZ.value, TargetLibraryField.ORDER.value: Q0},
+            {TargetLibraryField.GATE.value: Gate.RX.value, TargetLibraryField.ORDER.value: Q0},
+            {TargetLibraryField.GATE.value: Gate.RZ.value, TargetLibraryField.ORDER.value: Q0},
+        ],
     },
     # ========================
     # LEVEL 2.1: CNOT FLIPPED
     # ========================
-    Gate.CNOT_FLIPPED.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.H.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.H.value,
-                TargetLibraryField.ORDER.value: Q1,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.CNOT.value,
-                TargetLibraryField.ORDER.value: C1_T0,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.H.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.H.value,
-                TargetLibraryField.ORDER.value: Q1,
-            },
+    Gate.CNOT_FLIPPED.value: _fixed_level(
+        LEVEL2_QUBITS,
+        [
+            {TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q0},
+            {TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q1},
+            {TargetLibraryField.GATE.value: Gate.CNOT.value, TargetLibraryField.ORDER.value: C1_T0},
+            {TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q0},
+            {TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q1},
         ],
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_00.value,   # |00⟩ → |00⟩
-            Basis.STATE_01.value,   # |01⟩ → |01⟩
-            Basis.STATE_11.value,   # |10⟩ → |11⟩
-            Basis.STATE_10.value,   # |11⟩ → |10⟩
+        [
+            Basis.STATE_00.value,
+            Basis.STATE_01.value,
+            Basis.STATE_11.value,
+            Basis.STATE_10.value,
         ],
-    },
+    ),
     # ========================
     # LEVEL 2.2: CONTROLLED-Z
     # ========================
-    Gate.CONTROLLED_Z.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.H.value,
-                TargetLibraryField.ORDER.value: Q1,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.CNOT.value,
-                TargetLibraryField.ORDER.value: C0_T1,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.H.value,
-                TargetLibraryField.ORDER.value: Q1,
-            },
+    Gate.CONTROLLED_Z.value: _fixed_level(
+        LEVEL2_QUBITS,
+        [
+            {TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q1},
+            {TargetLibraryField.GATE.value: Gate.CNOT.value, TargetLibraryField.ORDER.value: C0_T1},
+            {TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q1},
         ],
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_00.value,    # |00⟩ → |00⟩
-            Basis.STATE_01.value,    # |01⟩ → |01⟩
-            Basis.STATE_10.value,    # |10⟩ → |10⟩
-            "-1|11⟩",  # |11⟩ → -|11⟩  (CZ adds phase -1 to |11⟩)
+        [
+            Basis.STATE_00.value,
+            Basis.STATE_01.value,
+            Basis.STATE_10.value,
+            "-1|11⟩",
         ],
-    },
+    ),
     # =================
     # LEVEL 2.3: SWAP
     # =================
-    Gate.SWAP.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.CNOT.value,
-                TargetLibraryField.ORDER.value: C0_T1,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.CNOT.value,
-                TargetLibraryField.ORDER.value: C1_T0,
-            },
-            {
-                TargetLibraryField.GATE.value: Gate.CNOT.value,
-                TargetLibraryField.ORDER.value: C0_T1,
-            },
+    Gate.SWAP.value: _fixed_level(
+        LEVEL2_QUBITS,
+        [
+            {TargetLibraryField.GATE.value: Gate.CNOT.value, TargetLibraryField.ORDER.value: C0_T1},
+            {TargetLibraryField.GATE.value: Gate.CNOT.value, TargetLibraryField.ORDER.value: C1_T0},
+            {TargetLibraryField.GATE.value: Gate.CNOT.value, TargetLibraryField.ORDER.value: C0_T1},
         ],
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_00.value,   # |00⟩ → |00⟩
-            Basis.STATE_10.value,   # |01⟩ → |10⟩
-            Basis.STATE_01.value,   # |10⟩ → |01⟩
-            Basis.STATE_11.value,   # |11⟩ → |11⟩
+        [
+            Basis.STATE_00.value,
+            Basis.STATE_10.value,
+            Basis.STATE_01.value,
+            Basis.STATE_11.value,
         ],
-    },
+    ),
     # ========================
     # LEVEL 2.4: CONTROLLED-H
     # ========================
-    Gate.CONTROLLED_H.value: {
-        TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
-        TargetLibraryField.PARAMETERIZED.value: False,
-        TargetLibraryField.STEPS.value: [
+    Gate.CONTROLLED_H.value: _fixed_level(
+        LEVEL2_QUBITS,
+        [
             {
                 TargetLibraryField.GATE.value: Gate.RY.value,
                 TargetLibraryField.ORDER.value: Q1,
@@ -213,11 +178,26 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
                 "theta": -(math.pi / 4),
             },
         ],
-        TargetLibraryField.EXPECTED_OUTPUTS.value: [
-            Basis.STATE_00.value,              # CH|00⟩ = |00⟩  (control=0)
-            Basis.STATE_01.value,              # CH|01⟩ = |01⟩  (control=0)
-            "0.707|10⟩ + 0.707|11⟩",          # CH|10⟩ = |1⟩⊗H|0⟩
-            "0.707|10⟩ - 0.707|11⟩",          # CH|11⟩ = |1⟩⊗H|1⟩
+        [
+            Basis.STATE_00.value,
+            Basis.STATE_01.value,
+            "0.707|10⟩ + 0.707|11⟩",
+            "0.707|10⟩ - 0.707|11⟩",
+        ],
+    ),
+    # ========================
+    # FUTURE: CONTROLLED-U (backend hook only — not shipped in UI)
+    # ========================
+    Gate.CONTROLLED_U.value: {
+        TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
+        TargetLibraryField.PARAMETERIZED.value: True,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_ZXZ.value,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
+        TargetLibraryField.STEPS.value: [
+            {
+                TargetLibraryField.GATE.value: Gate.CONTROLLED_U.value,
+                TargetLibraryField.ORDER.value: C0_T1,
+            },
         ],
     },
 }

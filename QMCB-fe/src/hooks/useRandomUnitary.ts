@@ -1,3 +1,8 @@
+import { useState, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fetchRandomUnitary } from "../services/randomUnitary";
+import { RANDOM_UNITARY_SEED_KEY } from "../utils/constants";
+
 /**
  * Fetches and persists a random single-qubit unitary for Level 1.6.
  *
@@ -10,21 +15,11 @@
  *  - staleTime/gcTime are Infinity so TanStack Query never auto-refetches
  *    (the student stays on the same challenge until they choose otherwise).
  */
-
-import { useState, useCallback, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchRandomUnitary } from "../services/randomUnitary";
-
-const SEED_KEY = "qmcb-random-unitary-seed";
-
 export function useRandomUnitary(enabled: boolean) {
-  // instanceKey is incremented by generateNew() to force a new query key,
-  // which bypasses the staleTime: Infinity cache and triggers a fresh fetch.
   const [instanceKey, setInstanceKey] = useState(0);
 
-  // Seed is initialised from sessionStorage so refreshes reproduce the same U.
   const [seed, setSeed] = useState<number | undefined>(() => {
-    const stored = sessionStorage.getItem(SEED_KEY);
+    const stored = sessionStorage.getItem(RANDOM_UNITARY_SEED_KEY);
     return stored !== null ? Number(stored) : undefined;
   });
 
@@ -36,16 +31,15 @@ export function useRandomUnitary(enabled: boolean) {
     enabled,
   });
 
-  // Persist the session_id returned by the backend so it survives a refresh.
   useEffect(() => {
     if (query.data?.session_id !== undefined) {
       setSeed(query.data.session_id);
-      sessionStorage.setItem(SEED_KEY, String(query.data.session_id));
+      sessionStorage.setItem(RANDOM_UNITARY_SEED_KEY, String(query.data.session_id));
     }
   }, [query.data?.session_id]);
 
   const generateNew = useCallback(() => {
-    sessionStorage.removeItem(SEED_KEY);
+    sessionStorage.removeItem(RANDOM_UNITARY_SEED_KEY);
     setSeed(undefined);
     setInstanceKey((k) => k + 1);
   }, []);

@@ -25,7 +25,7 @@ LEVEL3_QUBITS = 3
 
 class Gate(Enum):
     X = "X"
-    SQRT_X = "SQRT_X"   
+    SQRT_X = "SQRT_X"
     H = "H"
     S = "S"
     T = "T"
@@ -33,11 +33,22 @@ class Gate(Enum):
     RY = "RY"
     RZ = "RZ"
     U = "U"
+    RANDOM_U = "RANDOM_U"
     CNOT = "CNOT"
     CNOT_FLIPPED = "CNOT_FLIPPED"
     CONTROLLED_Z = "CONTROLLED_Z"
     SWAP = "SWAP"
     CONTROLLED_H = "CONTROLLED_H"
+    CONTROLLED_U = "CONTROLLED_U"
+
+
+class TargetParameterMode(str, Enum):
+    """How runtime angles for a target circuit are resolved."""
+
+    FIXED = "fixed"
+    TRIAL_THETA = "trial_theta"
+    SEED_ZXZ = "seed_zxz"
+    TRIAL_ZXZ = "trial_zxz"
 
 
 class TargetLibraryField(Enum):
@@ -46,6 +57,8 @@ class TargetLibraryField(Enum):
     GATE = "gate"
     ORDER = "order"
     PARAMETERIZED = "parameterized"
+    PARAMETER_MODE = "parameter_mode"
+    ALLOW_GLOBAL_PHASE = "allow_global_phase"
     EXPECTED_OUTPUTS = "expected_outputs"
 
 

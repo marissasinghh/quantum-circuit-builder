@@ -25,9 +25,9 @@ from unittest.mock import patch
 
 import pytest
 
-from app.controllers.simulate import simulate_unitaries
 from app.dto.unitary import UnitaryDTO
 from app.utils.helpers import get_qubit_order, get_target_gates
+from tests.simulate_helpers import run_simulate
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def test_simulate_unitaries_api_shape_and_baseline(
 
     # Production code prints circuits and gate debug lines; silence for test logs.
     with patch("builtins.print"):
-        response, status = simulate_unitaries(
+        response, status = run_simulate(
             swap_three_cnot_trial, target_name, validate_target=False
         )
 
@@ -102,7 +102,7 @@ def test_simulate_unitaries_mixed_string_and_dict_gates() -> None:
         qubit_order=[[0, 1], [0]],
     )
     with patch("builtins.print"):
-        response, status = simulate_unitaries(trial, "SWAP", validate_target=False)
+        response, status = run_simulate(trial, "SWAP", validate_target=False)
     assert status == 200
     trial_tt = response["trial_truth_table"]
     assert set(trial_tt.keys()) == {"input", "output"}
@@ -146,8 +146,7 @@ def test_parameterized_target_trial_matches_target_when_theta_identical(
         qubit_order=[[0]],
     )
 
-    with patch("builtins.print"):
-        response, status = simulate_unitaries(trial, target_name, validate_target=False)
+    response, status = run_simulate(trial, target_name, validate_target=False)
 
     assert status == 200
 

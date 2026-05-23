@@ -63,3 +63,20 @@ def test_theta_must_be_number() -> None:
                 "target_unitary": "SWAP",
             }
         )
+
+
+def test_parse_simulate_request_json_maps_flat_payload() -> None:
+    from app.utils.unitary_payload import parse_simulate_request_json
+
+    request = parse_simulate_request_json(
+        {
+            "number_of_qubits": 1,
+            "gates": [{"gate": "RX", "theta": 0.5}],
+            "qubit_order": [[0]],
+            "target_unitary": "RANDOM_U",
+            "seed": 42,
+        }
+    )
+    assert request.target_unitary == "RANDOM_U"
+    assert request.trial.number_of_qubits == 1
+    assert request.target_params.seed == 42

@@ -4,6 +4,7 @@
 
 import type { Gate, GateStep } from "../types/global";
 import type { TruthTableDTO } from "./truthTable";
+import type { ParameterMode } from "../utils/constants";
 
 /** Shape for a level's UI/UX config. */
 export interface LevelDefinition {
@@ -18,6 +19,8 @@ export interface LevelDefinition {
   canonical?: readonly GateStep[];
 
   expectedTruth?: TruthTableDTO;
+  /** How the backend resolves target parameters for this level. */
+  parameterMode?: ParameterMode;
   uiMaxGates?: number;
   description?: string;
   hint1?: string;

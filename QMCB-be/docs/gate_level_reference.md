@@ -210,8 +210,13 @@ whose truth table matches it exactly. Use any combination of your unlocked gates
 
 **Canonical circuit:** `Rz(α)  →  Rx(β)  →  Rz(γ)`   (angles derived from session seed)
 
-**Truth table:** Varies per session seed — no fixed outputs. The backend generates the target fresh
-from `angles_from_seed(seed)` on each request.
+**Backend:** `TARGET_LIBRARY["RANDOM_U"]` with `parameter_mode: seed_zxz`, `allow_global_phase: false`.
+Target built via `TargetParameterResolver` → `TargetUnitaryBuilder` (same path as grading).
+POST `/api/simulate` uses `SimulateRequestDTO.target_params.seed`.
+
+**Truth table:** Varies per session seed — no fixed outputs. Angles come from
+`angles_from_seed(seed)` in `app/utils/euler_angles.py`. Display table from
+`GET /api/levels/random-unitary` uses the same resolver/builder path as grading.
 
 > **Note:** Global-phase fallback does NOT apply to `RANDOM_U` (by design) — the target is
 > seeded per session and compared exactly.
@@ -381,6 +386,32 @@ standard textbook CH decomposition. Exact match (no global phase). Backend tests
 
 ---
 
+### Future · Controlled-U  ⚠ HOOK ONLY (not shipped)
+
+**Backend:** `TARGET_LIBRARY["CONTROLLED_U"]` stub with `parameter_mode: trial_zxz`.
+`TargetParameterResolver` raises `NotImplementedError` until the level ships.
+Frontend toolbox glyph exists; no `levels.ts` entry yet.
+
+**Learning goal (planned):** Parameterized controlled arbitrary unitary — three angles from
+the student's submission, reference built as `CU(U(α,β,γ))` rather than a fixed decomposition.
+
+---
+
+## Parameter modes (unified architecture)
+
+Each `TARGET_LIBRARY` entry declares how target parameters are resolved:
+
+| `parameter_mode` | Levels | Runtime source |
+|------------------|--------|----------------|
+| `fixed` | X, S, T, H, CNOT_FLIPPED, CZ, SWAP, CH | Baked into `steps` / `expected_outputs` |
+| `trial_theta` | RX, RY | Student's submitted θ (via `extract_theta_from_trial`) |
+| `seed_zxz` | RANDOM_U | `SimulateRequestDTO.target_params.seed` → `(α,β,γ)` |
+| `trial_zxz` | CONTROLLED_U (stub) | Future: three angles from student CU gate |
+
+Grading flow: `SimulateRequestDTO` → `resolve_target_params()` → `TargetUnitaryBuilder.build()`.
+
+---
+
 ## Summary table
 
 | Level | Gate          | Qubits | Global phase       | Frontend/backend flag               |
@@ -391,12 +422,13 @@ standard textbook CH decomposition. Exact match (no global phase). Backend tests
 | 1.3   | H             | 1      | e^(iπ/4)           | —                                   |
 | 1.4   | Rx            | 1      | e^(iθ/2) (θ-dep.)  | —                                   |
 | 1.5   | Ry            | 1      | θ-dependent        | —                                   |
-| 1.6   | Random U      | 1      | n/a (no fallback)  | —                                   |
+| 1.6   | Random U      | 1      | n/a (no fallback)  | `parameter_mode: seed_zxz` in library + FE |
 | 2.1   | CNOT Flipped  | 2      | None               | Frontend truth table differs        |
 | 2.2   | Controlled-Z  | 2      | None               | Frontend omits −1 phase on \|11⟩    |
 | 2.3   | SWAP          | 2      | None               | —                                   |
 | 2.4   | Controlled-H  | 2      | None               | Backend only — not yet in levels.ts |
+| —     | Controlled-U  | 2      | TBD                | Backend hook only — not shipped     |
 
 ---
 
-*Generated from live-verified backend data. Last updated: Week 7 (Level 2.4 added).*
+*Generated from live-verified backend data. Last updated: unified level architecture refactor.*

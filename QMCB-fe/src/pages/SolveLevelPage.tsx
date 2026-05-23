@@ -35,7 +35,7 @@ import {
 } from "../components/GateDesign";
 
 import { LEVEL_ORDER, getNextLevel } from "../config/levels";
-import { Gate } from "../types/global";
+import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 
@@ -78,9 +78,9 @@ function SolveLevelContent({
 
   const { unlockedGates, markLevelComplete } = useLevelProgress();
 
-  const isRandomLevel = currentLevel.target_unitary === Gate.RANDOM_U;
+  const isSeedDrivenLevel = currentLevel.parameterMode === ParameterMode.SEED_ZXZ;
   const { query: randomUnitaryQuery, generateNew: generateNewUnitary, seed: randomSeed } =
-    useRandomUnitary(isRandomLevel);
+    useRandomUnitary(isSeedDrivenLevel);
 
   const { mutation, rows, allCorrect, handleCheck, validationError } = useCircuitValidation(
     currentLevel,
@@ -167,8 +167,8 @@ function SolveLevelContent({
             </div>
             <TaskCard
               level={currentLevel}
-              dynamicTruth={isRandomLevel ? randomUnitaryQuery.data?.truth_table : undefined}
-              onNewUnitary={isRandomLevel ? handleNewUnitary : undefined}
+              dynamicTruth={isSeedDrivenLevel ? randomUnitaryQuery.data?.truth_table : undefined}
+              onNewUnitary={isSeedDrivenLevel ? handleNewUnitary : undefined}
             />
             <Toolbox availableGates={unlockedGates} activeId={activeId} />
             <CircuitCanvas

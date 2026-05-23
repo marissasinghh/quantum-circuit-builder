@@ -26,6 +26,7 @@ import {
   BASIS_01,
   BASIS_10,
   BASIS_11,
+  ParameterMode,
 } from "../utils/constants";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 
@@ -144,6 +145,8 @@ export const RX_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
+  parameterMode: ParameterMode.TRIAL_THETA,
+
   description: "Rx(θ) rotates a qubit by angle θ around the X-axis of the Bloch sphere. Synthesize a parameterized circuit whose unitary matches Rx(θ) for any angle θ.",
   hint1: "Which gates will translate the state to the proper axis of rotation?",
   hint2: "Conjugating a Z-axis rotation by Hadamards changes the rotation axis to X.",
@@ -165,6 +168,8 @@ export const RY_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
+  parameterMode: ParameterMode.TRIAL_THETA,
+
   description: "Ry(θ) rotates a qubit by angle θ around the Y-axis; unlike Rx, its matrix entries are entirely real with no complex phases. Synthesize a parameterized circuit whose unitary matches Ry(θ) for any angle θ.",
   hint1: "Which gates will translate the state to the proper axis of rotation?",
   hint2: "Conjugating an X-axis rotation by Rz changes the rotation axis to Y.",
@@ -177,6 +182,14 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
   target_unitary: Gate.RANDOM_U,
   number_of_qubits: LEVEL1_QUBITS,
   toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY] as const,
+
+  canonical: [
+    { gate: Gate.RZ, order: Q0 },
+    { gate: Gate.RX, order: Q0 },
+    { gate: Gate.RZ, order: Q0 },
+  ],
+
+  parameterMode: ParameterMode.SEED_ZXZ,
 
   uiMaxGates: MAX_GATES,
 
