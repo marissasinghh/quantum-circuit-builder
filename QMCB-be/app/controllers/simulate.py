@@ -14,27 +14,44 @@ from app.dto.simulate_request import SimulateRequestDTO
 from app.dto.truth_table import TruthTableDTO
 from typing import Any
 import logging
-import numpy as np
 
 
-def _match_up_to_global_phase(
-    trial_vecs: list,
-    target_vecs: list,
+def _probabilities_match(
+    trial_probs: list[list[float]],
+    target_probs: list[list[float]],
+    atol: float = 0.02,
+) -> bool:
+    """Return True when every row's probability vector matches within tolerance."""
+    if len(trial_probs) != len(target_probs):
+        return False
+
+    for trial_row, target_row in zip(trial_probs, target_probs):
+        if len(trial_row) != len(target_row):
+            return False
+        for t_p, g_p in zip(trial_row, target_row):
+            if abs(t_p - g_p) > atol:
+                return False
+
+    return True
+
+
+def _match_amplitudes_up_to_global_phase(
+    trial_amps: list[list[list[float]]],
+    target_amps: list[list[list[float]]],
     atol: float = 0.02,
 ) -> bool:
     """
-    Returns True if there exists a single unit complex number φ such that
-    trial_vecs[i] ≈ φ × target_vecs[i] for every basis-state row i.
+    Return True if trial amplitudes equal target amplitudes up to one global phase.
 
-    This catches circuits that implement the correct unitary up to global phase
-    (e.g. Rz·SQRT_X·Rz producing H with an e^(iπ/4) factor), which are
-    physically equivalent but produce different Dirac-notation strings.
+    Uses stored [re, im] pairs from the truth table (no raw state-vector re-simulation).
     """
     ratios: list[complex] = []
-    for tr_sv, tg_sv in zip(trial_vecs, target_vecs):
-        for tr_amp, tg_amp in zip(tr_sv.flatten(), tg_sv.flatten()):
+    for tr_row, tg_row in zip(trial_amps, target_amps):
+        for tr_pair, tg_pair in zip(tr_row, tg_row):
+            tr_amp = complex(tr_pair[0], tr_pair[1])
+            tg_amp = complex(tg_pair[0], tg_pair[1])
             if abs(tg_amp) > 1e-4:
-                ratios.append(complex(tr_amp) / complex(tg_amp))
+                ratios.append(tr_amp / tg_amp)
 
     if not ratios:
         return False
@@ -74,9 +91,6 @@ def simulate_unitaries(
     trial_truth_table_dto = TruthTableDTO([], [])
     target_truth_table_dto = TruthTableDTO([], [])
 
-    trial_vectors: list[np.ndarray] = []
-    target_vectors: list[np.ndarray] = []
-
     resolved = resolve_target_params(
         target_name,
         trial_dto,
@@ -87,6 +101,12 @@ def simulate_unitaries(
     if not resolved.simulate_live:
         logging.info("Skipping target circuit validation - Using stored outputs.")
         build_target_truth_table(target_name, target_truth_table_dto)
+
+    target_resolved = (
+        resolved
+        if resolved.simulate_live
+        else resolved_for_library_simulation(target_name)
+    )
 
     for state in basis_states:
         logging.info(f"Constructing circuit for state: {state}")
@@ -99,10 +119,9 @@ def simulate_unitaries(
         print("Trial Circuit:")
         print(trial_circuit)
 
-        trial_sv = CircuitSimulator.simulate_and_update(
+        CircuitSimulator.simulate_and_update(
             trial_circuit, qubits, state, trial_truth_table_dto, decimals=3
         )
-        trial_vectors.append(trial_sv)
 
         if resolved.simulate_live:
             logging.info("Computing target circuit for validation")
@@ -117,10 +136,20 @@ def simulate_unitaries(
             print("Target Circuit:")
             print(target_circuit)
 
-            target_sv = CircuitSimulator.simulate_and_update(
+            CircuitSimulator.simulate_and_update(
                 target_circuit, qubits, state, target_truth_table_dto, decimals=3
             )
-            target_vectors.append(target_sv)
+        else:
+            target_circuit_base = TargetUnitaryBuilder.build(
+                target_name, qubits, target_resolved
+            )
+            target_circuit = (
+                CircuitBuilder.prepare_basis_state(state, qubits) + target_circuit_base
+            )
+            _, target_sv = CircuitSimulator._simulate(target_circuit, qubits, decimals=3)
+            CircuitSimulator.append_wavefunction_columns(
+                target_truth_table_dto, target_sv, decimals=3
+            )
 
     logging.info("Passed simulation and results of circuit successfully!")
 
@@ -135,17 +164,11 @@ def simulate_unitaries(
     all_match = trial_dict["output"] == target_dict["output"]
 
     if not all_match and resolved.allow_global_phase:
-        if target_vectors:
-            all_match = _match_up_to_global_phase(trial_vectors, target_vectors)
-        else:
-            gp_resolved = resolved_for_library_simulation(target_name)
-            gp_target_vecs: list[np.ndarray] = []
-            for s in basis_states:
-                t_base = TargetUnitaryBuilder.build(target_name, qubits, gp_resolved)
-                t_circuit = CircuitBuilder.prepare_basis_state(s, qubits) + t_base
-                _, t_sv = CircuitSimulator._simulate(t_circuit, qubits)
-                gp_target_vecs.append(t_sv)
-            all_match = _match_up_to_global_phase(trial_vectors, gp_target_vecs)
+        all_match = _probabilities_match(
+            trial_dict["probabilities"], target_dict["probabilities"]
+        ) and _match_amplitudes_up_to_global_phase(
+            trial_dict["amplitudes"], target_dict["amplitudes"]
+        )
 
     return {
         "message": "Successfully simulated circuits.",

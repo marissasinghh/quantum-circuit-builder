@@ -21,13 +21,17 @@ Run from the QMCB-be folder:
 
 from __future__ import annotations
 
+import math
 from unittest.mock import patch
 
 import pytest
 
 from app.dto.unitary import UnitaryDTO
+from app.utils.constants import Gate
 from app.utils.helpers import get_qubit_order, get_target_gates
 from tests.simulate_helpers import run_simulate
+
+TRUTH_TABLE_KEYS = {"input", "output", "probabilities", "amplitudes"}
 
 
 @pytest.fixture
@@ -79,7 +83,7 @@ def test_simulate_unitaries_api_shape_and_baseline(
     assert response["message"] == "Successfully simulated circuits."
 
     trial = response["trial_truth_table"]
-    assert set(trial.keys()) == {"input", "output"}
+    assert set(trial.keys()) == TRUTH_TABLE_KEYS
     assert trial["input"] == ["|00>", "|01>", "|10>", "|11>"]
     # Wavefunction column uses Cirq ket Unicode; values come from current Cirq pipeline.
     assert trial["output"] == ["|00⟩", "|10⟩", "|01⟩", "|11⟩"]
@@ -105,7 +109,7 @@ def test_simulate_unitaries_mixed_string_and_dict_gates() -> None:
         response, status = run_simulate(trial, "SWAP", validate_target=False)
     assert status == 200
     trial_tt = response["trial_truth_table"]
-    assert set(trial_tt.keys()) == {"input", "output"}
+    assert set(trial_tt.keys()) == TRUTH_TABLE_KEYS
     assert trial_tt["input"] == ["|00>", "|01>", "|10>", "|11>"]
 
 
@@ -163,6 +167,58 @@ def test_parameterized_target_trial_matches_target_when_theta_identical(
         f"{gate_name}(theta={theta}): trial outputs {trial_tt['output']!r} "
         f"do not match target outputs {target_tt['output']!r}"
     )
+
+
+def test_hadamard_probabilities() -> None:
+    """
+    H on |0⟩ and |1⟩: each output basis state has probability ≈ 0.5.
+    Manual check: |0.707 + 0j|² = 0.5, |0 + 0.707j|² = 0.5 (with 3-decimal rounding).
+    """
+    trial = UnitaryDTO(
+        number_of_qubits=1,
+        gates=[Gate.H.value],
+        qubit_order=[[0]],
+    )
+
+    with patch("builtins.print"):
+        response, status = run_simulate(trial, Gate.H.value, validate_target=False)
+
+    assert status == 200
+    trial_tt = response["trial_truth_table"]
+    assert set(trial_tt.keys()) == TRUTH_TABLE_KEYS
+
+    probs = trial_tt["probabilities"]
+    assert len(probs) == 2
+    for row in probs:
+        assert len(row) == 2
+        assert abs(row[0] - 0.5) <= 0.02
+        assert abs(row[1] - 0.5) <= 0.02
+
+    amps = trial_tt["amplitudes"]
+    assert amps[0] == [[0.707, 0.0], [0.707, 0.0]]
+    assert amps[1] == [[0.707, 0.0], [-0.707, 0.0]]
+
+
+def test_h_canonical_circuit_matches_via_probability_fallback() -> None:
+    """Rz(π/2)·SQRT_X·Rz(π/2) differs in Dirac strings but matches H via probabilities."""
+    trial = UnitaryDTO(
+        number_of_qubits=1,
+        gates=[
+            {"gate": Gate.RZ.value, "theta": math.pi / 2},
+            Gate.SQRT_X.value,
+            {"gate": Gate.RZ.value, "theta": math.pi / 2},
+        ],
+        qubit_order=[[0], [0], [0]],
+    )
+
+    with patch("builtins.print"):
+        response, status = run_simulate(trial, Gate.H.value, validate_target=False)
+
+    assert status == 200
+    trial_tt = response["trial_truth_table"]
+    target_tt = response["target_truth_table"]
+    assert trial_tt["output"] != target_tt["output"]
+    assert response["all_match"] is True
 
 
 def test_target_dto_matches_swap_library_metadata(target_swap_dto: UnitaryDTO) -> None:

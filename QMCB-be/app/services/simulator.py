@@ -10,6 +10,16 @@ class CircuitSimulator:
     # ---------- wavefunction path (no measurement) ----------
 
     @staticmethod
+    def _wavefunction_row_data(
+        sv: np.ndarray, decimals: int
+    ) -> tuple[list[float], list[list[float]]]:
+        amplitudes = [
+            [round(float(a.real), decimals), round(float(a.imag), decimals)] for a in sv
+        ]
+        probabilities = [round(float(abs(a) ** 2), decimals) for a in sv]
+        return probabilities, amplitudes
+
+    @staticmethod
     def _simulate(
         circuit: Circuit, qubits: list[Qubit], decimals: int = 3
     ) -> tuple[str, np.ndarray]:
@@ -37,6 +47,8 @@ class CircuitSimulator:
         state: list[int],
         truth_table: TruthTableDTO,
         output: str,
+        probabilities: list[float],
+        amplitudes: list[list[float]],
         *,
         input_as_ket: bool = True,
     ) -> None:
@@ -44,12 +56,27 @@ class CircuitSimulator:
         Append a single row to the truth table.
         - Input column stored as '|01>' when input_as_ket=True (default), else '01'.
         - Output column stored as the Dirac-notation string produced by Cirq.
+        - Probabilities and amplitudes derived from the state vector.
         """
         inp = format_ket(state) if input_as_ket else list_to_joint_string(state)
         truth_table.input.append(inp)
         truth_table.output.append(output)
+        truth_table.probabilities.append(probabilities)
+        truth_table.amplitudes.append(amplitudes)
 
         return None
+
+    @staticmethod
+    def append_wavefunction_columns(
+        truth_table: TruthTableDTO,
+        sv: np.ndarray,
+        *,
+        decimals: int = 3,
+    ) -> None:
+        """Append probability/amplitude columns for one row without touching input/output."""
+        probabilities, amplitudes = CircuitSimulator._wavefunction_row_data(sv, decimals)
+        truth_table.probabilities.append(probabilities)
+        truth_table.amplitudes.append(amplitudes)
 
     # ---------- sampling path (with measurement) ----------
     @staticmethod
@@ -91,12 +118,18 @@ class CircuitSimulator:
     ) -> np.ndarray:
         """
         Single-call wrapper: simulate the wavefunction, record a truth-table row,
-        and return the raw state vector for global-phase comparison in the controller.
+        and return the raw state vector.
         """
         output, sv = CircuitSimulator._simulate(circuit, qubits, decimals)
+        probabilities, amplitudes = CircuitSimulator._wavefunction_row_data(sv, decimals)
         print("Circuit successully ran...")
         CircuitSimulator.wavefunction_truth_table(
-            state, truth_table, output, input_as_ket=input_as_ket
+            state,
+            truth_table,
+            output,
+            probabilities,
+            amplitudes,
+            input_as_ket=input_as_ket,
         )
         print("Truth table updated...")
 
