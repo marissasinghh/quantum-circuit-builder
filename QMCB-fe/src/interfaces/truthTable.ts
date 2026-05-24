@@ -8,3 +8,13 @@ export interface TruthTableDTO {
   probabilities?: readonly (readonly number[])[];
   amplitudes?: readonly (readonly [number, number])[][];
 }
+
+/** One row passed from the controller to the display layer. */
+export interface TruthRow {
+  input: string;
+  trial: string;
+  target: string;
+  ok: boolean;
+  probabilities?: readonly number[];
+  amplitudes?: readonly (readonly [number, number])[];
+}

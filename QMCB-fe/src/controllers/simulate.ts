@@ -8,6 +8,7 @@
 import type { PlacedGate } from "../types/global";
 import type { UnitaryRequestDTO } from "../interfaces/unitary";
 import type { SimulationResponseDTO } from "../interfaces/responseDTO";
+import type { TruthRow } from "../interfaces/truthTable";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { serializeOrders, serializeUnitaryGateEntries } from "../utils/circuit";
 
@@ -27,7 +28,7 @@ export function buildRequestFromLevel(
 }
 
 /** Convert backend DTO into rows the table can render easily. */
-export function toTruthRows(res: SimulationResponseDTO) {
+export function toTruthRows(res: SimulationResponseDTO): TruthRow[] {
   const t = res.trial_truth_table;
   const target = res.target_truth_table;
   return t.input.map((inp, i) => ({
@@ -38,5 +39,7 @@ export function toTruthRows(res: SimulationResponseDTO) {
     // the circuit matches up to global phase (all_match=true) even if the
     // Dirac-notation strings differ (e.g. H canonical Rz·SQRT_X·Rz).
     ok: res.all_match || t.output[i] === target.output[i],
+    probabilities: t.probabilities?.[i],
+    amplitudes: t.amplitudes?.[i],
   }));
 }

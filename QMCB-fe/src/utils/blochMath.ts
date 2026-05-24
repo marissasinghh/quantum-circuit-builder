@@ -235,7 +235,7 @@ if (import.meta.env.DEV) {
     type: Gate.X,
     wire: 0 as const,
     column: 0,
-  };
+  } satisfies PlacedSingleQubitGate;
   const xState = gateSequenceToBlochState([xGate]);
   console.assert(approx(xState.theta, Math.PI), `[blochMath] X gate theta: expected π, got ${xState.theta}`);
 
@@ -245,7 +245,7 @@ if (import.meta.env.DEV) {
     type: Gate.H,
     wire: 0 as const,
     column: 0,
-  };
+  } satisfies PlacedSingleQubitGate;
   const hState = gateSequenceToBlochState([hGate]);
   console.assert(approx(hState.theta, Math.PI / 2), `[blochMath] H gate theta: expected π/2, got ${hState.theta}`);
   // φ from |+⟩: arg(1/√2) − arg(1/√2) = 0 (both real positive, normalised to [0,2π))
