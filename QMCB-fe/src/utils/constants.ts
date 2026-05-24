@@ -43,6 +43,12 @@ export enum ParameterMode {
 /** sessionStorage key for Level 1.6 random-unitary seed persistence. */
 export const RANDOM_UNITARY_SEED_KEY = "qmcb-random-unitary-seed";
 
+/** localStorage key for gate-unlock progression. */
+export const LEVEL_PROGRESS_KEY = "cnot_progress";
+
+/** localStorage key for first-run onboarding dismissal. */
+export const HAS_SEEN_ONBOARDING_KEY = "hasSeenOnboarding";
+
 // ========================
 // BASIS STATES - 1 QUBITS
 // ========================`

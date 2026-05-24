@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { LEVEL_ORDER } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
+import { FirstRunOnboarding, hasLevelProgress } from "../components/FirstRunOnboarding";
 
 type LevelStatus = "locked" | "unlocked" | "completed";
 
@@ -94,6 +96,16 @@ function TierSection({
 export default function LevelsPage() {
   const { completedLevels } = useLevelProgress();
   const navigate = useNavigate();
+  const [showOnboarding, setShowOnboarding] = useState(() => !hasLevelProgress());
+
+  if (showOnboarding) {
+    return (
+      <FirstRunOnboarding
+        variant="fullscreen"
+        onComplete={() => setShowOnboarding(false)}
+      />
+    );
+  }
 
   const allItems = LEVEL_ORDER.map((level, index) => ({
     level,

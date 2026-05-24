@@ -6,8 +6,7 @@
 import { useState, useCallback } from "react";
 import { Gate } from "../types/global";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
-
-const STORAGE_KEY = "cnot_progress";
+import { LEVEL_PROGRESS_KEY } from "../utils/constants";
 const STARTING_GATES: Gate[] = [Gate.RZ, Gate.SQRT_X];
 
 interface ProgressState {
@@ -43,7 +42,7 @@ export function useLevelProgress() {
             ? [...prev.unlockedGates, levelId as Gate]
             : prev.unlockedGates,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
       return next;
     });
   }, []);
@@ -53,7 +52,7 @@ export function useLevelProgress() {
       completedLevels: [],
       unlockedGates: [...STARTING_GATES],
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+    localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(fresh));
     setProgress(fresh);
   }, []);
 
