@@ -277,11 +277,11 @@ function BlochIllustration() {
         </text>
 
         {/* X+ labels: state then letter, reading outward along X axis */}
-        <text x={112} y={174} textAnchor="end" fontSize={11} fill="#546e7a" fontFamily="monospace">
+        <text x={120} y={174} textAnchor="end" fontSize={11} fill="#546e7a" fontFamily="monospace">
           |i⟩
         </text>
         <text
-          x={97}
+          x={108}
           y={183}
           textAnchor="end"
           fontSize={13}
