@@ -6,7 +6,7 @@ import LevelsPage from "./pages/LevelsPage";
 import SolveLevelPage from "./pages/SolveLevelPage";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
-import { useLevelProgress } from "./hooks/useLevelProgress";
+import { LevelProgressProvider, useLevelProgress } from "./hooks/useLevelProgress";
 import { LEVEL_ORDER } from "./config/levels";
 import type { LevelDefinition } from "./interfaces/levelDefinition";
 
@@ -111,27 +111,29 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-space text-[#e8eaf6]">
-      <AppHeader />
-      <div className="flex flex-1 min-h-0">
-        <LevelSidebar />
-        <div className="flex flex-1 min-w-0 min-h-0 w-full flex-col">
-          <Routes>
-            <Route path="/" element={<Navigate to="/levels" replace />} />
-            <Route path="/levels" element={<LevelsPage />} />
-            <Route
-              path="/level/:id"
-              element={
-                <div className="flex flex-1 min-h-0 w-full [&_section]:flex-[1.1] [&_section]:min-w-0 [&_aside]:flex-[0.9] [&_aside]:min-w-0 [&_aside]:!w-auto">
-                  <SolveLevelPage />
-                </div>
-              }
-            />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Routes>
+    <LevelProgressProvider>
+      <div className="h-screen flex flex-col bg-space text-[#e8eaf6]">
+        <AppHeader />
+        <div className="flex flex-1 min-h-0">
+          <LevelSidebar />
+          <div className="flex flex-1 min-w-0 min-h-0 w-full flex-col">
+            <Routes>
+              <Route path="/" element={<Navigate to="/levels" replace />} />
+              <Route path="/levels" element={<LevelsPage />} />
+              <Route
+                path="/level/:id"
+                element={
+                  <div className="flex flex-1 min-h-0 w-full [&_section]:flex-[1.1] [&_section]:min-w-0 [&_aside]:flex-[0.9] [&_aside]:min-w-0 [&_aside]:!w-auto">
+                    <SolveLevelPage />
+                  </div>
+                }
+              />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+            </Routes>
+          </div>
         </div>
       </div>
-    </div>
+    </LevelProgressProvider>
   );
 }

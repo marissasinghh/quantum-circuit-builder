@@ -3,10 +3,18 @@
  * Starting gates: [RZ, SQRT_X]. Each completed level unlocks its target gate.
  */
 
-import { useState, useCallback } from "react";
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
 import { Gate } from "../types/global";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { LEVEL_PROGRESS_KEY } from "../utils/constants";
+
 const STARTING_GATES: Gate[] = [Gate.RZ, Gate.SQRT_X];
 
 interface ProgressState {
@@ -14,15 +22,41 @@ interface ProgressState {
   unlockedGates: Gate[];
 }
 
-function loadProgress(): ProgressState {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw) as ProgressState;
-  } catch {}
+function defaultProgress(): ProgressState {
   return { completedLevels: [], unlockedGates: [...STARTING_GATES] };
 }
 
-export function useLevelProgress() {
+function isValidProgressState(value: unknown): value is ProgressState {
+  if (!value || typeof value !== "object") return false;
+  const v = value as ProgressState;
+  return (
+    Array.isArray(v.completedLevels) &&
+    v.completedLevels.every((id) => typeof id === "string") &&
+    Array.isArray(v.unlockedGates)
+  );
+}
+
+function loadProgress(): ProgressState {
+  try {
+    const raw = localStorage.getItem(LEVEL_PROGRESS_KEY);
+    if (raw) {
+      const parsed: unknown = JSON.parse(raw);
+      if (isValidProgressState(parsed)) return parsed;
+    }
+  } catch {}
+  return defaultProgress();
+}
+
+interface LevelProgressContextValue {
+  completedLevels: string[];
+  unlockedGates: Gate[];
+  markLevelComplete: (level: LevelDefinition) => void;
+  resetProgress: () => void;
+}
+
+const LevelProgressContext = createContext<LevelProgressContextValue | null>(null);
+
+export function LevelProgressProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<ProgressState>(loadProgress);
 
   /**
@@ -48,18 +82,25 @@ export function useLevelProgress() {
   }, []);
 
   const resetProgress = useCallback(() => {
-    const fresh: ProgressState = {
-      completedLevels: [],
-      unlockedGates: [...STARTING_GATES],
-    };
+    const fresh = defaultProgress();
     localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(fresh));
     setProgress(fresh);
   }, []);
 
-  return {
+  const value: LevelProgressContextValue = {
     completedLevels: progress.completedLevels,
     unlockedGates: progress.unlockedGates,
     markLevelComplete,
     resetProgress,
   };
+
+  return createElement(LevelProgressContext.Provider, { value }, children);
+}
+
+export function useLevelProgress(): LevelProgressContextValue {
+  const ctx = useContext(LevelProgressContext);
+  if (!ctx) {
+    throw new Error("useLevelProgress must be used within a LevelProgressProvider");
+  }
+  return ctx;
 }
