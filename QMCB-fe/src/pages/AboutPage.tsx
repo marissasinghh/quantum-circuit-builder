@@ -3,10 +3,14 @@ import { FirstRunOnboarding } from "../components/FirstRunOnboarding";
 export default function AboutPage() {
   return (
     <main className="flex-1 overflow-y-auto canvas-grid p-6">
-      <div className="max-w-2xl">
-        <p className="font-mono text-[9px] tracking-[0.1em] text-cyan mb-1">// ABOUT</p>
-        <h1 className="font-mono text-base font-bold text-cyan mb-2">About</h1>
-        <p className="font-sans text-[11px] text-cyan-muted mb-6">
+      <div className="max-w-[620px] mx-auto">
+        <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
+          // about
+        </p>
+        <h1 className="font-mono text-[28px] font-bold text-cyan tracking-[0.04em] leading-[1.2] mb-2">
+          About
+        </h1>
+        <p className="font-sans text-[14px] text-slate italic mb-10">
           A quick intro to how this app thinks about qubits.
         </p>
         <FirstRunOnboarding variant="inline" />

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { FirstRunOnboarding, isOnboardingComplete } from "./components/FirstRunOnboarding";
 import { AppHeader } from "./components/AppHeader";
 import LevelsPage from "./pages/LevelsPage";
 import SolveLevelPage from "./pages/SolveLevelPage";
@@ -102,6 +104,12 @@ function LevelSidebar() {
 }
 
 export default function App() {
+  const [onboardingDone, setOnboardingDone] = useState(isOnboardingComplete);
+
+  if (!onboardingDone) {
+    return <FirstRunOnboarding onComplete={() => setOnboardingDone(true)} />;
+  }
+
   return (
     <div className="h-screen flex flex-col bg-space text-[#e8eaf6]">
       <AppHeader />

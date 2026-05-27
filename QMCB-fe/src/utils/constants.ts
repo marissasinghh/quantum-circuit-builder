@@ -47,7 +47,7 @@ export const RANDOM_UNITARY_SEED_KEY = "qmcb-random-unitary-seed";
 export const LEVEL_PROGRESS_KEY = "cnot_progress";
 
 /** localStorage key for first-run onboarding dismissal. */
-export const HAS_SEEN_ONBOARDING_KEY = "hasSeenOnboarding";
+export const ONBOARDING_COMPLETE_KEY = "cnot_onboarding_complete";
 
 // ========================
 // BASIS STATES - 1 QUBITS

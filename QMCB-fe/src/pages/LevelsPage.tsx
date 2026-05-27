@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { LEVEL_ORDER } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
-import { FirstRunOnboarding, hasLevelProgress } from "../components/FirstRunOnboarding";
 
 type LevelStatus = "locked" | "unlocked" | "completed";
 
@@ -100,16 +98,6 @@ function TierSection({
 export default function LevelsPage() {
   const { completedLevels } = useLevelProgress();
   const navigate = useNavigate();
-  const [showOnboarding, setShowOnboarding] = useState(() => !hasLevelProgress());
-
-  if (showOnboarding) {
-    return (
-      <FirstRunOnboarding
-        variant="fullscreen"
-        onComplete={() => setShowOnboarding(false)}
-      />
-    );
-  }
 
   const allItems = LEVEL_ORDER.map((level, index) => ({
     level,
@@ -123,9 +111,11 @@ export default function LevelsPage() {
   return (
     <main className="flex-1 overflow-y-auto canvas-grid p-6 space-y-8">
       <div>
-        <p className="font-mono text-[9px] tracking-[0.1em] text-cyan mb-1">// LEVELS</p>
-        <h1 className="font-mono text-base font-bold text-cyan">Choose a Level</h1>
-        <p className="font-sans text-[11px] text-cyan-muted mt-1">
+        <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">// levels</p>
+        <h1 className="font-mono text-[28px] font-bold text-cyan tracking-[0.04em] leading-[1.2] mb-2">
+          Choose a Level
+        </h1>
+        <p className="font-sans text-[14px] text-slate italic">
           Pick a level from the grid, or use the sidebar to jump straight in.
         </p>
       </div>
