@@ -128,11 +128,11 @@ export function BlochPreviewToggle({
 
 export function Toolbox({ availableGates }: ToolboxProps) {
   return (
-    <div>
+    <div className="shrink-0">
       <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase mb-2">
         Toolbox
       </h2>
-      <div className="flex flex-col">
+      <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto shrink-0">
         {availableGates.map((gate) => {
           const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
           if (!config) return null;
@@ -141,20 +141,15 @@ export function Toolbox({ availableGates }: ToolboxProps) {
 
           return (
             <DraggableTool key={gate} id={config.toolId}>
-              <div className="flex items-center gap-2.5 bg-[#0a1628] border border-grid rounded-[5px] px-3 py-2.5 mb-2 hover:border-cyan transition-colors cursor-grab">
+              <div className="flex items-center gap-2 bg-[#0a1628] border border-grid rounded-[5px] px-2 py-2 hover:border-cyan transition-colors cursor-grab min-w-0">
                 <span className="w-9 h-9 shrink-0 bg-grid border border-cyan rounded-[5px] flex items-center justify-center pointer-events-none">
                   <span className="font-mono text-[13px] font-bold text-cyan-muted">
                     {abbrev}
                   </span>
                 </span>
-                <div className="flex flex-col gap-0.5 min-w-0 pointer-events-none">
-                  <span className="font-mono text-[13px] font-bold text-cyan leading-tight">
-                    {config.label}
-                  </span>
-                  <span className="font-sans text-[12px] text-slate leading-snug">
-                    {config.description}
-                  </span>
-                </div>
+                <span className="font-mono text-[13px] font-bold text-cyan leading-tight truncate min-w-0 pointer-events-none">
+                  {config.label}
+                </span>
               </div>
             </DraggableTool>
           );
