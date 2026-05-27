@@ -35,7 +35,7 @@ import {
 } from "../components/GateDesign";
 
 import { LEVEL_ORDER, getNextLevel } from "../config/levels";
-import { ParameterMode } from "../utils/constants";
+import { BASIS_0, BASIS_1, ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate } from "../types/global";
@@ -94,6 +94,8 @@ function SolveLevelContent({
   const { query: randomUnitaryQuery, generateNew: generateNewUnitary, seed: randomSeed } =
     useRandomUnitary(isSeedDrivenLevel);
 
+  const [initialState, setInitialState] = React.useState<0 | 1>(0);
+
   const { mutation, rows, allCorrect, handleCheck, validationError } = useCircuitValidation(
     currentLevel,
     gates,
@@ -110,7 +112,10 @@ function SolveLevelContent({
     useSensor(TouchSensor, { activationConstraint: { delay: 0, tolerance: 10 } }),
   );
 
-  const blochState = useMemo(() => gateSequenceToBlochState(gates), [gates]);
+  const blochState = useMemo(
+    () => gateSequenceToBlochState(gates, initialState),
+    [gates, initialState]
+  );
 
   const isTLevel = currentLevel.target_unitary === Gate.T;
   const [showOrderTip, setShowOrderTip] = React.useState(false);
@@ -213,6 +218,33 @@ function SolveLevelContent({
               onNewUnitary={isSeedDrivenLevel ? handleNewUnitary : undefined}
             />
             <Toolbox availableGates={unlockedGates} activeId={activeId} />
+            {currentLevel.number_of_qubits === 1 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600 font-medium">Bloch preview from:</span>
+                <button
+                  type="button"
+                  onClick={() => setInitialState(0)}
+                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                    initialState === 0
+                      ? "bg-amber-100 border-amber-400 text-amber-800"
+                      : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
+                  }`}
+                >
+                  {BASIS_0}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInitialState(1)}
+                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                    initialState === 1
+                      ? "bg-amber-100 border-amber-400 text-amber-800"
+                      : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
+                  }`}
+                >
+                  {BASIS_1}
+                </button>
+              </div>
+            )}
             <CircuitCanvas
               gates={gates}
               numberOfQubits={currentLevel.number_of_qubits}

@@ -185,15 +185,18 @@ export interface BlochState {
 }
 
 /**
- * Simulate a sequence of placed gates on the |0⟩ initial state and return
+ * Simulate a sequence of placed gates on the given initial state and return
  * the resulting Bloch-sphere angles (θ, φ).
  *
  * Only single-qubit gates are processed; two-qubit gates are skipped.
  * If a gate has no matrix representation it is also skipped silently.
  */
-export function gateSequenceToBlochState(gates: PlacedGate[]): BlochState {
-  // Start at |0⟩ = [1, 0]
-  let state: StateVec = [c(1), c(0)];
+export function gateSequenceToBlochState(
+  gates: PlacedGate[],
+  initialState: 0 | 1 = 0
+): BlochState {
+  // |0⟩ = [1, 0] (north pole); |1⟩ = [0, 1] (south pole)
+  let state: StateVec = initialState === 1 ? [c(0), c(1)] : [c(1), c(0)];
 
   for (const gate of gates) {
     if (!isSingleQubitGate(gate)) continue;
@@ -229,6 +232,10 @@ if (import.meta.env.DEV) {
   const emptyState = gateSequenceToBlochState([]);
   console.assert(approx(emptyState.theta, 0), `[blochMath] empty circuit theta: expected 0, got ${emptyState.theta}`);
 
+  // Empty circuit from |1⟩ → south pole → θ=π
+  const emptyFromOne = gateSequenceToBlochState([], 1);
+  console.assert(approx(emptyFromOne.theta, Math.PI), `[blochMath] empty |1⟩ theta: expected π, got ${emptyFromOne.theta}`);
+
   // X gate on |0⟩ → |1⟩ → south pole → θ=π
   const xGate = {
     id: "test-x",
@@ -238,6 +245,10 @@ if (import.meta.env.DEV) {
   } satisfies PlacedSingleQubitGate;
   const xState = gateSequenceToBlochState([xGate]);
   console.assert(approx(xState.theta, Math.PI), `[blochMath] X gate theta: expected π, got ${xState.theta}`);
+
+  // X gate on |1⟩ → |0⟩ → north pole → θ=0
+  const xFromOne = gateSequenceToBlochState([xGate], 1);
+  console.assert(approx(xFromOne.theta, 0), `[blochMath] X from |1⟩ theta: expected 0, got ${xFromOne.theta}`);
 
   // H gate on |0⟩ → |+⟩ → equator +X → θ=π/2, φ=0
   const hGate = {
