@@ -3,6 +3,7 @@
  */
 
 import { Gate } from "../types/global";
+import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { DraggableTool } from "./DragAndDropWrappers";
 
 interface ToolboxProps {
@@ -95,10 +96,40 @@ function iconAbbrev(label: string): string {
   return label.length > 3 ? label.slice(0, 3) : label;
 }
 
+const blochToggleBtn = (active: boolean) =>
+  `font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
+    active
+      ? "bg-grid border-cyan text-cyan"
+      : "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted"
+  }`;
+
+/** Bloch basis toggle — rendered above the sphere in the right panel */
+export function BlochPreviewToggle({
+  initialState,
+  onSelect0,
+  onSelect1,
+}: {
+  initialState: 0 | 1;
+  onSelect0: () => void;
+  onSelect1: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <span className="font-sans text-[11px] text-slate shrink-0">Preview from:</span>
+      <button type="button" onClick={onSelect0} className={blochToggleBtn(initialState === 0)}>
+        {BASIS_0}
+      </button>
+      <button type="button" onClick={onSelect1} className={blochToggleBtn(initialState === 1)}>
+        {BASIS_1}
+      </button>
+    </div>
+  );
+}
+
 export function Toolbox({ availableGates }: ToolboxProps) {
   return (
     <div>
-      <h2 className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase mb-2">
+      <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase mb-2">
         Toolbox
       </h2>
       <div className="flex flex-col">
@@ -112,15 +143,15 @@ export function Toolbox({ availableGates }: ToolboxProps) {
             <DraggableTool key={gate} id={config.toolId}>
               <div className="flex items-center gap-2.5 bg-[#0a1628] border border-grid rounded-[5px] px-3 py-2.5 mb-2 hover:border-cyan transition-colors cursor-grab">
                 <span className="w-9 h-9 shrink-0 bg-grid border border-cyan rounded-[5px] flex items-center justify-center pointer-events-none">
-                  <span className="font-mono text-[11px] font-bold text-cyan-muted">
+                  <span className="font-mono text-[13px] font-bold text-cyan-muted">
                     {abbrev}
                   </span>
                 </span>
                 <div className="flex flex-col gap-0.5 min-w-0 pointer-events-none">
-                  <span className="font-mono text-[11px] font-bold text-cyan leading-tight">
+                  <span className="font-mono text-[13px] font-bold text-cyan leading-tight">
                     {config.label}
                   </span>
-                  <span className="font-sans text-[10px] text-slate leading-snug">
+                  <span className="font-sans text-[12px] text-slate leading-snug">
                     {config.description}
                   </span>
                 </div>
@@ -129,7 +160,7 @@ export function Toolbox({ availableGates }: ToolboxProps) {
           );
         })}
       </div>
-      <p className="mt-2 font-sans text-[9px] text-slate leading-relaxed">
+      <p className="mt-2 font-sans text-[12px] text-slate leading-relaxed">
         Drag a gate onto the wires. For 2-qubit gates, set the order after placement.
       </p>
     </div>

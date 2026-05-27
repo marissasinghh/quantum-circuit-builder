@@ -163,11 +163,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   const phiDeg   = (((phi   * 180) / Math.PI) % 360).toFixed(1);
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <p className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase w-full text-left">
-        Bloch Sphere
-      </p>
-
+    <div className="flex flex-col items-center gap-0 w-full">
       <svg
         width={SIZE}
         height={SIZE}
@@ -227,7 +223,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         <circle cx={tip.x} cy={tip.y} r={4} fill={DOT_COLOR} />
       </svg>
 
-      <p className="font-mono text-[8px] text-slate">
+      <p className="font-mono text-[10px] text-slate mt-0">
         θ = {thetaDeg}° &nbsp; φ = {phiDeg}°
       </p>
     </div>

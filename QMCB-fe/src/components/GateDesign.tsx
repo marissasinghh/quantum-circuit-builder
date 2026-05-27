@@ -138,7 +138,7 @@ function GateBlock({
         dominantBaseline="middle"
         textAnchor="middle"
         fontFamily={fonts.mono}
-        fontSize={11}
+        fontSize={13}
         fontWeight={700}
         fill={colors.cyanMuted}
       >
@@ -151,7 +151,7 @@ function GateBlock({
           dominantBaseline="middle"
           textAnchor="middle"
           fontFamily={fonts.mono}
-          fontSize={8}
+          fontSize={10}
           fill={colors.cyan}
         >
           {subLabel}
@@ -239,7 +239,7 @@ export function SqrtXGlyph({
         dominantBaseline="middle"
         textAnchor="middle"
         fontFamily={fonts.mono}
-        fontSize={11}
+        fontSize={13}
         fontWeight={700}
         fill={colors.cyanMuted}
       >

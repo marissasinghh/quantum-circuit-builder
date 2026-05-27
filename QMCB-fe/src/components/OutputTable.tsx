@@ -15,30 +15,46 @@ interface OutputTableProps {
   error: Error | null;
 }
 
+/** Two-qubit inputs use longer amplitude strings in Trial column */
+function isTwoQubitRows(rows: OutputRow[]): boolean {
+  return rows.some((r) => r.input.length > 4 || r.trial.length > 12);
+}
+
 export function OutputTable({ rows, isCorrect, error }: OutputTableProps) {
+  const twoQubit = rows ? isTwoQubitRows(rows) : false;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase">
+        <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase">
           Circuit Output
         </h2>
         {isCorrect && (
-          <span className="font-mono text-[9px] text-cyan">Complete ✓</span>
+          <span className="font-mono text-[10px] text-cyan">Complete ✓</span>
         )}
       </div>
 
       {error && (
-        <div className="font-sans text-[10px] text-[#ef5350] mb-2">{error.message}</div>
+        <div className="font-sans text-[12px] text-[#ef5350] mb-2">{error.message}</div>
       )}
 
       {!rows && !error && (
-        <div className="font-sans text-[10px] text-slate">
+        <div className="font-sans text-[12px] text-slate">
           Submit to see the truth tables.
         </div>
       )}
 
       {rows && (
-        <table className="w-full font-mono text-[9px]">
+        <table
+          className="w-full font-mono text-[11px] table-fixed border-collapse"
+          style={{ tableLayout: "fixed" }}
+        >
+          <colgroup>
+            <col style={{ width: twoQubit ? "12%" : "10%" }} />
+            <col style={{ width: twoQubit ? "48%" : "52%" }} />
+            <col style={{ width: twoQubit ? "30%" : "28%" }} />
+            <col style={{ width: "10%" }} />
+          </colgroup>
           <thead>
             <tr className="text-slate-muted border-b border-grid">
               <th className="text-left py-1 pr-1">In</th>
@@ -57,10 +73,14 @@ export function OutputTable({ rows, isCorrect, error }: OutputTableProps) {
                     : "bg-[rgba(233,69,96,0.08)] text-[#ef5350]"
                 }
               >
-                <td className="py-0.5 pr-1">{r.input}</td>
-                <td className="py-0.5 pr-1 text-cyan-muted">{r.trial}</td>
-                <td className="py-0.5 pr-1 text-cyan-muted">{r.target}</td>
-                <td className="py-0.5">{r.ok ? "✓" : "✗"}</td>
+                <td className="py-0.5 pr-1 text-left align-top">{r.input}</td>
+                <td className="py-0.5 pr-1 text-cyan-muted text-left align-top overflow-hidden text-ellipsis whitespace-nowrap max-w-0">
+                  {r.trial}
+                </td>
+                <td className="py-0.5 pr-1 text-cyan-muted text-left align-top overflow-hidden text-ellipsis whitespace-nowrap max-w-0">
+                  {r.target}
+                </td>
+                <td className="py-0.5 text-left">{r.ok ? "✓" : "✗"}</td>
               </tr>
             ))}
           </tbody>

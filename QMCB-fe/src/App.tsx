@@ -52,7 +52,7 @@ function LevelSidebar() {
   function renderTier(title: string, items: typeof tier1) {
     return (
       <div>
-        <div className="px-[14px] pt-2 pb-1 font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase">
+        <div className="px-[14px] pt-2 pb-1 font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase">
           {title}
         </div>
         {items.map(({ level, index, status }) => {
@@ -76,7 +76,7 @@ function LevelSidebar() {
               key={level.target_unitary}
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
               className={[
-                "flex items-center gap-1.5 px-[14px] py-1.5 font-sans text-[11px] cursor-pointer select-none",
+                "flex items-center gap-1.5 px-[14px] py-1.5 font-sans text-[12px] cursor-pointer select-none",
                 rowColor,
                 isLocked ? "cursor-not-allowed opacity-60" : "hover:bg-navy-light",
                 isActive ? "bg-grid border-l-2 border-cyan" : "",

@@ -35,6 +35,7 @@ const CANVAS_H = 200;
 const SQ_W = 44;
 const SQ_H = 40;
 const ANGLE_PILL_BORDER = "#2a4a6f";
+const WIRE_CYAN = "#4fc3f7";
 
 const controlInputClass =
   "bg-navy border border-grid rounded-gate px-1 py-0.5 text-[10px] font-mono text-cyan-muted focus:border-cyan outline-none";
@@ -74,24 +75,14 @@ export function CircuitCanvas({
         ))}
 
         <svg width={CANVAS_W} height={CANVAS_H} className="block min-h-[180px]">
-          <defs>
-            <filter id="wireGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2.5" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-
           {wireYs.map((y, i) => (
             <text
               key={`label-${i}`}
               x={LABEL_PAD - 4}
               y={y + 4}
-              fontSize={11}
+              fontSize={13}
               fontFamily={fonts.mono}
-              fill={colors.cyan}
+              fill={WIRE_CYAN}
               textAnchor="end"
             >
               {`|q${i}⟩`}
@@ -99,16 +90,25 @@ export function CircuitCanvas({
           ))}
 
           {wireYs.map((y, i) => (
-            <line
-              key={`wire-${i}`}
-              x1={LABEL_PAD}
-              y1={y}
-              x2={CANVAS_W - PAD_X}
-              y2={y}
-              stroke={colors.cyan}
-              strokeWidth={1.5}
-              filter="url(#wireGlow)"
-            />
+            <g key={`wire-${i}`}>
+              <line
+                x1={LABEL_PAD}
+                y1={y}
+                x2={CANVAS_W - PAD_X}
+                y2={y}
+                stroke={WIRE_CYAN}
+                strokeWidth={3}
+                strokeOpacity={0.35}
+              />
+              <line
+                x1={LABEL_PAD}
+                y1={y}
+                x2={CANVAS_W - PAD_X}
+                y2={y}
+                stroke={WIRE_CYAN}
+                strokeWidth={1.5}
+              />
+            </g>
           ))}
 
           {gates.map((g, i) => {
@@ -156,7 +156,7 @@ export function CircuitCanvas({
                         textAnchor="middle"
                         dominantBaseline="middle"
                         fontFamily={fonts.mono}
-                        fontSize={7}
+                        fontSize={9}
                         fill={colors.cyanMuted}
                       >
                         {thetaLabel}
@@ -198,7 +198,7 @@ export function CircuitCanvas({
 
       <div className="space-y-1.5 shrink-0 max-h-[120px] overflow-y-auto">
         {gates.length === 0 && (
-          <div className="font-sans text-[11px] text-slate">
+          <div className="font-sans text-[12px] text-slate">
             Drag a gate from the toolbox to the wires, then click &quot;Check Solution&quot;.
           </div>
         )}
@@ -302,13 +302,13 @@ export function CircuitCanvas({
         <button
           onClick={onCheck}
           disabled={isChecking || gates.length === 0}
-          className="w-full py-1.5 bg-navy border border-cyan rounded-gate font-mono text-[10px] text-cyan-muted tracking-[0.05em] hover:bg-grid disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full py-1.5 bg-navy border border-cyan rounded-gate font-mono text-[12px] text-cyan-muted tracking-[0.05em] hover:bg-grid disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isChecking ? "CHECKING..." : "CHECK SOLUTION"}
         </button>
         <button
           onClick={onClear}
-          className="w-full py-1 bg-transparent border border-grid rounded-gate font-mono text-[10px] text-slate hover:border-cyan-muted hover:text-cyan-muted transition-colors"
+          className="w-full py-1 bg-transparent border border-grid rounded-gate font-mono text-[12px] text-slate hover:border-cyan-muted hover:text-cyan-muted transition-colors"
         >
           CLEAR CIRCUIT
         </button>

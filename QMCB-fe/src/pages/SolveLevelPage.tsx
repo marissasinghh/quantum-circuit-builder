@@ -16,7 +16,7 @@ import { useRandomUnitary } from "../hooks/useRandomUnitary";
 import { useDragAndDrop } from "../hooks/useDragAndDrop";
 
 import { TaskCard } from "../components/TaskCard";
-import { Toolbox } from "../components/Toolbox";
+import { Toolbox, BlochPreviewToggle } from "../components/Toolbox";
 import { CircuitCanvas } from "../components/CircuitCanvas";
 import { OutputTable } from "../components/OutputTable";
 import { LevelCompleteModal } from "../components/LevelCompleteModal";
@@ -35,7 +35,7 @@ import {
 } from "../components/GateDesign";
 
 import { LEVEL_ORDER, getNextLevel } from "../config/levels";
-import { BASIS_0, BASIS_1, ParameterMode } from "../utils/constants";
+import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate } from "../types/global";
@@ -196,33 +196,6 @@ function SolveLevelContent({
               dynamicTruth={isSeedDrivenLevel ? randomUnitaryQuery.data?.truth_table : undefined}
               onNewUnitary={isSeedDrivenLevel ? handleNewUnitary : undefined}
             />
-            {currentLevel.number_of_qubits === 1 && (
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="font-sans text-[11px] text-slate">Bloch preview from:</span>
-                <button
-                  type="button"
-                  onClick={() => setInitialState(0)}
-                  className={`font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
-                    initialState === 0
-                      ? "bg-grid border-cyan text-cyan"
-                      : "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted"
-                  }`}
-                >
-                  {BASIS_0}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInitialState(1)}
-                  className={`font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
-                    initialState === 1
-                      ? "bg-grid border-cyan text-cyan"
-                      : "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted"
-                  }`}
-                >
-                  {BASIS_1}
-                </button>
-              </div>
-            )}
             <CircuitCanvas
               gates={gates}
               numberOfQubits={currentLevel.number_of_qubits}
@@ -239,7 +212,15 @@ function SolveLevelContent({
           <aside className="w-[220px] shrink-0 bg-navy border-l border-grid p-3 overflow-y-auto flex flex-col gap-4">
             <Toolbox availableGates={unlockedGates} activeId={activeId} />
             {currentLevel.number_of_qubits === 1 && (
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-0 w-full">
+                <p className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase w-full text-left">
+                  Bloch Sphere
+                </p>
+                <BlochPreviewToggle
+                  initialState={initialState}
+                  onSelect0={() => setInitialState(0)}
+                  onSelect1={() => setInitialState(1)}
+                />
                 <BlochSphere theta={blochState.theta} phi={blochState.phi} />
                 {showOrderTip && (
                   <div className="relative w-full text-[10px] text-cyan-muted bg-navy-light border border-grid rounded-panel px-2 py-1.5 leading-relaxed font-sans">
