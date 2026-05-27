@@ -168,101 +168,142 @@ function DecoColumn({ side }: { side: "left" | "right" }) {
 function BlochIllustration() {
   return (
     <div className="flex flex-col items-center py-5 pb-4">
-      <svg width={180} height={190} viewBox="0 0 180 190" aria-hidden>
-        <ellipse
-          cx={90}
-          cy={90}
-          rx={72}
-          ry={72}
+      <svg width="310" height="320" viewBox="0 0 310 320" aria-hidden>
+        {/* Back half of equatorial ellipse (dashed) */}
+        <path
+          d="M 50 140 a 90 22 0 0 0 180 0"
           fill="none"
-          stroke={colors.grid}
-          strokeWidth={1.5}
-        />
-        <ellipse
-          cx={90}
-          cy={90}
-          rx={72}
-          ry={20}
-          fill="none"
-          stroke={colors.grid}
-          strokeWidth={0.8}
+          stroke="#1e3a5f"
+          strokeWidth={1}
           strokeDasharray="5,3"
         />
-        <line x1={90} y1={18} x2={90} y2={162} stroke={colors.grid} strokeWidth={0.8} />
-        <line x1={18} y1={90} x2={162} y2={90} stroke={colors.grid} strokeWidth={0.8} />
-        <line
-          x1={32}
-          y1={57}
-          x2={148}
-          y2={123}
-          stroke={colors.grid}
-          strokeWidth={0.5}
-          strokeDasharray="3,2"
+
+        {/* Sphere outline */}
+        <ellipse
+          cx={140}
+          cy={140}
+          rx={90}
+          ry={90}
+          fill="none"
+          stroke="#1e3a5f"
+          strokeWidth={1.5}
         />
-        <line x1={90} y1={90} x2={90} y2={20} stroke={colors.cyan} strokeWidth={2.5} />
-        <circle cx={90} cy={20} r={6} fill={colors.cyan} />
-        <text
-          x={90}
-          y={11}
-          fontSize={11}
-          fontFamily={fonts.mono}
-          fill={colors.slate}
-          textAnchor="middle"
-        >
+
+        {/* Front half of equatorial ellipse (solid) */}
+        <path
+          d="M 50 140 a 90 22 0 0 1 180 0"
+          fill="none"
+          stroke="#1e3a5f"
+          strokeWidth={1}
+        />
+
+        {/* Z axis negative (dashed) */}
+        <line
+          x1={140}
+          y1={140}
+          x2={140}
+          y2={230}
+          stroke="#1e3a5f"
+          strokeWidth={0.8}
+          strokeDasharray="4,3"
+        />
+        {/* Z axis positive */}
+        <line x1={140} y1={140} x2={140} y2={52} stroke="#4fc3f7" strokeWidth={1.2} />
+        <polygon points="140,48 136,58 144,58" fill="#4fc3f7" />
+
+        {/* Y axis negative (dashed) */}
+        <line
+          x1={140}
+          y1={140}
+          x2={52}
+          y2={140}
+          stroke="#1e3a5f"
+          strokeWidth={0.8}
+          strokeDasharray="4,3"
+        />
+        {/* Y axis positive */}
+        <line x1={140} y1={140} x2={228} y2={140} stroke="#4fc3f7" strokeWidth={1.2} />
+        <polygon points="232,140 222,136 222,144" fill="#4fc3f7" />
+
+        {/* X axis negative (dashed) */}
+        <line
+          x1={140}
+          y1={140}
+          x2={175}
+          y2={120}
+          stroke="#1e3a5f"
+          strokeWidth={0.8}
+          strokeDasharray="4,3"
+        />
+        {/* X axis positive */}
+        <line x1={140} y1={140} x2={107} y2={159} stroke="#4fc3f7" strokeWidth={1.2} />
+        <polygon points="105,160 115.7,158.5 111.7,151.5" fill="#4fc3f7" />
+
+        {/* State vector */}
+        <line x1={140} y1={140} x2={140} y2={55} stroke="#4fc3f7" strokeWidth={2.5} />
+        {/* North pole dot: red */}
+        <circle cx={140} cy={55} r={5} fill="#e94560" />
+
+        {/* Z+ labels: stacked above, centered */}
+        <text x={140} y={34} textAnchor="middle" fontSize={11} fill="#546e7a" fontFamily="monospace">
           |0⟩
         </text>
         <text
-          x={90}
-          y={178}
-          fontSize={11}
-          fontFamily={fonts.mono}
-          fill={colors.slate}
+          x={140}
+          y={16}
           textAnchor="middle"
+          fontSize={13}
+          fill="#4fc3f7"
+          fontFamily="monospace"
+          fontWeight={700}
         >
-          |1⟩
+          Z
         </text>
-        <text
-          x={168}
-          y={94}
-          fontSize={10}
-          fontFamily={fonts.mono}
-          fill={colors.slate}
-          textAnchor="start"
-        >
+
+        {/* Y+ labels: state then letter, reading outward */}
+        <text x={244} y={144} textAnchor="start" fontSize={11} fill="#546e7a" fontFamily="monospace">
           |+⟩
         </text>
         <text
-          x={4}
-          y={94}
-          fontSize={10}
-          fontFamily={fonts.mono}
-          fill={colors.slate}
+          x={265}
+          y={144}
           textAnchor="start"
+          fontSize={13}
+          fill="#4fc3f7"
+          fontFamily="monospace"
+          fontWeight={700}
         >
-          |−⟩
+          Y
         </text>
-        <text
-          x={153}
-          y={64}
-          fontSize={10}
-          fontFamily={fonts.mono}
-          fill={colors.slate}
-          textAnchor="start"
-        >
+
+        {/* X+ labels: state then letter, reading outward along X axis */}
+        <text x={112} y={174} textAnchor="end" fontSize={11} fill="#546e7a" fontFamily="monospace">
           |i⟩
         </text>
         <text
-          x={2}
-          y={64}
-          fontSize={10}
-          fontFamily={fonts.mono}
-          fill={colors.slate}
-          textAnchor="start"
+          x={97}
+          y={183}
+          textAnchor="end"
+          fontSize={13}
+          fill="#4fc3f7"
+          fontFamily="monospace"
+          fontWeight={700}
         >
+          X
+        </text>
+
+        {/* Negative axis state labels */}
+        <text x={140} y={250} textAnchor="middle" fontSize={11} fill="#546e7a" fontFamily="monospace">
+          |1⟩
+        </text>
+        <text x={34} y={144} textAnchor="end" fontSize={11} fill="#546e7a" fontFamily="monospace">
+          |−⟩
+        </text>
+        <text x={190} y={112} textAnchor="start" fontSize={11} fill="#546e7a" fontFamily="monospace">
           |−i⟩
         </text>
       </svg>
-      <p className="font-mono text-[9px] text-slate-muted tracking-[0.1em] uppercase mt-2">
+      <p className="font-mono text-[9px] text-slate-muted tracking-[0.1em] mt-2">
         The Bloch sphere — state vector at |0⟩
       </p>
     </div>
