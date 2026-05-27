@@ -25,4 +25,6 @@ export interface LevelDefinition {
   description?: string;
   hint1?: string;
   hint2?: string;
+  /** When true, level appears on the picker but is not openable from the grid (stub / deferred). */
+  locked?: boolean;
 }

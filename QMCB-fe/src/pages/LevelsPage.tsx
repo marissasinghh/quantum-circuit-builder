@@ -12,6 +12,8 @@ function getLevelStatus(
   level: LevelDefinition,
   completedLevels: string[]
 ): LevelStatus {
+  if (level.locked) return "locked";
+
   const isCompleted = completedLevels.includes(level.target_unitary);
   const isUnlocked =
     index === 0 || completedLevels.includes(LEVEL_ORDER[index - 1].target_unitary);

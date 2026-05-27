@@ -78,6 +78,13 @@ export const BASIS_11 = "|11⟩" as const;
 
 export const TWO_QUBIT_INPUTS = [BASIS_00, BASIS_01, BASIS_10, BASIS_11] as const;
 
+// ====================================
+// SIMULATOR OUTPUT STRINGS - 2 QUBIT
+// ====================================
+
+export const CH_OUT_10 = "0.707|10⟩ + 0.707|11⟩" as const;
+export const CH_OUT_11 = "0.707|10⟩ - 0.707|11⟩" as const;
+
 // ===============
 // GATE CONSTANTS
 // ===============

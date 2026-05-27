@@ -38,6 +38,18 @@ import { LEVEL_ORDER, getNextLevel } from "../config/levels";
 import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
+import { Gate, type PlacedGate } from "../types/global";
+
+function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
+  return gates.length > 0 && gates.every((g) => g.type === Gate.RZ);
+}
+
+function rzThetaSignature(gates: PlacedGate[]): string {
+  return gates
+    .filter((g) => g.type === Gate.RZ)
+    .map((g) => `${g.id}:${g.theta ?? 0}`)
+    .join("|");
+}
 
 export default function SolveLevelPage() {
   const { id } = useParams<{ id: string }>();
@@ -99,6 +111,36 @@ function SolveLevelContent({
   );
 
   const blochState = useMemo(() => gateSequenceToBlochState(gates), [gates]);
+
+  const isTLevel = currentLevel.target_unitary === Gate.T;
+  const [showOrderTip, setShowOrderTip] = React.useState(false);
+  const prevGateCountRef = React.useRef(0);
+  const prevRzThetaSigRef = React.useRef("");
+
+  React.useEffect(() => {
+    if (!isTLevel) {
+      prevGateCountRef.current = gates.length;
+      prevRzThetaSigRef.current = "";
+      return;
+    }
+
+    const gateCount = gates.length;
+    const onlyRz = gatesAreOnlyRz(gates);
+    const thetaSig = rzThetaSignature(gates);
+
+    if (gateCount > prevGateCountRef.current) {
+      setShowOrderTip(false);
+    } else if (
+      onlyRz &&
+      prevRzThetaSigRef.current !== "" &&
+      thetaSig !== prevRzThetaSigRef.current
+    ) {
+      setShowOrderTip(true);
+    }
+
+    prevGateCountRef.current = gateCount;
+    prevRzThetaSigRef.current = onlyRz ? thetaSig : "";
+  }, [gates, isTLevel]);
 
   React.useEffect(() => {
     if (allCorrect && rows && rows.length > 0) {
@@ -186,8 +228,23 @@ function SolveLevelContent({
           {/* Right: Bloch Sphere (top) + Output */}
           <section className="space-y-6">
             {currentLevel.number_of_qubits === 1 && (
-              <div className="flex justify-center">
+              <div className="flex flex-col items-center gap-2">
                 <BlochSphere theta={blochState.theta} phi={blochState.phi} />
+                {showOrderTip && (
+                  <div className="relative max-w-sm text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-relaxed">
+                    <button
+                      type="button"
+                      onClick={() => setShowOrderTip(false)}
+                      className="absolute top-1 right-1.5 text-amber-600 hover:text-amber-900 leading-none"
+                      aria-label="Dismiss tip"
+                    >
+                      ×
+                    </button>
+                    <p className="pr-4">
+                      Gate order matters — Rz has nothing to rotate yet. Try placing sqrt(X) first.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
             <OutputTable

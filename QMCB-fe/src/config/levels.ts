@@ -26,6 +26,8 @@ import {
   BASIS_01,
   BASIS_10,
   BASIS_11,
+  CH_OUT_10,
+  CH_OUT_11,
   ParameterMode,
 } from "../utils/constants";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
@@ -280,6 +282,51 @@ export const SWAP_LEVEL: LevelDefinition = {
   hint2: "Three CNOTs applied in alternating control/target directions are sufficient.",
 } as const;
 
+// ========================
+// LEVEL 2.4: CONTROLLED-H
+// ========================
+export const CONTROLLED_H_LEVEL: LevelDefinition = {
+  target_unitary: Gate.CONTROLLED_H,
+  number_of_qubits: LEVEL2_QUBITS,
+  toolbox: [...SINGLE_QUBIT_GATES, Gate.CNOT, Gate.CONTROLLED_Z, Gate.SWAP] as const,
+
+  canonical: [
+    { gate: Gate.RY, order: Q1, theta: Math.PI / 4 },
+    { gate: Gate.CNOT, order: C0_T1 },
+    { gate: Gate.RY, order: Q1, theta: -(Math.PI / 4) },
+  ],
+
+  expectedTruth: {
+    input: TWO_QUBIT_INPUTS,
+    output: [BASIS_00, BASIS_01, CH_OUT_10, CH_OUT_11],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is |1⟩, and passes through unchanged otherwise. Synthesize a circuit whose unitary matches CH exactly.",
+  hint1: "Controlled gates can often be decomposed using rotation gates sandwiched around a CNOT.",
+  hint2: "Ry(π/4) · CNOT · Ry(-π/4) on the target qubit — verify the math for |10⟩ and |11⟩.",
+} as const;
+
+// ========================
+// LEVEL 2.5: CONTROLLED-U (placeholder)
+// ========================
+export const CONTROLLED_U_LEVEL: LevelDefinition = {
+  target_unitary: Gate.CONTROLLED_U,
+  number_of_qubits: LEVEL2_QUBITS,
+  toolbox: [...SINGLE_QUBIT_GATES, Gate.CNOT, Gate.CONTROLLED_Z, Gate.SWAP, Gate.CONTROLLED_H] as const,
+
+  parameterMode: ParameterMode.TRIAL_ZXZ,
+  locked: true,
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "Controlled-U applies an arbitrary single-qubit unitary to the target when the control is |1⟩. This optional level is coming soon.",
+  hint1: "Coming soon.",
+  hint2: "Coming soon.",
+} as const;
 
 //---------------------------------------------------------------------------------------
 /** Ordered list of levels for progression */
@@ -296,6 +343,8 @@ export const LEVEL_ORDER: readonly LevelDefinition[] = [
   CNOT_FLIPPED_LEVEL,
   CONTROLLED_Z_LEVEL,
   SWAP_LEVEL,
+  CONTROLLED_H_LEVEL,
+  CONTROLLED_U_LEVEL,
 ] as const;
 
 /** Get the next level in the progression, or null if on the last level */

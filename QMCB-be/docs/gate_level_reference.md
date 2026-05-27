@@ -348,12 +348,12 @@ phase. Frontend and backend are consistent — clean reference level.
 
 ---
 
-### Level 2.4 · Controlled-H  ⚠ BACKEND ONLY
+### Level 2.4 · Controlled-H
 
 **Description:** The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is
 |1⟩, and passes through unchanged otherwise. control=Q0, target=Q1.
 
-**Toolbox:** *(not yet defined in `levels.ts`)*
+**Toolbox:** `RZ, SQRT_X, X, S, T, H, RX, RY, U, CNOT, CONTROLLED_Z, SWAP` (all prior tier-2 gates; not CH itself)
 
 **Canonical circuit:** `Ry(π/4)[Q1]  →  CNOT[ctrl=Q0, tgt=Q1]  →  Ry(-π/4)[Q1]`
 
@@ -371,10 +371,7 @@ phase. Frontend and backend are consistent — clean reference level.
 | \|10⟩ | 0.707\|10⟩ + 0.707\|11⟩        | 0.707\|10⟩ + 0.707\|11⟩        | Exact |
 | \|11⟩ | 0.707\|10⟩ - 0.707\|11⟩        | 0.707\|10⟩ - 0.707\|11⟩        | Exact |
 
-> **Flag — backend only:**
-> Level 2.4 is implemented in `target_library.py` (added in Week 7) and all five tests in
-> `test_tier2_targets.py` pass. `levels.ts` has not yet been updated — no frontend entry,
-> no toolbox definition, no canonical reference in the UI.
+**Frontend `expectedTruth`:** `[|00⟩, |01⟩, 0.707|10⟩+0.707|11⟩, 0.707|10⟩−0.707|11⟩]` — matches backend `expected_outputs`.
 
 **Hint 1:** Controlled gates can often be decomposed using rotation gates sandwiched around a CNOT.
 
@@ -386,11 +383,12 @@ standard textbook CH decomposition. Exact match (no global phase). Backend tests
 
 ---
 
-### Future · Controlled-U  ⚠ HOOK ONLY (not shipped)
+### Level 2.5 · Controlled-U  ⚠ PLACEHOLDER (not shipped)
 
 **Backend:** `TARGET_LIBRARY["CONTROLLED_U"]` stub with `parameter_mode: trial_zxz`.
 `TargetParameterResolver` raises `NotImplementedError` until the level ships.
-Frontend toolbox glyph exists; no `levels.ts` entry yet.
+
+**Frontend:** `levels.ts` entry with `locked: true` and `parameterMode: trial_zxz`. Level card on the picker is always locked; completing 2.4 can still offer Next Level via `getNextLevel` (simulate will fail until CU ships).
 
 **Learning goal (planned):** Parameterized controlled arbitrary unitary — three angles from
 the student's submission, reference built as `CU(U(α,β,γ))` rather than a fixed decomposition.
@@ -426,8 +424,8 @@ Grading flow: `SimulateRequestDTO` → `resolve_target_params()` → `TargetUnit
 | 2.1   | CNOT Flipped  | 2      | None               | Frontend truth table differs        |
 | 2.2   | Controlled-Z  | 2      | None               | Frontend omits −1 phase on \|11⟩    |
 | 2.3   | SWAP          | 2      | None               | —                                   |
-| 2.4   | Controlled-H  | 2      | None               | Backend only — not yet in levels.ts |
-| —     | Controlled-U  | 2      | TBD                | Backend hook only — not shipped     |
+| 2.4   | Controlled-H  | 2      | None               | —                                   |
+| 2.5   | Controlled-U  | 2      | TBD                | FE placeholder locked; backend stub |
 
 ---
 
