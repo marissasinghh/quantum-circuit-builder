@@ -3,7 +3,6 @@
  */
 
 import { Gate } from "../types/global";
-import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph, RZGlyph, XGlyph, SqrtXGlyph } from "./GateDesign";
 import { DraggableTool } from "./DragAndDropWrappers";
 
 interface ToolboxProps {
@@ -13,81 +12,88 @@ interface ToolboxProps {
 
 const GATE_CONFIG = {
   [Gate.X]: {
-    component: <XGlyph width={32} height={28} />,
     label: "X",
+    description: "Pauli bit flip",
     toolId: "tool-x",
   },
   [Gate.SQRT_X]: {
-    component: <SqrtXGlyph width={32} height={28} />,
     label: "√X",
+    description: "Square-root of X",
     toolId: "tool-sqrt-x",
   },
   [Gate.CNOT]: {
-    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "CNOT",
+    description: "Controlled NOT gate",
     toolId: "tool-cnot",
   },
   [Gate.CNOT_FLIPPED]: {
-    component: <CNOTGlyph order={[1, 0]} width={48} height={40} />,
     label: "CNOT↕",
+    description: "Flipped control & target",
     toolId: "tool-cnot-flipped",
   },
   [Gate.CONTROLLED_Z]: {
-    component: <ControlledZGlyph order={[0, 1]} width={48} height={40} />,
     label: "CZ",
+    description: "Controlled phase on |11⟩",
     toolId: "tool-cz",
   },
   [Gate.SWAP]: {
-    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "SWAP",
+    description: "Exchange two qubits",
     toolId: "tool-swap",
   },
   [Gate.S]: {
-    component: <SGlyph width={36} height={28} />,
     label: "S",
+    description: "π/2 phase on |1⟩",
     toolId: "tool-s",
   },
   [Gate.T]: {
-    component: <TGlyph width={36} height={28} />,
     label: "T",
+    description: "π/4 phase on |1⟩",
     toolId: "tool-t",
   },
   [Gate.H]: {
-    component: <HGlyph width={32} height={28} />,
     label: "H",
+    description: "Hadamard superposition",
     toolId: "tool-h",
   },
   [Gate.RX]: {
-    component: <RXGlyph width={36} height={28} />,
-    label: "Rx",
+    label: "Rx(θ)",
+    description: "Rotate around X axis",
     toolId: "tool-rx",
   },
   [Gate.RY]: {
-    component: <RYGlyph width={36} height={28} />,
-    label: "Ry",
+    label: "Ry(θ)",
+    description: "Rotate around Y axis",
     toolId: "tool-ry",
   },
   [Gate.RZ]: {
-    component: <RZGlyph width={36} height={28} />,
-    label: "Rz",
+    label: "Rz(θ)",
+    description: "Rotate around Z axis",
     toolId: "tool-rz",
   },
   [Gate.U]: {
-    component: <UGlyph width={32} height={28} />,
     label: "U",
+    description: "General single-qubit unitary",
     toolId: "tool-u",
   },
   [Gate.CONTROLLED_H]: {
-    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "CH",
+    description: "Controlled Hadamard",
     toolId: "tool-ch",
   },
   [Gate.CONTROLLED_U]: {
-    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "CU",
+    description: "Controlled unitary",
     toolId: "tool-cu",
   },
 } as const;
+
+function iconAbbrev(label: string): string {
+  if (label === "√X") return "√X";
+  if (label.startsWith("R")) return label.slice(0, 2);
+  if (label.includes("(")) return label.split("(")[0];
+  return label.length > 3 ? label.slice(0, 3) : label;
+}
 
 export function Toolbox({ availableGates }: ToolboxProps) {
   return (
@@ -95,22 +101,29 @@ export function Toolbox({ availableGates }: ToolboxProps) {
       <h2 className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase mb-2">
         Toolbox
       </h2>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
         {availableGates.map((gate) => {
           const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
           if (!config) return null;
 
+          const abbrev = iconAbbrev(config.label);
+
           return (
             <DraggableTool key={gate} id={config.toolId}>
-              <div className="flex items-center gap-2 bg-navy border border-grid rounded-gate px-2 py-1.5 hover:border-cyan-muted transition-colors cursor-grab">
-                <span className="w-[18px] h-[18px] shrink-0 bg-grid rounded-[3px] flex items-center justify-center overflow-hidden pointer-events-none">
-                  <span className="scale-[0.5] origin-center leading-none">
-                    {config.component}
+              <div className="flex items-center gap-2.5 bg-[#0a1628] border border-grid rounded-[5px] px-3 py-2.5 mb-2 hover:border-cyan transition-colors cursor-grab">
+                <span className="w-9 h-9 shrink-0 bg-grid border border-cyan rounded-[5px] flex items-center justify-center pointer-events-none">
+                  <span className="font-mono text-[11px] font-bold text-cyan-muted">
+                    {abbrev}
                   </span>
                 </span>
-                <span className="font-mono text-[10px] text-cyan pointer-events-none">
-                  {config.label}
-                </span>
+                <div className="flex flex-col gap-0.5 min-w-0 pointer-events-none">
+                  <span className="font-mono text-[11px] font-bold text-cyan leading-tight">
+                    {config.label}
+                  </span>
+                  <span className="font-sans text-[10px] text-slate leading-snug">
+                    {config.description}
+                  </span>
+                </div>
               </div>
             </DraggableTool>
           );

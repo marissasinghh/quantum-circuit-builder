@@ -17,8 +17,7 @@ const Plus = ({ cx, cy, r = 8 }: { cx: number; cy: number; r?: number }) => (
   </>
 );
 
-/** CNOT glyph: two wires + vertical link + control dot + target ⊕
- * --> internal wires drawn at y=12 and y=height-12 for alignment on canvas. */
+/** CNOT glyph: two wires + vertical link + control dot + target ⊕ */
 export function CNOTGlyph({
   order = [0, 1],
   width = 80,
@@ -110,40 +109,54 @@ export function ControlledZGlyph({
 /** Single-qubit gate block (H, T, Rz, etc.) */
 function GateBlock({
   label,
-  width = 32,
-  height = 28,
+  subLabel,
+  width = 44,
+  height = 40,
 }: {
   label: string;
+  subLabel?: string;
   width?: number;
   height?: number;
 }) {
-  const rx = 4;
-  const fontSize = width <= 36 ? 9 : 11;
+  const rx = 5;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label={label}>
       <rect
-        x={1}
-        y={1}
-        width={width - 2}
-        height={height - 2}
+        x={0.75}
+        y={0.75}
+        width={width - 1.5}
+        height={height - 1.5}
         rx={rx}
         ry={rx}
         fill={colors.navy}
         stroke={colors.cyan}
-        strokeWidth={1}
+        strokeWidth={1.5}
       />
       <text
         x="50%"
-        y="55%"
+        y={subLabel ? "42%" : "55%"}
         dominantBaseline="middle"
         textAnchor="middle"
         fontFamily={fonts.mono}
-        fontSize={fontSize}
+        fontSize={11}
         fontWeight={700}
         fill={colors.cyanMuted}
       >
         {label}
       </text>
+      {subLabel && (
+        <text
+          x="50%"
+          y="72%"
+          dominantBaseline="middle"
+          textAnchor="middle"
+          fontFamily={fonts.mono}
+          fontSize={8}
+          fill={colors.cyan}
+        >
+          {subLabel}
+        </text>
+      )}
     </svg>
   );
 }
@@ -161,11 +174,11 @@ export function SGlyph(props: { width?: number; height?: number }) {
 }
 
 export function RXGlyph(props: { width?: number; height?: number }) {
-  return <GateBlock label="Rx" {...props} />;
+  return <GateBlock label="Rx" subLabel="θ" {...props} />;
 }
 
 export function RYGlyph(props: { width?: number; height?: number }) {
-  return <GateBlock label="Ry" {...props} />;
+  return <GateBlock label="Ry" subLabel="θ" {...props} />;
 }
 
 export function UGlyph(props: { width?: number; height?: number }) {
@@ -173,29 +186,21 @@ export function UGlyph(props: { width?: number; height?: number }) {
 }
 
 export function RZGlyph(props: { width?: number; height?: number }) {
-  return <GateBlock label="Rz" {...props} />;
+  return <GateBlock label="Rz" subLabel="θ" {...props} />;
 }
 
 export function XGlyph(props: { width?: number; height?: number }) {
   return <GateBlock label="X" {...props} />;
 }
 
-/**
- * √X glyph: the radical symbol is drawn as an SVG polyline so it does not
- * depend on system-font support for U+221A (the Windows system font ships
- * with an incomplete glyph that drops the overline). The "X" letter is
- * rendered separately at the same font size as every other GateBlock-based
- * glyph so the placed gate visually matches its siblings.
- */
 export function SqrtXGlyph({
-  width = 32,
-  height = 28,
+  width = 44,
+  height = 40,
 }: {
   width?: number;
   height?: number;
 }) {
-  const rx = 4;
-  const fontSize = width <= 36 ? 9 : 11;
+  const rx = 5;
 
   const xCenterX = width * 0.5;
 
@@ -210,15 +215,15 @@ export function SqrtXGlyph({
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="√X">
       <rect
-        x={1}
-        y={1}
-        width={width - 2}
-        height={height - 2}
+        x={0.75}
+        y={0.75}
+        width={width - 1.5}
+        height={height - 1.5}
         rx={rx}
         ry={rx}
         fill={colors.navy}
         stroke={colors.cyan}
-        strokeWidth={1}
+        strokeWidth={1.5}
       />
       <polyline
         points={`${dipStartX},${dipStartY} ${dipBotX},${dipBotY} ${upStrokeTopX},${overlineY} ${overlineEndX},${overlineY}`}
@@ -234,7 +239,7 @@ export function SqrtXGlyph({
         dominantBaseline="middle"
         textAnchor="middle"
         fontFamily={fonts.mono}
-        fontSize={fontSize}
+        fontSize={11}
         fontWeight={700}
         fill={colors.cyanMuted}
       >

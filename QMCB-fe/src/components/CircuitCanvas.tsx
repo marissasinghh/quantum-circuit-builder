@@ -29,8 +29,22 @@ const THETA_PRESETS = [
   { label: "2π",  value: 2 * Math.PI },
 ] as const;
 
+const LABEL_PAD = 36;
+const PAD_X = 100;
+const CANVAS_H = 200;
+const SQ_W = 44;
+const SQ_H = 40;
+const ANGLE_PILL_BORDER = "#2a4a6f";
+
 const controlInputClass =
   "bg-navy border border-grid rounded-gate px-1 py-0.5 text-[10px] font-mono text-cyan-muted focus:border-cyan outline-none";
+
+function computeWireYs(numberOfQubits: number): number[] {
+  if (numberOfQubits === 1) {
+    return [CANVAS_H / 2];
+  }
+  return [CANVAS_H * 0.38, CANVAS_H * 0.62];
+}
 
 export function CircuitCanvas({
   gates,
@@ -43,31 +57,26 @@ export function CircuitCanvas({
   isChecking,
 }: CircuitCanvasProps) {
   const COL_W = 90;
-  const PAD_X = 100;
-  const WIRE_TOP_PAD = 80;
-  const WIRE_SPACING = 80;
-  const WIRE_BOTTOM_PAD = 90;
   const CANVAS_W = Math.max(600, PAD_X * 2 + Math.max(1, gates.length) * COL_W);
-  const CANVAS_H = WIRE_TOP_PAD + (numberOfQubits - 1) * WIRE_SPACING + WIRE_BOTTOM_PAD;
 
-  const wireYs = Array.from({ length: numberOfQubits }, (_, i) => WIRE_TOP_PAD + i * WIRE_SPACING);
+  const wireYs = computeWireYs(numberOfQubits);
+  const wireTop = wireYs[0];
+  const wireSpan = wireYs.length > 1 ? wireYs[wireYs.length - 1] - wireYs[0] : 0;
 
   const CNOT_W = 80;
-  const CNOT_H = WIRE_SPACING + 24;
-  const SQ_W = 32;
-  const SQ_H = 28;
+  const CNOT_H = wireSpan > 0 ? wireSpan + 24 : SQ_H + 12;
 
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
-      <div className="relative flex-1 min-h-0 overflow-x-auto overflow-y-hidden rounded-panel">
+      <div className="relative flex-1 min-h-[180px] overflow-x-auto overflow-y-hidden rounded-panel">
         {wireYs.map((y, i) => (
-          <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 14} height={28} />
+          <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 20} height={40} />
         ))}
 
-        <svg width={CANVAS_W} height={CANVAS_H} className="block">
+        <svg width={CANVAS_W} height={CANVAS_H} className="block min-h-[180px]">
           <defs>
-            <filter id="wireGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="2" result="blur" />
+            <filter id="wireGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="2.5" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -78,11 +87,12 @@ export function CircuitCanvas({
           {wireYs.map((y, i) => (
             <text
               key={`label-${i}`}
-              x={8}
+              x={LABEL_PAD - 4}
               y={y + 4}
-              fontSize={10}
+              fontSize={11}
               fontFamily={fonts.mono}
               fill={colors.cyan}
+              textAnchor="end"
             >
               {`|q${i}⟩`}
             </text>
@@ -91,12 +101,12 @@ export function CircuitCanvas({
           {wireYs.map((y, i) => (
             <line
               key={`wire-${i}`}
-              x1={PAD_X}
+              x1={LABEL_PAD}
               y1={y}
               x2={CANVAS_W - PAD_X}
               y2={y}
               stroke={colors.cyan}
-              strokeWidth={1}
+              strokeWidth={1.5}
               filter="url(#wireGlow)"
             />
           ))}
@@ -111,7 +121,7 @@ export function CircuitCanvas({
               }
 
               return (
-                <g key={g.id} transform={`translate(${xCenter - CNOT_W / 2}, ${wireYs[0] - 12})`}>
+                <g key={g.id} transform={`translate(${xCenter - CNOT_W / 2}, ${wireTop - 12})`}>
                   <GlyphComponent order={g.order} width={CNOT_W} height={CNOT_H} />
                 </g>
               );
@@ -129,22 +139,24 @@ export function CircuitCanvas({
               return (
                 <g key={g.id} transform={`translate(${x}, ${y - SQ_H / 2})`}>
                   {isParameterized && thetaLabel && (
-                    <g transform={`translate(${SQ_W / 2}, -10)`}>
+                    <g transform={`translate(${SQ_W / 2}, -11)`}>
                       <rect
-                        x={-20}
-                        y={-8}
-                        width={40}
+                        x={-22}
+                        y={-9}
+                        width={44}
                         height={14}
-                        rx={10}
+                        rx={8}
                         fill={colors.grid}
+                        stroke={ANGLE_PILL_BORDER}
+                        strokeWidth={1}
                       />
                       <text
                         x={0}
-                        y={2}
+                        y={1}
                         textAnchor="middle"
                         dominantBaseline="middle"
                         fontFamily={fonts.mono}
-                        fontSize={8}
+                        fontSize={7}
                         fill={colors.cyanMuted}
                       >
                         {thetaLabel}

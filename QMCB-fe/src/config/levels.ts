@@ -52,7 +52,8 @@ export const X_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "The X gate flips |0⟩ to |1⟩ and |1⟩ to |0⟩ — the quantum equivalent of a classical NOT. Synthesize a circuit whose unitary matches X exactly.",
+  description:
+    "The X gate flips a qubit: $|0\\rangle \\mapsto |1\\rangle$ and $|1\\rangle \\mapsto |0\\rangle$. It is the quantum NOT gate. Synthesize a circuit whose unitary matches X exactly.",
   hint1: "Check how sqrt_x moves the state on the Bloch sphere.",
   hint2: "How could you use sqrt_x to move the state further south?",
 } as const;
@@ -76,7 +77,8 @@ export const S_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "The S gate leaves |0⟩ unchanged and multiplies |1⟩ by i — a π/2 phase rotation around the Z-axis. Synthesize a circuit whose unitary matches S exactly.",
+  description:
+    "The S gate applies a $\\frac{\\pi}{2}$ phase rotation: $|0\\rangle \\mapsto |0\\rangle$ and $|1\\rangle \\mapsto i|1\\rangle$. Synthesize a circuit whose unitary matches S exactly.",
   hint1: "S is a pure Z-axis rotation; to better visualize this rotation, place a sqrt_x gate first to see how Rz(θ) rotates the state.",
   hint2: "What angle do you need to use to make the π/2 phase rotation?",
 } as const;
@@ -100,7 +102,8 @@ export const T_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "The T gate leaves |0⟩ unchanged and applies a phase of e^(iπ/4) to |1⟩ — a π/4 phase rotation around the Z-axis. Synthesize a circuit whose unitary matches T exactly.",
+  description:
+    "The T gate applies a $\\frac{\\pi}{4}$ phase rotation: $|0\\rangle \\mapsto |0\\rangle$ and $|1\\rangle \\mapsto e^{i\\pi/4}|1\\rangle$. Synthesize a circuit whose unitary matches T exactly.",
   hint1: "The T gate is very similar to the S gate — use the same method for visualizing the Rz rotation.",
   hint2: "T is Rz at precisely half the angle you used for S.",
 } as const;
@@ -126,7 +129,8 @@ export const H_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "The Hadamard gate creates equal superposition: |0⟩ maps to (|0⟩+|1⟩)/√2 and |1⟩ maps to (|0⟩−|1⟩)/√2. Synthesize a circuit whose unitary matches H exactly.",
+  description:
+    "The Hadamard gate creates equal superposition: $|0\\rangle \\mapsto \\frac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$ and $|1\\rangle \\mapsto \\frac{|0\\rangle - |1\\rangle}{\\sqrt{2}}$. Synthesize a circuit whose unitary matches H exactly.",
   hint1: "H requires both rotation axes — combine Rz and SQRT_X in sequence.",
   hint2: "Conjugating sqrt_x by Rz rotations changes the effective rotation axis — try sandwiching sqrt_x between two Rz gates.",
 } as const;
@@ -149,7 +153,8 @@ export const RX_LEVEL: LevelDefinition = {
 
   parameterMode: ParameterMode.TRIAL_THETA,
 
-  description: "Rx(θ) rotates a qubit by angle θ around the X-axis of the Bloch sphere. Synthesize a parameterized circuit whose unitary matches Rx(θ) for any angle θ.",
+  description:
+    "The $R_x(\\theta)$ gate rotates the Bloch sphere around the X axis by angle $\\theta$. Synthesize a parameterized circuit whose unitary matches $R_x(\\theta)$ for any angle $\\theta$.",
   hint1: "Which gates will translate the state to the proper axis of rotation?",
   hint2: "Conjugating a Z-axis rotation by Hadamards changes the rotation axis to X.",
 } as const;
@@ -172,7 +177,8 @@ export const RY_LEVEL: LevelDefinition = {
 
   parameterMode: ParameterMode.TRIAL_THETA,
 
-  description: "Ry(θ) rotates a qubit by angle θ around the Y-axis; unlike Rx, its matrix entries are entirely real with no complex phases. Synthesize a parameterized circuit whose unitary matches Ry(θ) for any angle θ.",
+  description:
+    "The $R_y(\\theta)$ gate rotates the Bloch sphere around the Y axis by angle $\\theta$. Synthesize a parameterized circuit whose unitary matches $R_y(\\theta)$ for any angle $\\theta$.",
   hint1: "Which gates will translate the state to the proper axis of rotation?",
   hint2: "Conjugating an X-axis rotation by Rz changes the rotation axis to Y.",
 } as const;
@@ -225,7 +231,8 @@ export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "CNOT_FLIPPED is a CNOT gate with its control and target reversed: qubit 1 controls qubit 0 instead of the usual direction. Synthesize a circuit whose unitary matches the flipped CNOT exactly.",
+  description:
+    "CNOT with flipped control and target: if $|q_1\\rangle = |1\\rangle$, flip $|q_0\\rangle$. Synthesize a circuit whose unitary matches the flipped CNOT exactly.",
   hint1: "Think about how conjugating a gate by single-qubit operations can change which qubit plays which role.",
   hint2: "Hadamards can swap the control and target roles of a CNOT.",
 } as const;
@@ -251,7 +258,8 @@ export const CONTROLLED_Z_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "The CZ gate applies a phase flip of −1 to the |11⟩ state and leaves all other basis states unchanged — unlike CNOT, it is fully symmetric between its two qubits. Synthesize a circuit whose unitary matches CZ exactly.",
+  description:
+    "The CZ gate applies a $\\pi$ phase flip when both qubits are $|1\\rangle$: $|11\\rangle \\mapsto -|11\\rangle$. Synthesize a circuit whose unitary matches CZ exactly.",
   hint1: "CZ applies a phase flip — think about which single-qubit gate converts between the X and Z bases.",
   hint2: "Wrapping a CNOT with Hadamards on one qubit converts a bit-flip into a phase-flip.",
 } as const;
@@ -277,7 +285,8 @@ export const SWAP_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  description: "The SWAP gate exchanges the states of two qubits: |a,b⟩ maps to |b,a⟩ for all inputs. Synthesize a circuit whose unitary matches SWAP exactly.",
+  description:
+    "SWAP exchanges two qubits: $|01\\rangle \\mapsto |10\\rangle$ and $|10\\rangle \\mapsto |01\\rangle$. Synthesize a circuit whose unitary matches SWAP exactly.",
   hint1: "Think about how you can use CNOT to transfer information between qubits in both directions.",
   hint2: "Three CNOTs applied in alternating control/target directions are sufficient.",
 } as const;
@@ -304,7 +313,7 @@ export const CONTROLLED_H_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is |1⟩, and passes through unchanged otherwise. Synthesize a circuit whose unitary matches CH exactly.",
+    "The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is $|1\\rangle$, and passes through unchanged otherwise. Synthesize a circuit whose unitary matches CH exactly.",
   hint1: "Controlled gates can often be decomposed using rotation gates sandwiched around a CNOT.",
   hint2: "Ry(π/4) · CNOT · Ry(-π/4) on the target qubit — verify the math for |10⟩ and |11⟩.",
 } as const;
@@ -323,7 +332,7 @@ export const CONTROLLED_U_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "Controlled-U applies an arbitrary single-qubit unitary to the target when the control is |1⟩. This optional level is coming soon.",
+    "Controlled-U applies an arbitrary single-qubit unitary to the target when the control is $|1\\rangle$. This optional level is coming soon.",
   hint1: "Coming soon.",
   hint2: "Coming soon.",
 } as const;

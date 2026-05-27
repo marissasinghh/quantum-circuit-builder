@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO } from "../interfaces/truthTable";
 import { LEVEL_ORDER } from "../config/levels";
+import { MathText } from "./MathText";
 
 interface TaskCardProps {
   level: LevelDefinition;
@@ -44,9 +45,10 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
       <p className="font-mono text-[9px] tracking-[0.1em] text-cyan mb-1">
         {`// LEVEL ${levelLabel}`}
       </p>
-      <p className="font-sans text-[11px] text-cyan-muted leading-relaxed">
-        {level.description}
-      </p>
+      <MathText
+        text={level.description}
+        className="font-sans text-[11px] text-cyan-muted leading-relaxed"
+      />
 
       <div className="mt-2">
         <div className="font-mono text-[9px] text-slate-muted uppercase tracking-wide mb-1">

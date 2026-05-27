@@ -107,11 +107,18 @@ export default function App() {
       <AppHeader />
       <div className="flex flex-1 min-h-0">
         <LevelSidebar />
-        <div className="flex flex-1 min-w-0 min-h-0 flex-col">
+        <div className="flex flex-1 min-w-0 min-h-0 w-full flex-col">
           <Routes>
             <Route path="/" element={<Navigate to="/levels" replace />} />
             <Route path="/levels" element={<LevelsPage />} />
-            <Route path="/level/:id" element={<SolveLevelPage />} />
+            <Route
+              path="/level/:id"
+              element={
+                <div className="flex flex-1 min-h-0 w-full [&_section]:flex-[1.1] [&_section]:min-w-0 [&_aside]:flex-[0.9] [&_aside]:min-w-0 [&_aside]:!w-auto">
+                  <SolveLevelPage />
+                </div>
+              }
+            />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
