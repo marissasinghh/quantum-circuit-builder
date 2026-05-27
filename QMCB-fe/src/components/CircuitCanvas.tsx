@@ -70,48 +70,56 @@ export function CircuitCanvas({
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
       <div className="relative flex-1 min-h-[180px] overflow-x-auto overflow-y-hidden rounded-panel">
-        {wireYs.map((y, i) => (
-          <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 20} height={40} />
-        ))}
-
-        <svg width={CANVAS_W} height={CANVAS_H} className="block min-h-[180px]">
+        <div
+          className="relative w-full h-full"
+          style={{ minWidth: CANVAS_W, height: CANVAS_H }}
+        >
           {wireYs.map((y, i) => (
-            <text
-              key={`label-${i}`}
-              x={LABEL_PAD - 4}
-              y={y + 4}
-              fontSize={13}
-              fontFamily={fonts.mono}
-              fill={WIRE_CYAN}
-              textAnchor="end"
+            <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 20} height={40} />
+          ))}
+
+          {/* Full-width wires — span drop zone, independent of gate count */}
+          {wireYs.map((y, i) => (
+            <div
+              key={`wire-${i}`}
+              className="absolute left-[36px] right-0 pointer-events-none"
+              style={{ top: y }}
             >
-              {`|q${i}⟩`}
-            </text>
+              <div
+                className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] opacity-[0.35]"
+                style={{ backgroundColor: WIRE_CYAN }}
+              />
+              <div
+                className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1.5px]"
+                style={{
+                  backgroundColor: WIRE_CYAN,
+                  boxShadow: "0 0 6px rgba(79,195,247,0.35)",
+                }}
+              />
+            </div>
           ))}
 
-          {wireYs.map((y, i) => (
-            <g key={`wire-${i}`}>
-              <line
-                x1={LABEL_PAD}
-                y1={y}
-                x2={CANVAS_W - PAD_X}
-                y2={y}
-                stroke={WIRE_CYAN}
-                strokeWidth={3}
-                strokeOpacity={0.35}
-              />
-              <line
-                x1={LABEL_PAD}
-                y1={y}
-                x2={CANVAS_W - PAD_X}
-                y2={y}
-                stroke={WIRE_CYAN}
-                strokeWidth={1.5}
-              />
-            </g>
-          ))}
+          <svg
+            width={CANVAS_W}
+            height={CANVAS_H}
+            className="relative block z-10"
+            style={{ minWidth: "100%" }}
+          >
+            {wireYs.map((y, i) => (
+              <text
+                key={`label-${i}`}
+                x={LABEL_PAD - 4}
+                y={y + 4}
+                fontSize={13}
+                fontFamily={fonts.mono}
+                fill={WIRE_CYAN}
+                textAnchor="end"
+              >
+                {`|q${i}⟩`}
+              </text>
+            ))}
 
-          {gates.map((g, i) => {
+            {gates.map((g, i) => {
             const xCenter = PAD_X + i * COL_W;
 
             if (TWO_QUBIT_GATES.has(g.type) && "order" in g) {
@@ -193,7 +201,8 @@ export function CircuitCanvas({
 
             return null;
           })}
-        </svg>
+          </svg>
+        </div>
       </div>
 
       <div className="space-y-1.5 shrink-0 max-h-[120px] overflow-y-auto">

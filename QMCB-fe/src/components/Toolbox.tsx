@@ -114,7 +114,7 @@ export function BlochPreviewToggle({
   onSelect1: () => void;
 }) {
   return (
-    <div className="flex items-center gap-2 w-full">
+    <div className="flex items-center gap-2 w-full mt-1.5">
       <span className="font-sans text-[11px] text-slate shrink-0">Preview from:</span>
       <button type="button" onClick={onSelect0} className={blochToggleBtn(initialState === 0)}>
         {BASIS_0}
