@@ -11,80 +11,79 @@ interface ToolboxProps {
   activeId: string | null;
 }
 
-// Map gate types to their visual components and display info
 const GATE_CONFIG = {
   [Gate.X]: {
-    component: <XGlyph width={64} height={44} />,
+    component: <XGlyph width={32} height={28} />,
     label: "X",
     toolId: "tool-x",
   },
   [Gate.SQRT_X]: {
-    component: <SqrtXGlyph width={64} height={44} />,
+    component: <SqrtXGlyph width={32} height={28} />,
     label: "√X",
     toolId: "tool-sqrt-x",
   },
   [Gate.CNOT]: {
-    component: <CNOTGlyph order={[0, 1]} width={84} height={64} />,
+    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "CNOT",
     toolId: "tool-cnot",
   },
   [Gate.CNOT_FLIPPED]: {
-    component: <CNOTGlyph order={[1, 0]} width={84} height={64} />,
+    component: <CNOTGlyph order={[1, 0]} width={48} height={40} />,
     label: "CNOT↕",
     toolId: "tool-cnot-flipped",
   },
   [Gate.CONTROLLED_Z]: {
-    component: <ControlledZGlyph order={[0, 1]} width={84} height={64} />,
+    component: <ControlledZGlyph order={[0, 1]} width={48} height={40} />,
     label: "CZ",
     toolId: "tool-cz",
   },
   [Gate.SWAP]: {
-    component: <CNOTGlyph order={[0, 1]} width={84} height={64} />,
+    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "SWAP",
     toolId: "tool-swap",
   },
   [Gate.S]: {
-    component: <SGlyph width={76} height={44} />,
+    component: <SGlyph width={36} height={28} />,
     label: "S",
     toolId: "tool-s",
   },
   [Gate.T]: {
-    component: <TGlyph width={76} height={44} />,
+    component: <TGlyph width={36} height={28} />,
     label: "T",
     toolId: "tool-t",
   },
   [Gate.H]: {
-    component: <HGlyph width={64} height={44} />,
+    component: <HGlyph width={32} height={28} />,
     label: "H",
     toolId: "tool-h",
   },
   [Gate.RX]: {
-    component: <RXGlyph width={76} height={44} />,
-    label: "Rx(θ)",
+    component: <RXGlyph width={36} height={28} />,
+    label: "Rx",
     toolId: "tool-rx",
   },
   [Gate.RY]: {
-    component: <RYGlyph width={76} height={44} />,
-    label: "Ry(θ)",
+    component: <RYGlyph width={36} height={28} />,
+    label: "Ry",
     toolId: "tool-ry",
   },
   [Gate.RZ]: {
-    component: <RZGlyph width={76} height={44} />,
-    label: "Rz(θ)",
+    component: <RZGlyph width={36} height={28} />,
+    label: "Rz",
     toolId: "tool-rz",
   },
   [Gate.U]: {
-    component: <UGlyph width={64} height={44} />,
+    component: <UGlyph width={32} height={28} />,
     label: "U",
     toolId: "tool-u",
   },
   [Gate.CONTROLLED_H]: {
-    component: <CNOTGlyph order={[0, 1]} width={84} height={64} />,
+    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "CH",
     toolId: "tool-ch",
   },
   [Gate.CONTROLLED_U]: {
-    component: <CNOTGlyph order={[0, 1]} width={84} height={64} />,
+    component: <CNOTGlyph order={[0, 1]} width={48} height={40} />,
     label: "CU",
     toolId: "tool-cu",
   },
@@ -92,22 +91,33 @@ const GATE_CONFIG = {
 
 export function Toolbox({ availableGates }: ToolboxProps) {
   return (
-    <div className="bg-white rounded-2xl shadow p-5">
-      <h2 className="text-2xl font-semibold mb-3">Toolbox</h2>
-      <div className="grid grid-cols-3 gap-6">
+    <div>
+      <h2 className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase mb-2">
+        Toolbox
+      </h2>
+      <div className="flex flex-col gap-2">
         {availableGates.map((gate) => {
           const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
-          if (!config) return null; // Skip unknown gates
+          if (!config) return null;
 
           return (
-            <div key={gate} className="flex flex-col items-center">
-              <DraggableTool id={config.toolId}>{config.component}</DraggableTool>
-            </div>
+            <DraggableTool key={gate} id={config.toolId}>
+              <div className="flex items-center gap-2 bg-navy border border-grid rounded-gate px-2 py-1.5 hover:border-cyan-muted transition-colors cursor-grab">
+                <span className="w-[18px] h-[18px] shrink-0 bg-grid rounded-[3px] flex items-center justify-center overflow-hidden pointer-events-none">
+                  <span className="scale-[0.5] origin-center leading-none">
+                    {config.component}
+                  </span>
+                </span>
+                <span className="font-mono text-[10px] text-cyan pointer-events-none">
+                  {config.label}
+                </span>
+              </div>
+            </DraggableTool>
           );
         })}
       </div>
-      <p className="mt-3 text-xs text-gray-500">
-        Tip: drag a gate onto the wires at right. For 2-qubit gates, set the order after placement.
+      <p className="mt-2 font-sans text-[9px] text-slate leading-relaxed">
+        Drag a gate onto the wires. For 2-qubit gates, set the order after placement.
       </p>
     </div>
   );

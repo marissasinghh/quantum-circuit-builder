@@ -2,9 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
-/* a couple of handy defaults */
 html,
 body,
 #root {
   height: 100%;
+}
+
+body {
+  background-color: #080c18;
+  color: #e8eaf6;
+  font-family: "Inter", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: rgba(79, 195, 247, 0.3);
+}
+
+.canvas-grid {
+  background-image:
+    linear-gradient(rgba(79, 195, 247, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 195, 247, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
 }

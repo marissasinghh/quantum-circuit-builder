@@ -6,6 +6,7 @@ import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global"
 import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, RZGlyph, UGlyph, XGlyph, SqrtXGlyph } from "./GateDesign";
 import { DroppableStrip } from "./DragAndDropWrappers";
 import { allowedOrdersFor } from "../config/gates";
+import { colors, fonts } from "../design-tokens";
 
 interface CircuitCanvasProps {
   gates: PlacedGate[];
@@ -18,10 +19,7 @@ interface CircuitCanvasProps {
   isChecking: boolean;
 }
 
-// Set of all 2-qubit gates
 const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTROLLED_Z, Gate.SWAP]);
-
-// Gates that require a theta (rotation angle) from the student
 const PARAMETERIZED_GATES = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 
 const THETA_PRESETS = [
@@ -30,6 +28,9 @@ const THETA_PRESETS = [
   { label: "π",   value: Math.PI },
   { label: "2π",  value: 2 * Math.PI },
 ] as const;
+
+const controlInputClass =
+  "bg-navy border border-grid rounded-gate px-1 py-0.5 text-[10px] font-mono text-cyan-muted focus:border-cyan outline-none";
 
 export function CircuitCanvas({
   gates,
@@ -41,7 +42,6 @@ export function CircuitCanvas({
   onClear,
   isChecking,
 }: CircuitCanvasProps) {
-  // Canvas geometry
   const COL_W = 90;
   const PAD_X = 100;
   const WIRE_TOP_PAD = 80;
@@ -50,49 +50,66 @@ export function CircuitCanvas({
   const CANVAS_W = Math.max(600, PAD_X * 2 + Math.max(1, gates.length) * COL_W);
   const CANVAS_H = WIRE_TOP_PAD + (numberOfQubits - 1) * WIRE_SPACING + WIRE_BOTTOM_PAD;
 
-  // One Y coordinate per qubit wire — wireYs[0] is the top wire, wireYs[n-1] is the bottom
   const wireYs = Array.from({ length: numberOfQubits }, (_, i) => WIRE_TOP_PAD + i * WIRE_SPACING);
 
   const CNOT_W = 80;
-  const CNOT_H = WIRE_SPACING + 24; // spans two adjacent wires
-  const SQ_W = 54;
-  const SQ_H = 38;
-  return (
-    <div className="bg-white rounded-2xl shadow p-5">
-      <h2 className="text-2xl font-semibold mb-4">Circuit</h2>
+  const CNOT_H = WIRE_SPACING + 24;
+  const SQ_W = 32;
+  const SQ_H = 28;
 
-      <div className="relative border rounded-xl p-3 bg-gray-50 overflow-x-auto">
-        {/* Droppable strips — one per qubit, centered on each wire */}
+  return (
+    <div className="flex flex-1 flex-col min-h-0 gap-3">
+      <div className="relative flex-1 min-h-0 overflow-x-auto overflow-y-hidden rounded-panel">
         {wireYs.map((y, i) => (
-          <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 28} height={56} />
+          <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 14} height={28} />
         ))}
 
-        {/* SVG canvas */}
         <svg width={CANVAS_W} height={CANVAS_H} className="block">
-          {/* Wire labels */}
+          <defs>
+            <filter id="wireGlow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
           {wireYs.map((y, i) => (
-            <text key={i} x={8} y={y + 4} fontSize={14} fill="#374151">
+            <text
+              key={`label-${i}`}
+              x={8}
+              y={y + 4}
+              fontSize={10}
+              fontFamily={fonts.mono}
+              fill={colors.cyan}
+            >
               {`|q${i}⟩`}
             </text>
           ))}
 
-          {/* Wires */}
           {wireYs.map((y, i) => (
-            <line key={i} x1={PAD_X} y1={y} x2={CANVAS_W - PAD_X} y2={y} stroke="#9CA3AF" strokeWidth={2} />
+            <line
+              key={`wire-${i}`}
+              x1={PAD_X}
+              y1={y}
+              x2={CANVAS_W - PAD_X}
+              y2={y}
+              stroke={colors.cyan}
+              strokeWidth={1}
+              filter="url(#wireGlow)"
+            />
           ))}
 
-          {/* Placed gates */}
           {gates.map((g, i) => {
             const xCenter = PAD_X + i * COL_W;
 
-            // Handle all 2-qubit gates
             if (TWO_QUBIT_GATES.has(g.type) && "order" in g) {
-              // Choose the right glyph based on gate type
               let GlyphComponent = CNOTGlyph;
               if (g.type === Gate.CONTROLLED_Z) {
                 GlyphComponent = ControlledZGlyph;
               }
-              
+
               return (
                 <g key={g.id} transform={`translate(${xCenter - CNOT_W / 2}, ${wireYs[0] - 12})`}>
                   <GlyphComponent order={g.order} width={CNOT_W} height={CNOT_H} />
@@ -100,12 +117,40 @@ export function CircuitCanvas({
               );
             }
 
-            // Handle single-qubit gates
             if ("wire" in g) {
               const y = wireYs[g.wire];
               const x = xCenter - SQ_W / 2;
+              const isParameterized = PARAMETERIZED_GATES.has(g.type);
+              const thetaLabel =
+                g.theta !== undefined
+                  ? `${((g.theta * 180) / Math.PI).toFixed(0)}°`
+                  : null;
+
               return (
                 <g key={g.id} transform={`translate(${x}, ${y - SQ_H / 2})`}>
+                  {isParameterized && thetaLabel && (
+                    <g transform={`translate(${SQ_W / 2}, -10)`}>
+                      <rect
+                        x={-20}
+                        y={-8}
+                        width={40}
+                        height={14}
+                        rx={10}
+                        fill={colors.grid}
+                      />
+                      <text
+                        x={0}
+                        y={2}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontFamily={fonts.mono}
+                        fontSize={8}
+                        fill={colors.cyanMuted}
+                      >
+                        {thetaLabel}
+                      </text>
+                    </g>
+                  )}
                   {(() => {
                     switch (g.type) {
                       case Gate.X:
@@ -113,17 +158,17 @@ export function CircuitCanvas({
                       case Gate.SQRT_X:
                         return <SqrtXGlyph width={SQ_W} height={SQ_H} />;
                       case Gate.S:
-                        return <SGlyph width={SQ_W + 12} height={SQ_H} />;
+                        return <SGlyph width={SQ_W + 8} height={SQ_H} />;
                       case Gate.T:
-                        return <TGlyph width={SQ_W + 12} height={SQ_H} />;
+                        return <TGlyph width={SQ_W + 8} height={SQ_H} />;
                       case Gate.H:
                         return <HGlyph width={SQ_W} height={SQ_H} />;
                       case Gate.RX:
-                        return <RXGlyph width={SQ_W + 6} height={SQ_H} />;
+                        return <RXGlyph width={SQ_W + 4} height={SQ_H} />;
                       case Gate.RY:
-                        return <RYGlyph width={SQ_W + 6} height={SQ_H} />;
+                        return <RYGlyph width={SQ_W + 4} height={SQ_H} />;
                       case Gate.RZ:
-                        return <RZGlyph width={SQ_W + 12} height={SQ_H} />;
+                        return <RZGlyph width={SQ_W + 8} height={SQ_H} />;
                       case Gate.U:
                         return <UGlyph width={SQ_W} height={SQ_H} />;
                       default:
@@ -139,11 +184,10 @@ export function CircuitCanvas({
         </svg>
       </div>
 
-      {/* Gate controls */}
-      <div className="mt-4 space-y-2">
+      <div className="space-y-1.5 shrink-0 max-h-[120px] overflow-y-auto">
         {gates.length === 0 && (
-          <div className="text-sm text-gray-500">
-            {'Drag a gate from the toolbox to the wires, then click "Check Solution".'}
+          <div className="font-sans text-[11px] text-slate">
+            Drag a gate from the toolbox to the wires, then click &quot;Check Solution&quot;.
           </div>
         )}
 
@@ -153,14 +197,17 @@ export function CircuitCanvas({
           const orders = isTwoQubit ? allowedOrdersFor(g.type as Gate) : [];
 
           return (
-            <div key={g.id} className="flex flex-wrap items-center gap-3 border rounded-lg px-3 py-2">
-              <div className="text-sm font-medium w-32">{g.type}</div>
+            <div
+              key={g.id}
+              className="flex flex-wrap items-center gap-2 border border-grid rounded-gate px-2 py-1.5 bg-navy"
+            >
+              <div className="font-mono text-[10px] text-cyan w-24">{g.type}</div>
 
               {isTwoQubit && "order" in g && (
                 <>
-                  <label className="text-sm">Order:</label>
+                  <label className="font-sans text-[10px] text-slate">Order:</label>
                   <select
-                    className="border rounded px-1 py-0.5 text-sm"
+                    className={controlInputClass}
                     value={`${g.order[0]}-${g.order[1]}`}
                     onChange={(e) => {
                       const [a, b] = e.target.value
@@ -179,18 +226,18 @@ export function CircuitCanvas({
               )}
 
               {!isTwoQubit && "wire" in g && (
-                <div className="text-xs text-gray-500">wire: {g.wire}</div>
+                <div className="font-mono text-[9px] text-slate">wire: {g.wire}</div>
               )}
 
               {isParameterized && "wire" in g && (
                 <div className="flex items-center gap-1 flex-wrap">
-                  <label className="text-xs text-gray-500">θ (rad):</label>
+                  <label className="font-mono text-[9px] text-slate">θ:</label>
                   <input
                     type="range"
                     min={-2 * Math.PI}
                     max={2 * Math.PI}
                     step={0.01}
-                    className="w-32"
+                    className="w-24 accent-cyan"
                     value={g.theta ?? 0}
                     onChange={(e) => {
                       const val = parseFloat(e.target.value);
@@ -200,8 +247,8 @@ export function CircuitCanvas({
                   <input
                     type="number"
                     step="0.001"
-                    placeholder="radians"
-                    className="border rounded px-1 py-0.5 text-sm w-24"
+                    placeholder="rad"
+                    className={`${controlInputClass} w-16`}
                     value={g.theta !== undefined ? g.theta : ""}
                     onChange={(e) => {
                       const val = parseFloat(e.target.value);
@@ -211,7 +258,7 @@ export function CircuitCanvas({
                   <button
                     onClick={() => onSetGateTheta(g.id, -(g.theta ?? 0))}
                     title="Negate angle"
-                    className="px-1.5 py-0.5 text-xs border rounded hover:bg-gray-100 font-bold text-gray-600"
+                    className="px-1.5 py-0.5 font-mono text-[9px] border border-grid rounded-gate text-cyan-muted hover:bg-grid"
                   >
                     ±
                   </button>
@@ -219,7 +266,7 @@ export function CircuitCanvas({
                     <button
                       key={label}
                       onClick={() => onSetGateTheta(g.id, value)}
-                      className="px-1.5 py-0.5 text-xs border rounded hover:bg-gray-100"
+                      className="px-1.5 py-0.5 font-mono text-[9px] border border-grid rounded-gate text-cyan-muted hover:bg-grid"
                     >
                       {label}
                     </button>
@@ -227,8 +274,11 @@ export function CircuitCanvas({
                 </div>
               )}
 
-              <span className="text-xs text-gray-500">col {idx}</span>
-              <button onClick={() => onRemoveGate(g.id)} className="ml-auto text-red-600 text-sm">
+              <span className="font-mono text-[9px] text-slate-muted">col {idx}</span>
+              <button
+                onClick={() => onRemoveGate(g.id)}
+                className="ml-auto font-mono text-[9px] text-[#ef5350] hover:text-red-400"
+              >
                 Remove
               </button>
             </div>
@@ -236,17 +286,19 @@ export function CircuitCanvas({
         })}
       </div>
 
-      {/* Action buttons */}
-      <div className="mt-4 flex gap-2">
+      <div className="shrink-0 flex flex-col gap-2">
         <button
           onClick={onCheck}
           disabled={isChecking || gates.length === 0}
-          className="px-3 py-1.5 rounded-lg border disabled:opacity-60"
+          className="w-full py-1.5 bg-navy border border-cyan rounded-gate font-mono text-[10px] text-cyan-muted tracking-[0.05em] hover:bg-grid disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isChecking ? "Checking..." : "Check Solution"}
+          {isChecking ? "CHECKING..." : "CHECK SOLUTION"}
         </button>
-        <button onClick={onClear} className="px-3 py-1.5 rounded-lg border">
-          Clear Circuit
+        <button
+          onClick={onClear}
+          className="w-full py-1 bg-transparent border border-grid rounded-gate font-mono text-[10px] text-slate hover:border-cyan-muted hover:text-cyan-muted transition-colors"
+        >
+          CLEAR CIRCUIT
         </button>
       </div>
     </div>

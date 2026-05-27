@@ -13,6 +13,7 @@
  */
 
 import React from "react";
+import { colors, fonts } from "../design-tokens";
 
 interface BlochSphereProps {
   theta: number;
@@ -22,12 +23,12 @@ interface BlochSphereProps {
 // ---------------------------------------------------------------------------
 // Canvas constants
 // ---------------------------------------------------------------------------
-const SIZE = 300;
+const SIZE = 196;
 const CX   = SIZE / 2; // 150
 const CY   = SIZE / 2; // 150
-const R    = 90;        // sphere radius in SVG pixels
+const R    = 58;
 
-const DIST_LABEL = R + 14; // state labels: 14 px beyond sphere silhouette
+const DIST_LABEL = R + 10;
 
 // ---------------------------------------------------------------------------
 // 3D orthographic projection — azimuth +30°, elevation 30°
@@ -115,18 +116,15 @@ const EQUATOR  = makeCirclePaths("xy");
 const MERID_XZ = makeCirclePaths("xz");
 const MERID_YZ = makeCirclePaths("yz");
 
-// ---------------------------------------------------------------------------
-// Colour palette
-// ---------------------------------------------------------------------------
-const SPHERE_STROKE = "#6B7280";
-const CIRCLE_BACK   = "#D1D5DB";
-const CIRCLE_FRONT  = "#9CA3AF";
-const AXIS_STROKE   = "#D1D5DB";
-const LABEL_MAIN    = "#374151";
-const LABEL_AXIS    = "#9CA3AF";
-const ARROW_COLOR   = "#10B981";
-const DOT_COLOR     = "#10B981";
-const FONT = "ui-sans-serif, system-ui, -apple-system, sans-serif";
+const SPHERE_STROKE = colors.grid;
+const CIRCLE_BACK   = colors.grid;
+const CIRCLE_FRONT  = colors.grid;
+const AXIS_STROKE   = colors.grid;
+const LABEL_MAIN    = colors.slate;
+const LABEL_AXIS    = colors.slate;
+const ARROW_COLOR   = colors.cyan;
+const DOT_COLOR     = colors.cyan;
+const FONT = fonts.mono;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -166,7 +164,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+      <p className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase w-full text-left">
         Bloch Sphere
       </p>
 
@@ -197,27 +195,25 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         {/* ── 5. Labels ── */}
 
         {/* Z axis — +z label at north-pole tip, nudged right */}
-        <text x={ltZtip.x + 6} y={ltZtip.y - 2} fontSize={9} fontFamily={FONT} fontStyle="italic"
+        <text x={ltZtip.x + 6} y={ltZtip.y - 2} fontSize={8} fontFamily={FONT} fontStyle="italic"
               fill={LABEL_AXIS} textAnchor="start" dominantBaseline="auto">+z</text>
-        <text x={lbZpos.x} y={lbZpos.y - 3} fontSize={11} fontFamily={FONT} fontWeight={600}
+        <text x={lbZpos.x} y={lbZpos.y - 3} fontSize={9} fontFamily={FONT} fontWeight={700}
               fill={LABEL_MAIN} textAnchor="middle" dominantBaseline="auto">|0⟩</text>
-        <text x={lbZneg.x} y={lbZneg.y + 3} fontSize={11} fontFamily={FONT} fontWeight={600}
+        <text x={lbZneg.x} y={lbZneg.y + 3} fontSize={9} fontFamily={FONT} fontWeight={700}
               fill={LABEL_MAIN} textAnchor="middle" dominantBaseline="hanging">|1⟩</text>
 
-        {/* X axis — +x label at equatorial cross-section tip (lower-left), nudged below */}
-        <text x={ltXtip.x - 2} y={ltXtip.y + 10} fontSize={9} fontFamily={FONT} fontStyle="italic"
+        <text x={ltXtip.x - 2} y={ltXtip.y + 10} fontSize={8} fontFamily={FONT} fontStyle="italic"
               fill={LABEL_AXIS} textAnchor="middle" dominantBaseline="hanging">+x</text>
-        <text x={lbXpos.x - 4} y={lbXpos.y} fontSize={11} fontFamily={FONT} fontWeight={600}
+        <text x={lbXpos.x - 4} y={lbXpos.y} fontSize={9} fontFamily={FONT} fontWeight={700}
               fill={LABEL_MAIN} textAnchor="end" dominantBaseline="middle">|+⟩</text>
-        <text x={lbXneg.x + 4} y={lbXneg.y} fontSize={11} fontFamily={FONT} fontWeight={600}
+        <text x={lbXneg.x + 4} y={lbXneg.y} fontSize={9} fontFamily={FONT} fontWeight={700}
               fill={LABEL_MAIN} textAnchor="start" dominantBaseline="middle">|−⟩</text>
 
-        {/* Y axis — +y label at equatorial cross-section tip (right), nudged above */}
-        <text x={ltYtip.x + 4} y={ltYtip.y - 8} fontSize={9} fontFamily={FONT} fontStyle="italic"
+        <text x={ltYtip.x + 4} y={ltYtip.y - 8} fontSize={8} fontFamily={FONT} fontStyle="italic"
               fill={LABEL_AXIS} textAnchor="start" dominantBaseline="auto">+y</text>
-        <text x={lbYpos.x + 4} y={lbYpos.y} fontSize={11} fontFamily={FONT} fontWeight={600}
+        <text x={lbYpos.x + 4} y={lbYpos.y} fontSize={9} fontFamily={FONT} fontWeight={700}
               fill={LABEL_MAIN} textAnchor="start" dominantBaseline="middle">|i⟩</text>
-        <text x={lbYneg.x - 4} y={lbYneg.y} fontSize={11} fontFamily={FONT} fontWeight={600}
+        <text x={lbYneg.x - 4} y={lbYneg.y} fontSize={9} fontFamily={FONT} fontWeight={700}
               fill={LABEL_MAIN} textAnchor="end" dominantBaseline="middle">|−i⟩</text>
 
         {/* ── 6. State arrow ── */}
@@ -231,7 +227,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         <circle cx={tip.x} cy={tip.y} r={4} fill={DOT_COLOR} />
       </svg>
 
-      <p className="text-xs text-gray-400 font-mono">
+      <p className="font-mono text-[8px] text-slate">
         θ = {thetaDeg}° &nbsp; φ = {phiDeg}°
       </p>
     </div>

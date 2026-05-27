@@ -5,6 +5,9 @@ interface LevelCompleteModalProps {
   hasNextLevel: boolean;
 }
 
+const btnClass =
+  "w-full py-1.5 bg-navy border border-cyan rounded-gate font-mono text-[10px] text-cyan-muted tracking-[0.05em] hover:bg-grid transition-colors";
+
 export function LevelCompleteModal({
   isOpen,
   onRepeat,
@@ -15,38 +18,24 @@ export function LevelCompleteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-50" />
+      <div className="absolute inset-0 bg-[rgba(8,12,24,0.92)]" />
 
-      {/* Modal content */}
-      <div className="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+      <div className="relative bg-navy border border-cyan rounded-panel p-6 max-w-md w-full mx-4">
         <div className="text-center">
-          {/* Success icon */}
-          <div className="mb-4 text-6xl">🎉</div>
+          <h2 className="font-mono text-base text-cyan mb-2">LEVEL COMPLETE</h2>
 
-          {/* Title */}
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Level Completed!</h2>
-
-          {/* Message */}
-          <p className="text-gray-600 mb-6">
-            Congratulations! You&apos;ve successfully built the target circuit.
+          <p className="font-sans text-[11px] text-cyan-muted mb-6">
+            Target circuit verified. Proceed to the next level or repeat this one.
           </p>
 
-          {/* Buttons */}
-          <div className="flex gap-3 justify-center">
-            <button
-              onClick={onRepeat}
-              className="px-6 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50 transition"
-            >
-              Repeat Level
+          <div className="flex flex-col gap-2">
+            <button onClick={onRepeat} className={btnClass}>
+              REPEAT LEVEL
             </button>
 
             {hasNextLevel && (
-              <button
-                onClick={onNext}
-                className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition"
-              >
-                Next Level →
+              <button onClick={onNext} className={btnClass}>
+                NEXT LEVEL →
               </button>
             )}
           </div>

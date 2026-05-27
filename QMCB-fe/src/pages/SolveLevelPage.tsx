@@ -177,12 +177,8 @@ function SolveLevelContent({
     }
   };
 
-  const handleLevelSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    navigate("/level/" + e.target.value);
-  };
-
   return (
-    <div>
+    <div className="flex flex-1 min-h-0 w-full">
       <DndContext
         sensors={sensors}
         onDragStart={(e) => setActiveId(String(e.active.id))}
@@ -192,42 +188,24 @@ function SolveLevelContent({
           onDragEnd(e);
         }}
       >
-        <main className="mx-auto max-w-6xl px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left: Task + Toolbox + Circuit Canvas */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 text-sm">
-              <label htmlFor="level-select" className="text-gray-600 font-medium">
-                Level:
-              </label>
-              <select
-                id="level-select"
-                className="border rounded px-2 py-1 text-sm"
-                value={currentLevel.target_unitary}
-                onChange={handleLevelSelect}
-              >
-                {LEVEL_ORDER.map((level) => (
-                  <option key={level.target_unitary} value={level.target_unitary}>
-                    {level.target_unitary}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="flex flex-1 min-h-0 w-full">
+          {/* Center: Task + Circuit Canvas */}
+          <section className="flex-1 flex flex-col min-w-0 bg-space canvas-grid p-4 overflow-hidden gap-3">
             <TaskCard
               level={currentLevel}
               dynamicTruth={isSeedDrivenLevel ? randomUnitaryQuery.data?.truth_table : undefined}
               onNewUnitary={isSeedDrivenLevel ? handleNewUnitary : undefined}
             />
-            <Toolbox availableGates={unlockedGates} activeId={activeId} />
             {currentLevel.number_of_qubits === 1 && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 font-medium">Bloch preview from:</span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-sans text-[11px] text-slate">Bloch preview from:</span>
                 <button
                   type="button"
                   onClick={() => setInitialState(0)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                  className={`font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
                     initialState === 0
-                      ? "bg-amber-100 border-amber-400 text-amber-800"
-                      : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
+                      ? "bg-grid border-cyan text-cyan"
+                      : "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted"
                   }`}
                 >
                   {BASIS_0}
@@ -235,10 +213,10 @@ function SolveLevelContent({
                 <button
                   type="button"
                   onClick={() => setInitialState(1)}
-                  className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                  className={`font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
                     initialState === 1
-                      ? "bg-amber-100 border-amber-400 text-amber-800"
-                      : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
+                      ? "bg-grid border-cyan text-cyan"
+                      : "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted"
                   }`}
                 >
                   {BASIS_1}
@@ -257,17 +235,18 @@ function SolveLevelContent({
             />
           </section>
 
-          {/* Right: Bloch Sphere (top) + Output */}
-          <section className="space-y-6">
+          {/* Right: Toolbox + Bloch + Output */}
+          <aside className="w-[220px] shrink-0 bg-navy border-l border-grid p-3 overflow-y-auto flex flex-col gap-4">
+            <Toolbox availableGates={unlockedGates} activeId={activeId} />
             {currentLevel.number_of_qubits === 1 && (
               <div className="flex flex-col items-center gap-2">
                 <BlochSphere theta={blochState.theta} phi={blochState.phi} />
                 {showOrderTip && (
-                  <div className="relative max-w-sm text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-relaxed">
+                  <div className="relative w-full text-[10px] text-cyan-muted bg-navy-light border border-grid rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                     <button
                       type="button"
                       onClick={() => setShowOrderTip(false)}
-                      className="absolute top-1 right-1.5 text-amber-600 hover:text-amber-900 leading-none"
+                      className="absolute top-0.5 right-1 text-slate hover:text-cyan leading-none"
                       aria-label="Dismiss tip"
                     >
                       ×
@@ -284,8 +263,8 @@ function SolveLevelContent({
               isCorrect={allCorrect}
               error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
             />
-          </section>
-        </main>
+          </aside>
+        </div>
 
         <DragOverlay>
           {activeId === "tool-x" && <XGlyph width={64} height={44} />}

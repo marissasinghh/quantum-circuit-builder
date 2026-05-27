@@ -1,18 +1,19 @@
 import React from "react";
 import type { ControlTargetOrder } from "../types/global";
+import { colors, fonts } from "../design-tokens";
 
-const WIRE_COLOR = "#9CA3AF";
+const WIRE_COLOR = colors.grid;
 
 /** Shared wire styling */
 const Wire = ({ x1, x2, y }: { x1: number; x2: number; y: number }) => (
-  <line x1={x1} y1={y} x2={x2} y2={y} stroke={WIRE_COLOR} strokeWidth={2} />
+  <line x1={x1} y1={y} x2={x2} y2={y} stroke={WIRE_COLOR} strokeWidth={1} />
 );
 
 /** A tiny plus sign for the CNOT target circle */
 const Plus = ({ cx, cy, r = 8 }: { cx: number; cy: number; r?: number }) => (
   <>
-    <line x1={cx - r} y1={cy} x2={cx + r} y2={cy} stroke="#111827" strokeWidth={2} />
-    <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} stroke="#111827" strokeWidth={2} />
+    <line x1={cx - r} y1={cy} x2={cx + r} y2={cy} stroke={colors.cyan} strokeWidth={1.5} />
+    <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} stroke={colors.cyan} strokeWidth={1.5} />
   </>
 );
 
@@ -40,11 +41,11 @@ export function CNOTGlyph({
       <Wire x1={pad} x2={width - pad} y={yTop} />
       <Wire x1={pad} x2={width - pad} y={yBot} />
 
-      <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke="#10B981" strokeWidth={3} />
+      <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke={colors.cyan} strokeWidth={2} />
 
-      <circle cx={cx} cy={controlY} r={6} fill="#10B981" />
-      <circle cx={cx} cy={targetY} r={10} fill="white" stroke="#10B981" strokeWidth={3} />
-      <Plus cx={cx} cy={targetY} r={6} />
+      <circle cx={cx} cy={controlY} r={5} fill={colors.cyan} />
+      <circle cx={cx} cy={targetY} r={9} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
+      <Plus cx={cx} cy={targetY} r={5} />
     </svg>
   );
 }
@@ -67,20 +68,16 @@ export function ControlledZGlyph({
   const controlY = order[0] === 0 ? yTop : yBot;
   const targetY = order[1] === 1 ? yBot : yTop;
 
-  // Box dimensions for the Z gate
   const boxW = 20;
   const boxH = 20;
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="Controlled-Z">
-      {/* Draw wires FIRST (bottom layer) */}
       <Wire x1={pad} x2={width - pad} y={yTop} />
       <Wire x1={pad} x2={width - pad} y={yBot} />
 
-      {/* Vertical connecting line (behind box) */}
-      <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke="#8B5CF6" strokeWidth={3} />
+      <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke={colors.cyan} strokeWidth={2} />
 
-      {/* Target: boxed Z - drawn AFTER wires so it covers them */}
       <rect
         x={cx - boxW / 2}
         y={targetY - boxH / 2}
@@ -88,25 +85,24 @@ export function ControlledZGlyph({
         height={boxH}
         rx={4}
         ry={4}
-        fill="white"
-        stroke="#8B5CF6"
-        strokeWidth={2.5}
+        fill={colors.navy}
+        stroke={colors.cyan}
+        strokeWidth={1.5}
       />
       <text
         x={cx}
         y={targetY + 1}
         dominantBaseline="middle"
         textAnchor="middle"
-        fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto"
-        fontSize={12}
-        fontWeight={600}
-        fill="#8B5CF6"
+        fontFamily={fonts.mono}
+        fontSize={10}
+        fontWeight={700}
+        fill={colors.cyanMuted}
       >
         Z
       </text>
 
-      {/* Control dot - drawn LAST (top layer) */}
-      <circle cx={cx} cy={controlY} r={6} fill="#8B5CF6" />
+      <circle cx={cx} cy={controlY} r={5} fill={colors.cyan} />
     </svg>
   );
 }
@@ -114,14 +110,15 @@ export function ControlledZGlyph({
 /** Single-qubit gate block (H, T, Rz, etc.) */
 function GateBlock({
   label,
-  width = 54,
-  height = 38,
+  width = 32,
+  height = 28,
 }: {
   label: string;
   width?: number;
   height?: number;
 }) {
-  const rx = 8;
+  const rx = 4;
+  const fontSize = width <= 36 ? 9 : 11;
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label={label}>
       <rect
@@ -131,18 +128,19 @@ function GateBlock({
         height={height - 2}
         rx={rx}
         ry={rx}
-        fill="white"
-        stroke="#111827"
-        strokeWidth={2}
+        fill={colors.navy}
+        stroke={colors.cyan}
+        strokeWidth={1}
       />
       <text
         x="50%"
         y="55%"
         dominantBaseline="middle"
         textAnchor="middle"
-        fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto"
-        fontSize={14}
-        fill="#111827"
+        fontFamily={fonts.mono}
+        fontSize={fontSize}
+        fontWeight={700}
+        fill={colors.cyanMuted}
       >
         {label}
       </text>
@@ -163,11 +161,11 @@ export function SGlyph(props: { width?: number; height?: number }) {
 }
 
 export function RXGlyph(props: { width?: number; height?: number }) {
-  return <GateBlock label="Rx(θ)" {...props} />;
+  return <GateBlock label="Rx" {...props} />;
 }
 
 export function RYGlyph(props: { width?: number; height?: number }) {
-  return <GateBlock label="Ry(θ)" {...props} />;
+  return <GateBlock label="Ry" {...props} />;
 }
 
 export function UGlyph(props: { width?: number; height?: number }) {
@@ -175,7 +173,7 @@ export function UGlyph(props: { width?: number; height?: number }) {
 }
 
 export function RZGlyph(props: { width?: number; height?: number }) {
-  return <GateBlock label="Rz(θ)" {...props} />;
+  return <GateBlock label="Rz" {...props} />;
 }
 
 export function XGlyph(props: { width?: number; height?: number }) {
@@ -190,19 +188,17 @@ export function XGlyph(props: { width?: number; height?: number }) {
  * glyph so the placed gate visually matches its siblings.
  */
 export function SqrtXGlyph({
-  width = 54,
-  height = 38,
+  width = 32,
+  height = 28,
 }: {
   width?: number;
   height?: number;
 }) {
-  const rx = 8;
+  const rx = 4;
+  const fontSize = width <= 36 ? 9 : 11;
 
-  // X letter centered horizontally in the box.
   const xCenterX = width * 0.5;
 
-  // √ shape — overline width matches the rendered width of "X" at fontSize=14
-  // (≈ 18% of a 54px box). The hook + diagonal sit immediately to the left.
   const overlineY = height * 0.24;
   const dipStartX = width * 0.22;
   const dipStartY = height * 0.61;
@@ -220,15 +216,15 @@ export function SqrtXGlyph({
         height={height - 2}
         rx={rx}
         ry={rx}
-        fill="white"
-        stroke="#111827"
-        strokeWidth={2}
+        fill={colors.navy}
+        stroke={colors.cyan}
+        strokeWidth={1}
       />
       <polyline
         points={`${dipStartX},${dipStartY} ${dipBotX},${dipBotY} ${upStrokeTopX},${overlineY} ${overlineEndX},${overlineY}`}
         fill="none"
-        stroke="#111827"
-        strokeWidth={1.35}
+        stroke={colors.cyan}
+        strokeWidth={1.2}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
@@ -237,9 +233,10 @@ export function SqrtXGlyph({
         y="62%"
         dominantBaseline="middle"
         textAnchor="middle"
-        fontFamily="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto"
-        fontSize={14}
-        fill="#111827"
+        fontFamily={fonts.mono}
+        fontSize={fontSize}
+        fontWeight={700}
+        fill={colors.cyanMuted}
       >
         X
       </text>

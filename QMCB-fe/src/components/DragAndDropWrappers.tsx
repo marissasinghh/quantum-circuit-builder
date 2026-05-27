@@ -33,7 +33,7 @@ export function DroppableStrip({ id, top, height }: { id: string; top: number; h
         right: 0,
         top,
         height,
-        outline: isOver ? "2px dashed #60a5fa" : "none",
+        outline: isOver ? "2px dashed #4fc3f7" : "none",
         outlineOffset: 2,
       }}
     />

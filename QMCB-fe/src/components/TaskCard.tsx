@@ -5,24 +5,27 @@
 import { useState } from "react";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO } from "../interfaces/truthTable";
+import { LEVEL_ORDER } from "../config/levels";
 
 interface TaskCardProps {
   level: LevelDefinition;
-  /**
-   * Dynamic truth table for Level 1.6 (random unitary). When provided,
-   * this takes precedence over level.expectedTruth.
-   */
   dynamicTruth?: TruthTableDTO;
-  /**
-   * When provided, a "Try a different unitary" button is rendered below
-   * the truth table. Intended for Level 1.6 only.
-   */
   onNewUnitary?: () => void;
+}
+
+function levelNumber(index: number): string {
+  if (index < 7) return `1.${index}`;
+  return `2.${index - 6}`;
 }
 
 export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
   const truth = dynamicTruth ?? level.expectedTruth;
   const [shownHint, setShownHint] = useState<1 | 2 | null>(null);
+
+  const levelIndex = LEVEL_ORDER.findIndex(
+    (l) => l.target_unitary === level.target_unitary
+  );
+  const levelLabel = levelIndex >= 0 ? levelNumber(levelIndex) : level.target_unitary;
 
   function toggleHint(n: 1 | 2) {
     setShownHint((prev) => (prev === n ? null : n));
@@ -30,27 +33,39 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
 
   const hintText = shownHint === 1 ? level.hint1 : shownHint === 2 ? level.hint2 : null;
 
-  return (
-    <div className="bg-white rounded-2xl shadow p-5">
-      <h2 className="text-2xl font-semibold mb-2">Task</h2>
-      <p className="text-sm">{level.description}</p>
+  const hintBtnBase =
+    "font-mono text-[9px] px-2 py-0.5 rounded-gate border transition-colors";
+  const hintBtnActive = "bg-grid border-cyan text-cyan";
+  const hintBtnIdle =
+    "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted";
 
-      <div className="mt-3 text-sm">
-        <div className="font-medium">Expected Output:</div>
+  return (
+    <div className="bg-navy border border-grid rounded-panel px-2.5 py-2 shrink-0">
+      <p className="font-mono text-[9px] tracking-[0.1em] text-cyan mb-1">
+        {`// LEVEL ${levelLabel}`}
+      </p>
+      <p className="font-sans text-[11px] text-cyan-muted leading-relaxed">
+        {level.description}
+      </p>
+
+      <div className="mt-2">
+        <div className="font-mono text-[9px] text-slate-muted uppercase tracking-wide mb-1">
+          Expected Output
+        </div>
         {truth ? (
           <>
-            <table className="mt-2 text-xs border">
+            <table className="w-full font-mono text-[9px] border-collapse">
               <thead>
-                <tr className="bg-gray-50">
-                  <th className="border px-2 py-1">Input</th>
-                  <th className="border px-2 py-1">Output</th>
+                <tr className="text-slate-muted border-b border-grid">
+                  <th className="text-left py-0.5 pr-2">In</th>
+                  <th className="text-left py-0.5">Out</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="text-cyan-muted">
                 {truth.input.map((inp, idx) => (
                   <tr key={inp}>
-                    <td className="border px-2 py-1">{inp}</td>
-                    <td className="border px-2 py-1">{truth.output[idx]}</td>
+                    <td className="py-0.5 pr-2">{inp}</td>
+                    <td className="py-0.5">{truth.output[idx]}</td>
                   </tr>
                 ))}
               </tbody>
@@ -58,51 +73,42 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
             {onNewUnitary && (
               <button
                 onClick={onNewUnitary}
-                className="mt-3 text-xs text-blue-600 underline hover:text-blue-800"
+                className="mt-2 font-mono text-[9px] text-cyan hover:text-cyan-muted underline"
               >
                 Try a different unitary
               </button>
             )}
           </>
         ) : (
-          <p className="mt-2 text-xs text-gray-500 italic">
+          <p className="font-sans text-[10px] text-slate italic">
             Parameterized gate — output depends on θ. The backend checks your unitary for any angle.
           </p>
         )}
       </div>
 
-      {/* ── Hints ─────────────────────────────────────────────────────────── */}
       {(level.hint1 || level.hint2) && (
-        <div className="mt-4 border-t pt-3">
+        <div className="mt-3 border-t border-grid pt-2">
           <div className="flex gap-2">
             {level.hint1 && (
               <button
                 onClick={() => toggleHint(1)}
-                className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                  shownHint === 1
-                    ? "bg-amber-100 border-amber-400 text-amber-800"
-                    : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
-                }`}
+                className={`${hintBtnBase} ${shownHint === 1 ? hintBtnActive : hintBtnIdle}`}
               >
-                💡 Hint 1
+                Hint 1
               </button>
             )}
             {level.hint2 && (
               <button
                 onClick={() => toggleHint(2)}
-                className={`text-xs px-3 py-1 rounded-full border transition-colors ${
-                  shownHint === 2
-                    ? "bg-amber-100 border-amber-400 text-amber-800"
-                    : "border-gray-300 text-gray-500 hover:border-amber-400 hover:text-amber-700"
-                }`}
+                className={`${hintBtnBase} ${shownHint === 2 ? hintBtnActive : hintBtnIdle}`}
               >
-                💡 Hint 2
+                Hint 2
               </button>
             )}
           </div>
 
           {hintText && (
-            <p className="mt-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-relaxed">
+            <p className="mt-2 font-sans text-[10px] text-cyan-muted bg-navy-light border border-grid rounded-panel px-2 py-1.5 leading-relaxed">
               {hintText}
             </p>
           )}

@@ -6,17 +6,34 @@ import { Link } from "react-router-dom";
 
 export function AppHeader() {
   return (
-    <header className="border-b bg-white">
-      <nav className="mx-auto max-w-6xl px-4 py-3 flex gap-6 text-sm font-medium items-center">
-        <Link to="/levels" className="text-gray-900 font-semibold">
-          Quantum Circuit Builder
+    <header className="bg-navy border-b border-grid h-10 shrink-0">
+      <nav className="px-4 py-2.5 flex items-center h-full">
+        <Link
+          to="/levels"
+          className="font-mono text-[13px] font-bold text-cyan tracking-[0.05em] hover:text-cyan-muted"
+        >
+          ⟨ψ| CNOT GAME |ψ⟩
         </Link>
-        <Link className="text-gray-500 hover:text-gray-900 ml-auto" to="/settings">
-          Settings
-        </Link>
-        <Link className="text-gray-500 hover:text-gray-900" to="/about">
-          About
-        </Link>
+        <div className="ml-auto flex items-center gap-4">
+          <Link
+            to="/levels"
+            className="font-sans text-[11px] text-slate hover:text-cyan transition-colors"
+          >
+            Levels
+          </Link>
+          <Link
+            to="/about"
+            className="font-sans text-[11px] text-slate hover:text-cyan transition-colors"
+          >
+            About
+          </Link>
+          <Link
+            to="/settings"
+            className="font-sans text-[11px] text-slate hover:text-cyan transition-colors"
+          >
+            Settings
+          </Link>
+        </div>
       </nav>
     </header>
   );

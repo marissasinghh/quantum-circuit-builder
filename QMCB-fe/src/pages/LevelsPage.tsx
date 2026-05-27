@@ -41,27 +41,27 @@ function LevelCard({
 }) {
   const isLocked = status === "locked";
 
+  let cardClass =
+    "rounded-panel border p-4 flex flex-col gap-2 transition select-none ";
+  if (isLocked) {
+    cardClass += "bg-navy border-grid text-slate cursor-not-allowed opacity-60";
+  } else if (status === "completed") {
+    cardClass += "bg-navy border-grid text-cyan-muted cursor-pointer hover:border-cyan-muted";
+  } else {
+    cardClass += "bg-navy border-grid text-cyan cursor-pointer hover:border-cyan";
+  }
+
   return (
-    <div
-      onClick={isLocked ? undefined : onClick}
-      className={[
-        "rounded-xl border p-5 flex flex-col gap-2 transition select-none",
-        isLocked
-          ? "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
-          : status === "completed"
-          ? "bg-green-50 border-green-200 text-gray-900 cursor-pointer hover:shadow-md"
-          : "bg-white border-gray-200 text-gray-900 cursor-pointer hover:shadow-md",
-      ].join(" ")}
-    >
-      <div className="flex items-center justify-between text-xs font-medium text-gray-400">
-        <span>Level {levelNum}</span>
-        {status === "completed" && <span className="text-green-600 text-base">✓</span>}
-        {status === "locked" && <span className="text-gray-300 text-base">🔒</span>}
+    <div onClick={isLocked ? undefined : onClick} className={cardClass}>
+      <div className="flex items-center justify-between font-mono text-[9px] text-slate">
+        <span>LEVEL {levelNum}</span>
+        {status === "completed" && <span className="text-cyan">✓</span>}
+        {status === "locked" && <span className="text-slate-muted">—</span>}
       </div>
 
-      <p className="text-lg font-semibold tracking-wide">{level.target_unitary}</p>
+      <p className="font-mono text-sm font-bold tracking-wide">{level.target_unitary}</p>
 
-      <span className="text-xs text-gray-400">
+      <span className="font-sans text-[10px] text-slate">
         {level.number_of_qubits === 1 ? "1-qubit" : "2-qubit"}
       </span>
     </div>
@@ -79,8 +79,10 @@ function TierSection({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold text-gray-700">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      <h2 className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase">
+        {title}
+      </h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {items.map(({ level, index, status }) => (
           <LevelCard
             key={level.target_unitary}
@@ -119,8 +121,14 @@ export default function LevelsPage() {
   const tier2 = allItems.filter((item) => item.level.number_of_qubits === 2);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8 space-y-10">
-      <h1 className="text-2xl font-bold text-gray-900">Choose a Level</h1>
+    <main className="flex-1 overflow-y-auto canvas-grid p-6 space-y-8">
+      <div>
+        <p className="font-mono text-[9px] tracking-[0.1em] text-cyan mb-1">// LEVELS</p>
+        <h1 className="font-mono text-base font-bold text-cyan">Choose a Level</h1>
+        <p className="font-sans text-[11px] text-cyan-muted mt-1">
+          Pick a level from the grid, or use the sidebar to jump straight in.
+        </p>
+      </div>
       <TierSection
         title="Tier 1 — Single Qubit"
         items={tier1}
