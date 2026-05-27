@@ -281,7 +281,7 @@ function BlochIllustration() {
           |i⟩
         </text>
         <text
-          x={93}
+          x={88}
           y={183}
           textAnchor="end"
           fontSize={13}
