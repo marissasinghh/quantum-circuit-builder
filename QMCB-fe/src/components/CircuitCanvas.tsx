@@ -205,7 +205,8 @@ export function CircuitCanvas({
         </div>
       </div>
 
-      <div className="space-y-1.5 shrink-0 max-h-[120px] overflow-y-auto">
+      <div className="shrink-0 flex flex-col gap-3 pb-5">
+      <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
         {gates.length === 0 && (
           <div className="font-sans text-[12px] text-slate">
             Drag a gate from the toolbox to the wires, then click &quot;Check Solution&quot;.
@@ -307,7 +308,7 @@ export function CircuitCanvas({
         })}
       </div>
 
-      <div className="shrink-0 flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         <button
           onClick={onCheck}
           disabled={isChecking || gates.length === 0}
@@ -321,6 +322,7 @@ export function CircuitCanvas({
         >
           CLEAR CIRCUIT
         </button>
+      </div>
       </div>
     </div>
   );

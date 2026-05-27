@@ -77,15 +77,6 @@ function projectOutward(
   return { x: CX + (dx / len) * dist2D, y: CY + (dy / len) * dist2D };
 }
 
-/** State vector tip on the 2D sphere silhouette — exactly radius R from center. */
-function projectStateTip(bx: number, by: number, bz: number): { x: number; y: number } {
-  const p = project(bx, by, bz);
-  const dx = p.x - CX;
-  const dy = p.y - CY;
-  const len = Math.hypot(dx, dy) || 1;
-  return { x: CX + (dx / len) * R, y: CY + (dy / len) * R };
-}
-
 // ---------------------------------------------------------------------------
 // Great circle path builder
 // ---------------------------------------------------------------------------
@@ -142,7 +133,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
   const bx = Math.sin(theta) * Math.cos(phi);
   const by = Math.sin(theta) * Math.sin(phi);
   const bz = Math.cos(theta);
-  const tip = projectStateTip(bx, by, bz);
+  const tip = project(bx, by, bz);
   const arrowAngleDeg = (Math.atan2(tip.y - CY, tip.x - CX) * 180) / Math.PI;
 
   // Axis endpoints — exactly at sphere surface so lines stop at the equatorial cross-sections
@@ -229,7 +220,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
           fill={ARROW_COLOR}
           transform={`translate(${tip.x},${tip.y}) rotate(${arrowAngleDeg - 90})`}
         />
-        <circle cx={tip.x} cy={tip.y} r={4.5} fill={DOT_COLOR} />
+        <circle cx={tip.x} cy={tip.y} r={4} fill={DOT_COLOR} />
       </svg>
 
       <p className="font-mono text-[10px] text-slate mt-0">
