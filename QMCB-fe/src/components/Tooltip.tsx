@@ -124,6 +124,7 @@ interface TooltipProps {
   children: ReactNode;
   bottom?: number;
   right?: number;
+  ariaLabel?: string;
 }
 
 interface PopupPosition {
@@ -155,7 +156,13 @@ function clampPopupPosition(
   return { top, left, width };
 }
 
-export function Tooltip({ id: idProp, children, bottom = 6, right = 8 }: TooltipProps) {
+export function Tooltip({
+  id: idProp,
+  children,
+  bottom = 6,
+  right = 8,
+  ariaLabel,
+}: TooltipProps) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const { openId, setOpenId } = useTooltipContext();
@@ -264,6 +271,7 @@ export function Tooltip({ id: idProp, children, bottom = 6, right = 8 }: Tooltip
               setOpenId(open ? null : id);
             }
           }}
+          ariaLabel={ariaLabel}
         />
       </span>
       {popup}

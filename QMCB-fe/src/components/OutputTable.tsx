@@ -2,9 +2,8 @@
  * Output Table: displays the circuit output truth table and validation results.
  */
 
-import { useCallback, useState } from "react";
 import type { TruthRow } from "../interfaces/truthTable";
-import { Tooltip, TooltipIcon, TooltipMath, useTooltip } from "./Tooltip";
+import { Tooltip, TooltipMath } from "./Tooltip";
 
 interface OutputTableProps {
   rows: TruthRow[] | null;
@@ -48,71 +47,19 @@ function ProbabilityCell({ probs }: { probs: readonly number[] | undefined }) {
 }
 
 function ExpectedPHeaderTooltip() {
-  const { openId, setOpenId } = useTooltip();
-  const open = openId === EXPECTED_P_TOOLTIP_ID;
-  const [hovered, setHovered] = useState(false);
-
-  const toggle = useCallback(
-    (event: React.MouseEvent) => {
-      event.stopPropagation();
-      setOpenId(open ? null : EXPECTED_P_TOOLTIP_ID);
-    },
-    [open, setOpenId]
-  );
-
   return (
-    <>
-      <span
-        data-tooltip-root
-        style={{
-          position: "absolute",
-          bottom: 4,
-          right: 6,
-        }}
-      >
-        <TooltipIcon
-          open={open}
-          hovered={hovered}
-          onClick={toggle}
-          onMouseDown={(e) => e.stopPropagation()}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              setOpenId(open ? null : EXPECTED_P_TOOLTIP_ID);
-            }
-          }}
-          ariaLabel="Measurement probability info"
-        />
-      </span>
-      {open && (
-        <div
-          data-tooltip-root
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            zIndex: 100,
-            width: 250,
-            whiteSpace: "normal",
-            background: "#0d1b30",
-            border: "1px solid #2563a8",
-            borderRadius: 8,
-            padding: "12px 14px",
-            fontSize: 12,
-            lineHeight: 1.6,
-            color: "#b0bec5",
-          }}
-        >
-          Measurement probabilities: the chance of observing each output state. Calculated as{" "}
-          <TooltipMath>P = |amplitude|²</TooltipMath>. A definite state like{" "}
-          <TooltipMath>|1⟩</TooltipMath> gives <TooltipMath>P = 1.000</TooltipMath>. A
-          superposition splits probability across states. Your trial probabilities must match
-          expected for the level to pass.
-        </div>
-      )}
-    </>
+    <Tooltip
+      id={EXPECTED_P_TOOLTIP_ID}
+      bottom={4}
+      right={6}
+      ariaLabel="Measurement probability info"
+    >
+      Measurement probabilities: the chance of observing each output state. Calculated as{" "}
+      <TooltipMath>P = |amplitude|²</TooltipMath>. A definite state like{" "}
+      <TooltipMath>|1⟩</TooltipMath> gives <TooltipMath>P = 1.000</TooltipMath>. A superposition
+      splits probability across states. Your trial probabilities must match expected for the level
+      to pass.
+    </Tooltip>
   );
 }
 
