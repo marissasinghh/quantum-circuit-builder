@@ -11,31 +11,30 @@ export default {
         slate: { DEFAULT: "#546e7a", muted: "#37474f" },
         "wire-off": "#1e3a5f",
 
-        // Background layers (deepest → most elevated)
-        "bg-app": "#0d1526",
-        "bg-sidebar": "#0a1220",
-        "bg-panel": "#111d35",
-        "bg-elevated": "#162840",
-        "bg-hover": "#1c2e4a",
+        "bg-app": "#0f1a2e",
+        "bg-sidebar": "#0c1828",
+        "bg-panel": "#162340",
+        "bg-elevated": "#1a2e4a",
+        "bg-hover": "#1f3455",
 
-        // 3-tier accent hierarchy
-        tier1: "rgba(89, 155, 195, 0.14)",
-        tier2: "#3d6880",
+        tier1: "rgba(89, 155, 195, 0.16)",
+        tier2: "#5a90b0",
         tier3: "#7dc4e0",
 
-        // Body text
-        "text-body": "#aecce0",
-        "text-muted": "#2e5268",
+        "text-body": "#c8dde8",
+        "text-muted": "#3a6070",
 
-        // Semantic
+        "bloch-label": "#8ab4c8",
+
         "match-bg": "rgba(40, 100, 70, 0.12)",
         "mismatch-bg": "rgba(150, 55, 55, 0.10)",
         "mismatch-text": "#a06868",
         "error-action": "#a05555",
       },
       fontFamily: {
-        mono: ["JetBrains Mono", "monospace"],
+        display: ["Exo 2", "sans-serif"],
         sans: ["Figtree", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
       },
       borderRadius: {
         gate: "4px",

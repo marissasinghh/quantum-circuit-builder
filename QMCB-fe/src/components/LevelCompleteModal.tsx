@@ -6,10 +6,10 @@ interface LevelCompleteModalProps {
 }
 
 const primaryBtnClass =
-  "w-full py-1.5 bg-tier3/5 border border-tier3/35 rounded-gate font-sans text-[11px] text-tier3 tracking-[0.05em] hover:bg-tier3/10 hover:border-tier3/60 transition-colors";
+  "w-full py-1.5 bg-tier3/5 border border-tier3/35 rounded-gate font-mono text-[11px] text-tier3 tracking-[0.05em] hover:bg-tier3/10 hover:border-tier3/60 transition-colors";
 
 const secondaryBtnClass =
-  "w-full py-1.5 bg-transparent border border-tier1 rounded-gate font-sans text-[11px] text-text-muted tracking-[0.05em] hover:border-tier2 hover:text-tier2 transition-colors";
+  "w-full py-1.5 bg-transparent border border-tier1 rounded-gate font-mono text-[11px] text-text-muted tracking-[0.05em] hover:border-tier2 hover:text-tier2 transition-colors";
 
 export function LevelCompleteModal({
   isOpen,

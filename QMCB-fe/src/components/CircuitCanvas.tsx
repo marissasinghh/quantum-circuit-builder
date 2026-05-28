@@ -99,7 +99,7 @@ export function CircuitCanvas({
                 className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1.5px]"
                 style={{
                   backgroundColor: WIRE_COLOR,
-                  boxShadow: "0 0 6px rgba(89, 155, 195, 0.28)",
+                  boxShadow: "0 0 6px rgba(89, 155, 195, 0.30)",
                 }}
               />
             </div>

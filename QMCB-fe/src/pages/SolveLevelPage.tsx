@@ -213,8 +213,8 @@ function SolveLevelContent({
           </section>
 
           {/* Right: Toolbox + Bloch + Output */}
-          <aside className="w-[220px] shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto flex flex-col gap-0">
-            <div className="rounded-md border border-tier1 p-3 mb-3">
+          <aside className="w-[242px] shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto overflow-x-hidden flex flex-col gap-0 min-w-0">
+            <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-hidden">
               <Toolbox availableGates={unlockedGates} activeId={activeId} />
             </div>
             {currentLevel.number_of_qubits === 1 && (
@@ -250,7 +250,7 @@ function SolveLevelContent({
               </>
             )}
             <div className="border-t border-tier1 my-3" />
-            <div className="rounded-md border border-tier1 p-3 mb-3">
+            <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-hidden">
               <OutputTable
                 rows={rows}
                 isCorrect={allCorrect}

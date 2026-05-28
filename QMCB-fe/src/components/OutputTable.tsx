@@ -12,7 +12,7 @@ interface OutputTableProps {
   showGlobalPhaseNote?: boolean;
 }
 
-const CELL_PADDING = "9px 16px";
+const GRID_COLS = "34px 60px 34px 40px 34px 20px";
 const EXPECTED_P_TOOLTIP_ID = "expected-p-probability";
 
 function splitAmplitudeTerms(value: string): string[] {
@@ -25,7 +25,7 @@ function AmplitudeCell({ value }: { value: string }) {
   return (
     <>
       {terms.map((term, i) => (
-        <span key={i} style={{ display: "block" }}>
+        <span key={i} className="block truncate">
           {term}
         </span>
       ))}
@@ -38,7 +38,7 @@ function ProbabilityCell({ probs }: { probs: readonly number[] | undefined }) {
   return (
     <>
       {probs.map((p, i) => (
-        <span key={i} style={{ display: "block" }}>
+        <span key={i} className="block">
           {p.toFixed(3)}
         </span>
       ))}
@@ -51,7 +51,7 @@ function ExpectedPHeaderTooltip() {
     <Tooltip
       id={EXPECTED_P_TOOLTIP_ID}
       bottom={4}
-      right={6}
+      right={0}
       ariaLabel="Measurement probability info"
     >
       Measurement probabilities: the chance of observing each output state. Calculated as{" "}
@@ -70,9 +70,9 @@ export function OutputTable({
   showGlobalPhaseNote = false,
 }: OutputTableProps) {
   return (
-    <div>
+    <div className="min-w-0 overflow-hidden">
       <div className="mb-2">
-        <h2 className="font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase">
+        <h2 className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase">
           CIRCUIT OUTPUT
         </h2>
       </div>
@@ -95,92 +95,61 @@ export function OutputTable({
 
       {rows && (
         <>
-          <div
-            style={{
-              display: "inline-block",
-              position: "relative",
-              paddingRight: 14,
-              paddingBottom: 20,
-            }}
-          >
-            <table
-              className="font-mono text-[11px] border-collapse"
-              style={{ tableLayout: "auto", whiteSpace: "nowrap" }}
+          <div className="relative min-w-0 pb-5">
+            <div
+              className="font-mono text-[10px] w-full min-w-0"
+              style={{ display: "grid" }}
             >
-              <thead>
-                <tr className="text-text-muted border-b border-tier1">
-                  <th className="text-left" style={{ padding: CELL_PADDING }}>
-                    Input
-                  </th>
-                  <th className="text-left" style={{ padding: CELL_PADDING }}>
-                    Trial
-                  </th>
-                  <th className="text-left" style={{ padding: CELL_PADDING }}>
-                    P (trial)
-                  </th>
-                  <th className="text-left" style={{ padding: CELL_PADDING }}>
-                    Expected
-                  </th>
-                  <th
-                    className="text-left"
-                    style={{ position: "relative", padding: CELL_PADDING }}
+              <div
+                className="text-text-muted border-b border-tier1"
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: GRID_COLS,
+                  columnGap: "2px",
+                }}
+              >
+                <span className="py-1 truncate">Input</span>
+                <span className="py-1 truncate">Trial</span>
+                <span className="py-1 truncate">P(t)</span>
+                <span className="py-1 truncate">Expected</span>
+                <span className="py-1 truncate relative pr-3">
+                  P(e)
+                  <ExpectedPHeaderTooltip />
+                </span>
+                <span className="py-1 truncate">Match</span>
+              </div>
+
+              {rows.map((r) => (
+                <div
+                  key={r.input}
+                  className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: GRID_COLS,
+                    columnGap: "2px",
+                  }}
+                >
+                  <span className="py-1 text-tier3 truncate">{r.input}</span>
+                  <span
+                    className={`py-1 truncate ${r.ok ? "text-tier3" : "text-mismatch-text"}`}
                   >
-                    P (exp.)
-                    <ExpectedPHeaderTooltip />
-                  </th>
-                  <th className="text-left" style={{ padding: CELL_PADDING }}>
-                    Match
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr
-                    key={r.input}
-                    className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}
-                  >
-                    <td
-                      className="font-mono text-tier3 text-left align-top"
-                      style={{ padding: CELL_PADDING }}
-                    >
-                      {r.input}
-                    </td>
-                    <td
-                      className={`font-mono text-left align-top ${
-                        r.ok ? "text-tier3" : "text-mismatch-text"
-                      }`}
-                      style={{ padding: CELL_PADDING }}
-                    >
-                      <AmplitudeCell value={r.trial} />
-                    </td>
-                    <td
-                      className="font-mono text-text-muted text-left align-top"
-                      style={{ padding: CELL_PADDING }}
-                    >
-                      <ProbabilityCell probs={r.trialProbabilities} />
-                    </td>
-                    <td
-                      className="font-mono text-tier3 text-left align-top"
-                      style={{ padding: CELL_PADDING }}
-                    >
-                      <AmplitudeCell value={r.target} />
-                    </td>
-                    <td
-                      className="font-mono text-text-muted text-left align-top"
-                      style={{ padding: CELL_PADDING }}
-                    >
-                      <ProbabilityCell probs={r.targetProbabilities} />
-                    </td>
-                    <td
-                      className={`text-left align-top ${r.ok ? "text-tier3" : "text-error-action"}`}
-                      style={{ padding: CELL_PADDING }}
-                    >
-                      {r.ok ? "✓" : "✗"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    <AmplitudeCell value={r.trial} />
+                  </span>
+                  <span className="py-1 text-text-muted">
+                    <ProbabilityCell probs={r.trialProbabilities} />
+                  </span>
+                  <span className="py-1 text-tier3 truncate">
+                    <AmplitudeCell value={r.target} />
+                  </span>
+                  <span className="py-1 text-text-muted">
+                    <ProbabilityCell probs={r.targetProbabilities} />
+                  </span>
+                  <span className={`py-1 ${r.ok ? "text-tier3" : "text-error-action"}`}>
+                    {r.ok ? "✓" : "✗"}
+                  </span>
+                </div>
+              ))}
+            </div>
 
             <Tooltip id="circuit-output" bottom={4} right={0}>
               Quantum gates are linear operations. This means if your circuit produces the right

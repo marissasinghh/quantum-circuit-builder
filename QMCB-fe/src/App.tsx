@@ -54,40 +54,24 @@ function LevelSidebar() {
   function renderTier(title: string, items: typeof tier1) {
     return (
       <div>
-        <div className="px-[14px] pt-2 pb-1 font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase">
+        <div className="pt-2 pb-1 font-mono text-[8px] tracking-[0.09em] text-text-muted uppercase whitespace-nowrap">
           {title}
         </div>
         {items.map(({ level, index, status }) => {
           const isLocked = status === "locked";
           const isActive = activeId === level.target_unitary;
-          const isCompleted = status === "completed";
-
-          let rowColor = "text-tier2";
-          let dotColor = "bg-tier2";
-          if (isCompleted) {
-            rowColor = "text-tier2";
-            dotColor = "bg-tier2";
-          }
-          if (isActive) {
-            rowColor = "text-tier3";
-            dotColor = "bg-tier3";
-          }
 
           return (
             <div
               key={level.target_unitary}
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
               className={[
-                "flex items-center gap-1.5 px-[14px] py-1.5 font-sans text-[12px] cursor-pointer select-none",
-                rowColor,
-                isLocked ? "cursor-not-allowed opacity-60" : "hover:bg-bg-hover",
-                isActive ? "bg-bg-elevated border-l-2 border-tier3" : "",
+                "py-1 font-mono text-[11px] cursor-pointer select-none truncate",
+                isActive ? "text-tier3 bg-bg-elevated border-l-2 border-tier3 pl-[10px]" : "text-text-muted pl-3",
+                isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover" : "",
               ].join(" ")}
             >
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
-              <span>
-                {levelNumber(index)} {level.target_unitary}
-              </span>
+              {levelNumber(index)} {level.target_unitary}
             </div>
           );
         })}
@@ -96,9 +80,9 @@ function LevelSidebar() {
   }
 
   return (
-    <aside className="w-[180px] shrink-0 bg-bg-sidebar border-r border-tier1 overflow-y-auto h-full">
-      {renderTier("Tier 1 — Single Qubit", tier1)}
-      {renderTier("Tier 2 — Two Qubit", tier2)}
+    <aside className="w-[142px] shrink-0 bg-bg-sidebar border-r border-tier1 overflow-y-auto h-full px-3">
+      {renderTier("TIER 1 — SINGLE QUBIT", tier1)}
+      {renderTier("TIER 2 — TWO QUBIT", tier2)}
     </aside>
   );
 }
@@ -119,7 +103,7 @@ function AppShell() {
             <Route
               path="/level/:id"
               element={
-                <div className="flex flex-1 min-h-0 w-full [&_section]:flex-[1.1] [&_section]:min-w-0 [&_aside]:flex-[0.9] [&_aside]:min-w-0 [&_aside]:!w-auto">
+                <div className="flex flex-1 min-h-0 w-full [&_section]:flex-1 [&_section]:min-w-0 [&_aside]:w-[242px] [&_aside]:shrink-0">
                   <SolveLevelPage />
                 </div>
               }

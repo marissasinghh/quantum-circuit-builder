@@ -23,10 +23,10 @@ interface BlochSphereProps {
 // ---------------------------------------------------------------------------
 // Canvas constants
 // ---------------------------------------------------------------------------
-const SIZE = 196;
-const CX   = SIZE / 2; // 150
-const CY   = SIZE / 2; // 150
-const R    = 58;
+const SIZE = 220;
+const CX   = SIZE / 2;
+const CY   = SIZE / 2;
+const R    = 65;
 
 const DIST_LABEL = R + 10;
 
@@ -116,12 +116,12 @@ const EQUATOR  = makeCirclePaths("xy");
 const MERID_XZ = makeCirclePaths("xz");
 const MERID_YZ = makeCirclePaths("yz");
 
-const SPHERE_STROKE = colors.grid;
-const CIRCLE_BACK   = colors.grid;
-const CIRCLE_FRONT  = colors.grid;
-const AXIS_STROKE   = colors.grid;
-const LABEL_MAIN    = colors.slate;
-const LABEL_AXIS    = colors.slate;
+const SPHERE_STROKE = colors.wireframe;
+const CIRCLE_BACK   = colors.wireframe;
+const CIRCLE_FRONT  = colors.wireframe;
+const AXIS_STROKE   = colors.wireframe;
+const LABEL_MAIN    = colors.blochLabel;
+const LABEL_AXIS    = colors.blochLabel;
 const ARROW_COLOR   = colors.cyan;
 const DOT_COLOR     = colors.cyan;
 const FONT = fonts.mono;
@@ -223,7 +223,7 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         <circle cx={tip.x} cy={tip.y} r={4} fill={DOT_COLOR} />
       </svg>
 
-      <p className="font-mono text-[10px] text-slate mt-0">
+      <p className="font-sans text-[10px] text-text-muted mt-0">
         θ = {thetaDeg}° &nbsp; φ = {phiDeg}°
       </p>
     </div>

@@ -200,14 +200,14 @@ function shouldShowGateTooltip(gate: Gate, completed: string[]): boolean {
 const blochToggleBtn = (active: boolean) =>
   `font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
     active
-      ? "bg-bg-elevated border-tier3 text-tier3"
-      : "border-tier1 text-tier2 hover:border-tier2 hover:text-tier3"
+      ? "bg-tier3/14 text-tier3 border-tier3/40"
+      : "text-text-muted border-tier1 hover:border-tier2"
   }`;
 
 /** Bloch sphere section header */
 export function BlochSphereHeader() {
   return (
-    <p className="font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase mb-2 w-full text-left">
+    <p className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-2 w-full text-left">
       BLOCH SPHERE
     </p>
   );
@@ -240,46 +240,33 @@ export function Toolbox({ availableGates }: ToolboxProps) {
   const { completedLevels } = useLevelProgress();
 
   return (
-    <div className="relative shrink-0">
-      <h2 className="font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase mb-2">
+    <div className="relative shrink-0 min-w-0">
+      <h2 className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-2">
         TOOLBOX
       </h2>
-      <div className="bg-bg-panel border border-tier1 rounded-md p-2">
-        <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto shrink-0">
-          {availableGates.map((gate) => {
-            const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
-            if (!config) return null;
+      <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto shrink-0 min-w-0">
+        {availableGates.map((gate) => {
+          const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
+          if (!config) return null;
 
-            const tooltipCfg = GATE_TOOLTIPS[gate];
+          const tooltipCfg = GATE_TOOLTIPS[gate];
 
-            return (
-              <div
-                key={gate}
-                className="relative flex items-center gap-2 bg-bg-elevated border border-tier1 rounded-[5px] px-2 py-1.5 hover:border-tier2 hover:scale-[1.02] transition-transform duration-100 min-w-0"
-              >
-                <DraggableTool id={config.toolId}>
-                  <div className="flex flex-col flex-1 min-w-0 cursor-grab active:cursor-grabbing pr-4 pointer-events-none">
-                    <span className="font-mono font-medium text-[13px] text-tier3 leading-tight">
-                      {config.label}
-                    </span>
-                    <span className="font-mono text-xs text-text-muted leading-tight mt-0.5">
-                      {config.description}
-                    </span>
-                  </div>
-                </DraggableTool>
-                <span
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-muted pointer-events-none select-none"
-                  aria-hidden
-                >
-                  ⠿
+          return (
+            <div
+              key={gate}
+              className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 cursor-grab active:cursor-grabbing min-w-0"
+            >
+              <DraggableTool id={config.toolId}>
+                <span className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none pr-4">
+                  {config.label}
                 </span>
-                {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
-                  <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
-                )}
-              </div>
-            );
-          })}
-        </div>
+              </DraggableTool>
+              {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
+                <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
+              )}
+            </div>
+          );
+        })}
       </div>
       <p className="mt-2 font-sans text-xs text-text-muted leading-relaxed">
         Drag a gate onto the wires. For 2-qubit gates, set the order after placement.

@@ -50,16 +50,16 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
 
   return (
     <div className="bg-bg-panel border border-tier1 rounded-panel px-2.5 py-2 shrink-0">
-      <p className="font-mono text-[11px] tracking-[0.1em] text-text-muted mb-1">
+      <p className="font-mono text-[9px] tracking-[0.1em] text-text-muted mb-1">
         {`// LEVEL ${levelLabel}`}
       </p>
       <MathText
         text={level.description ?? ""}
-        className="task-description font-sans text-sm text-text-body leading-relaxed"
+        className="task-description font-sans text-[13px] text-text-body leading-relaxed"
       />
 
       <div className="mt-2">
-        <div className="font-mono text-[10px] text-text-muted uppercase tracking-wide mb-1">
+        <div className="font-mono text-[8.5px] text-text-muted uppercase tracking-wide mb-1">
           EXPECTED OUTPUT
         </div>
         {truth ? (
@@ -98,7 +98,7 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
 
       {(level.hint1 || level.hint2) && (
         <div className="mt-3 border-t border-tier1 pt-2">
-          <div className="flex gap-2 items-start">
+          <div className="flex gap-2">
             {level.hint1 && (
               <button
                 onClick={handleHint1Click}
@@ -108,22 +108,19 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
               </button>
             )}
             {level.hint2 && (
-              <div className="flex flex-col items-start">
-                <button
-                  onClick={() => toggleHint(2)}
-                  disabled={!hint1Viewed}
-                  className={`${hintBtnBase} ${
-                    !hint1Viewed
-                      ? hint2Locked
-                      : shownHint === 2
-                        ? hintBtnActive
-                        : hintBtnIdle
-                  }`}
-                >
-                  Hint 2
-                </button>
-                <span className="text-xs text-text-muted mt-0.5">more revealing</span>
-              </div>
+              <button
+                onClick={() => toggleHint(2)}
+                disabled={!hint1Viewed}
+                className={`${hintBtnBase} ${
+                  !hint1Viewed
+                    ? hint2Locked
+                    : shownHint === 2
+                      ? hintBtnActive
+                      : hintBtnIdle
+                }`}
+              >
+                Hint 2
+              </button>
             )}
           </div>
 
