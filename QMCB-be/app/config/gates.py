@@ -46,17 +46,17 @@ class CirqGateMapper:
 
         elif gate == Gate.RX.value:
             if theta is None:
-                raise ValueError("theta is required for RX gate")
+                raise ValueError("Theta is required for RX gate")
             return cirq.rx(theta)(selected_qubits[0]) 
 
         elif gate == Gate.RY.value:
             if theta is None:
-                raise ValueError("theta is required for RY gate")
+                raise ValueError("Theta is required for RY gate")
             return cirq.ry(theta)(selected_qubits[0])
 
         elif gate == Gate.RZ.value:
             if theta is None:
-                raise ValueError("theta is required for RZ gate")
+                raise ValueError("Theta is required for RZ gate")
             # Use the phase gate convention [[1,0],[0,e^(iθ)]] so that
             # Rz(π/2) = S exactly, Rz(π/4) = T exactly, with no global phase offset.
             # cirq.rz() uses the symmetric convention (global phase e^(-iθ/2)) which

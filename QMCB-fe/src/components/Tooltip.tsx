@@ -31,6 +31,10 @@ function useTooltipContext() {
   return ctx;
 }
 
+export function useTooltip() {
+  return useTooltipContext();
+}
+
 export function TooltipProvider({ children }: { children: ReactNode }) {
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -66,6 +70,8 @@ export function TooltipMath({ children }: { children: ReactNode }) {
 interface TooltipProps {
   id?: string;
   children: ReactNode;
+  bottom?: number;
+  right?: number;
 }
 
 interface PopupPosition {
@@ -97,7 +103,7 @@ function clampPopupPosition(
   return { top, left, width };
 }
 
-export function Tooltip({ id: idProp, children }: TooltipProps) {
+export function Tooltip({ id: idProp, children, bottom = 6, right = 8 }: TooltipProps) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const { openId, setOpenId } = useTooltipContext();
@@ -190,8 +196,8 @@ export function Tooltip({ id: idProp, children }: TooltipProps) {
         data-tooltip-root
         style={{
           position: "absolute",
-          bottom: 6,
-          right: 8,
+          bottom,
+          right,
           zIndex: open ? 100 : 1,
         }}
       >
