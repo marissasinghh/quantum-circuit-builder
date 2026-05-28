@@ -9,7 +9,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import { fonts } from "../design-tokens";
+
+const TOOLTIP_MARGIN = 8;
+const TOOLTIP_GAP = 22;
+const TOOLTIP_MAX_WIDTH = 340;
 
 interface TooltipContextValue {
   openId: string | null;
@@ -63,33 +68,79 @@ interface TooltipProps {
   children: ReactNode;
 }
 
+interface PopupPosition {
+  top: number;
+  left: number;
+  width: number;
+}
+
+function clampPopupPosition(
+  triggerRect: DOMRect,
+  popupWidth: number,
+  popupHeight: number
+): PopupPosition {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const width = Math.min(TOOLTIP_MAX_WIDTH, popupWidth, vw - TOOLTIP_MARGIN * 2);
+
+  let left = triggerRect.right - width;
+  let top = triggerRect.top - popupHeight - TOOLTIP_GAP;
+
+  if (left < TOOLTIP_MARGIN) left = TOOLTIP_MARGIN;
+  if (left + width > vw - TOOLTIP_MARGIN) left = vw - TOOLTIP_MARGIN - width;
+
+  if (top < TOOLTIP_MARGIN) top = triggerRect.bottom + TOOLTIP_GAP;
+  if (top + popupHeight > vh - TOOLTIP_MARGIN) {
+    top = Math.max(TOOLTIP_MARGIN, vh - TOOLTIP_MARGIN - popupHeight);
+  }
+
+  return { top, left, width };
+}
+
 export function Tooltip({ id: idProp, children }: TooltipProps) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const { openId, setOpenId } = useTooltipContext();
   const open = openId === id;
+  const triggerRef = useRef<HTMLSpanElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
-  const [popupRight, setPopupRight] = useState(0);
+  const [popupPos, setPopupPos] = useState<PopupPosition | null>(null);
   const [hovered, setHovered] = useState(false);
+
+  const updatePosition = useCallback(() => {
+    const trigger = triggerRef.current;
+    const popup = popupRef.current;
+    if (!trigger || !popup) return;
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const width = Math.min(TOOLTIP_MAX_WIDTH, window.innerWidth - TOOLTIP_MARGIN * 2);
+    popup.style.width = `${width}px`;
+
+    const height = popup.offsetHeight;
+    setPopupPos(clampPopupPosition(triggerRect, width, height));
+  }, []);
 
   useLayoutEffect(() => {
     if (!open) {
-      setPopupRight(0);
+      setPopupPos(null);
       return;
     }
 
-    const rect = popupRef.current?.getBoundingClientRect();
-    if (!rect) return;
+    updatePosition();
+    const frame = requestAnimationFrame(updatePosition);
 
-    let adjust = 0;
-    if (rect.right > window.innerWidth - 8) {
-      adjust += rect.right - (window.innerWidth - 8);
+    function handleReposition() {
+      updatePosition();
     }
-    if (rect.left < 8) {
-      adjust -= 8 - rect.left;
-    }
-    setPopupRight(adjust);
-  }, [open, children]);
+
+    window.addEventListener("resize", handleReposition);
+    window.addEventListener("scroll", handleReposition, true);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
+    };
+  }, [open, children, updatePosition]);
 
   const toggle = useCallback(
     (event: React.MouseEvent) => {
@@ -101,66 +152,76 @@ export function Tooltip({ id: idProp, children }: TooltipProps) {
 
   const iconColor = open || hovered ? "#7dd3fc" : "#4a8ab5";
 
-  return (
-    <span
-      data-tooltip-root
-      style={{
-        position: "absolute",
-        bottom: 6,
-        right: 8,
-        zIndex: open ? 100 : 1,
-      }}
-    >
-      <span
-        role="button"
-        tabIndex={0}
-        aria-label="More info"
-        aria-expanded={open}
-        onClick={toggle}
-        onMouseDown={(e) => e.stopPropagation()}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setOpenId(open ? null : id);
-          }
-        }}
-        className="italic cursor-pointer select-none"
+  const popup =
+    open &&
+    createPortal(
+      <div
+        ref={popupRef}
+        data-tooltip-root
         style={{
-          fontFamily: "Georgia, serif",
+          position: "fixed",
+          top: popupPos?.top ?? -9999,
+          left: popupPos?.left ?? -9999,
+          width: popupPos?.width ?? TOOLTIP_MAX_WIDTH,
+          visibility: popupPos ? "visible" : "hidden",
+          maxWidth: TOOLTIP_MAX_WIDTH,
+          zIndex: 100,
+          background: "#0d1226",
+          border: "1px solid #1e3a5f",
+          borderRadius: 6,
+          padding: "10px 12px",
+          fontFamily: fonts.mono,
           fontSize: 13,
-          color: iconColor,
-          transition: "color 0.15s",
+          lineHeight: 1.6,
+          color: "#b0bec5",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+          whiteSpace: "normal",
         }}
       >
-        i
-      </span>
-      {open && (
-        <div
-          ref={popupRef}
-          data-tooltip-root
+        {children}
+      </div>,
+      document.body
+    );
+
+  return (
+    <>
+      <span
+        ref={triggerRef}
+        data-tooltip-root
+        style={{
+          position: "absolute",
+          bottom: 6,
+          right: 8,
+          zIndex: open ? 100 : 1,
+        }}
+      >
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label="More info"
+          aria-expanded={open}
+          onClick={toggle}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setOpenId(open ? null : id);
+            }
+          }}
+          className="italic cursor-pointer select-none"
           style={{
-            position: "absolute",
-            bottom: 28,
-            right: popupRight,
-            maxWidth: 280,
-            zIndex: 100,
-            background: "#0d1226",
-            border: "1px solid #1e3a5f",
-            borderRadius: 6,
-            padding: "10px 12px",
-            fontFamily: fonts.mono,
+            fontFamily: "Georgia, serif",
             fontSize: 13,
-            lineHeight: 1.6,
-            color: "#b0bec5",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
-            whiteSpace: "normal",
+            color: iconColor,
+            transition: "color 0.15s",
           }}
         >
-          {children}
-        </div>
-      )}
-    </span>
+          i
+        </span>
+      </span>
+      {popup}
+    </>
   );
 }
