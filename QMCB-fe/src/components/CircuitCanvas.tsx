@@ -7,6 +7,7 @@ import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, 
 import { DroppableStrip } from "./DragAndDropWrappers";
 import { allowedOrdersFor } from "../config/gates";
 import { colors, fonts } from "../design-tokens";
+import { Tooltip } from "./Tooltip";
 
 interface CircuitCanvasProps {
   gates: PlacedGate[];
@@ -105,19 +106,37 @@ export function CircuitCanvas({
             className="relative block z-10"
             style={{ minWidth: "100%" }}
           >
-            {wireYs.map((y, i) => (
-              <text
-                key={`label-${i}`}
-                x={LABEL_PAD - 4}
-                y={y + 4}
-                fontSize={13}
-                fontFamily={fonts.mono}
-                fill={WIRE_CYAN}
-                textAnchor="end"
-              >
-                {`|q${i}⟩`}
-              </text>
-            ))}
+            {wireYs.map((y, i) =>
+              i === 0 ? (
+                <foreignObject
+                  key={`label-${i}`}
+                  x={0}
+                  y={y - 10}
+                  width={LABEL_PAD + 50}
+                  height={22}
+                >
+                  <div
+                    className="flex items-center justify-end h-full"
+                    style={{ fontFamily: fonts.mono, fontSize: 13, color: WIRE_CYAN }}
+                  >
+                    {`|q${i}⟩`}
+                    <Tooltip text="A qubit is the quantum version of a classical bit. Unlike a bit which is always 0 or 1, a qubit can exist in a superposition of both until it is measured." />
+                  </div>
+                </foreignObject>
+              ) : (
+                <text
+                  key={`label-${i}`}
+                  x={LABEL_PAD - 4}
+                  y={y + 4}
+                  fontSize={13}
+                  fontFamily={fonts.mono}
+                  fill={WIRE_CYAN}
+                  textAnchor="end"
+                >
+                  {`|q${i}⟩`}
+                </text>
+              )
+            )}
 
             {gates.map((g, i) => {
             const xCenter = PAD_X + i * COL_W;

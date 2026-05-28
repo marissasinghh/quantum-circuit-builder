@@ -16,7 +16,7 @@ import { useRandomUnitary } from "../hooks/useRandomUnitary";
 import { useDragAndDrop } from "../hooks/useDragAndDrop";
 
 import { TaskCard } from "../components/TaskCard";
-import { Toolbox, BlochPreviewToggle } from "../components/Toolbox";
+import { Toolbox, BlochPreviewToggle, BlochSphereHeader } from "../components/Toolbox";
 import { CircuitCanvas } from "../components/CircuitCanvas";
 import { OutputTable } from "../components/OutputTable";
 import { LevelCompleteModal } from "../components/LevelCompleteModal";
@@ -213,9 +213,7 @@ function SolveLevelContent({
             <Toolbox availableGates={unlockedGates} activeId={activeId} />
             {currentLevel.number_of_qubits === 1 && (
               <div className="flex flex-col items-center gap-0 w-full">
-                <p className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase w-full text-left">
-                  Bloch Sphere
-                </p>
+                <BlochSphereHeader />
                 <BlochPreviewToggle
                   initialState={initialState}
                   onSelect0={() => setInitialState(0)}

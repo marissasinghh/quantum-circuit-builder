@@ -3,6 +3,7 @@
  */
 
 import type { TruthRow } from "../interfaces/truthTable";
+import { Tooltip } from "./Tooltip";
 
 interface OutputTableProps {
   rows: TruthRow[] | null;
@@ -32,8 +33,9 @@ export function OutputTable({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase">
+        <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase flex items-center">
           Circuit Output
+          <Tooltip text="Quantum gates are linear operations. This means if your circuit produces the right output for every basis state — |0⟩ and |1⟩ — it is guaranteed to work correctly on any superposition too. That is why matching all rows here is enough to prove your circuit is correct." />
         </h2>
         {isCorrect && (
           <span className="font-mono text-[10px] text-cyan">Complete ✓</span>
