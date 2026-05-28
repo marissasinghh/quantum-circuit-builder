@@ -2,11 +2,12 @@
  * Toolbox: contains draggable gate components.
  */
 
+import type { ReactNode } from "react";
 import { Gate } from "../types/global";
 import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { DraggableTool } from "./DragAndDropWrappers";
-import { Tooltip } from "./Tooltip";
+import { Tooltip, TooltipMath } from "./Tooltip";
 
 interface ToolboxProps {
   availableGates: readonly Gate[];
@@ -91,40 +92,103 @@ const GATE_CONFIG = {
   },
 } as const;
 
-const GATE_TOOLTIPS: Partial<Record<Gate, { text: string; gatedBy?: Gate }>> = {
+const GATE_TOOLTIPS: Partial<Record<Gate, { content: ReactNode; gatedBy?: Gate }>> = {
   [Gate.SQRT_X]: {
-    text: "Rotates the state vector around the X axis by 90°. This is your main tool for moving a state off the Z axis and into superposition.",
+    content: (
+      <>
+        Rotates the state vector around the X axis by 90°. This is your main tool for moving a
+        state off the Z axis and into superposition.
+      </>
+    ),
     gatedBy: Gate.X,
   },
   [Gate.RZ]: {
-    text: "Rotates the state vector around the Z axis by angle θ. This changes the phase of your qubit without moving it off the Z axis if you start at a pole. Adjust θ using the slider after placing it on the wire.",
+    content: (
+      <>
+        Rotates the state vector around the Z axis by angle <TooltipMath>θ</TooltipMath>. This
+        changes the phase of your qubit without moving it off the Z axis if you start at a pole.
+        Adjust <TooltipMath>θ</TooltipMath> using the slider after placing it on the wire.
+      </>
+    ),
     gatedBy: Gate.S,
   },
   [Gate.H]: {
-    text: "Sends |0⟩ to |+⟩ and |1⟩ to |−⟩. It is a combination of rotations that lands you exactly on the equator of the Bloch sphere.",
+    content: (
+      <>
+        Sends <TooltipMath>|0⟩</TooltipMath> to <TooltipMath>|+⟩</TooltipMath> and{" "}
+        <TooltipMath>|1⟩</TooltipMath> to <TooltipMath>|−⟩</TooltipMath>. It is a combination of
+        rotations that lands you exactly on the equator of the Bloch sphere.
+      </>
+    ),
   },
   [Gate.S]: {
-    text: "Rotates the state vector around the Z axis by 90° (π/2). A quarter turn of phase — useful for fine-tuning where on the equator your state ends up.",
+    content: (
+      <>
+        Rotates the state vector around the Z axis by 90° (<TooltipMath>π/2</TooltipMath>). A
+        quarter turn of phase — useful for fine-tuning where on the equator your state ends up.
+      </>
+    ),
   },
   [Gate.T]: {
-    text: "Rotates the state vector around the Z axis by 45° (π/4). Half of what the S gate does — handy for precision phase adjustments.",
+    content: (
+      <>
+        Rotates the state vector around the Z axis by 45° (<TooltipMath>π/4</TooltipMath>). Half of
+        what the S gate does — handy for precision phase adjustments.
+      </>
+    ),
   },
   [Gate.RX]: {
-    text: "Rotates the state vector around the X axis by angle θ. Adjust θ using the slider after placing it on the wire.",
+    content: (
+      <>
+        Rotates the state vector around the X axis by angle <TooltipMath>θ</TooltipMath>. Adjust{" "}
+        <TooltipMath>θ</TooltipMath> using the slider after placing it on the wire.
+      </>
+    ),
   },
   [Gate.RY]: {
-    text: "Rotates the state vector around the Y axis by angle θ. Adjust θ using the slider after placing it on the wire.",
+    content: (
+      <>
+        Rotates the state vector around the Y axis by angle <TooltipMath>θ</TooltipMath>. Adjust{" "}
+        <TooltipMath>θ</TooltipMath> using the slider after placing it on the wire.
+      </>
+    ),
   },
   [Gate.CNOT]: {
-    text: "A two-qubit gate. If the control qubit is |1⟩, it flips the target qubit. The Bloch sphere only visualizes single-qubit states, so watch the truth table for this one.",
+    content: (
+      <>
+        A two-qubit gate. If the control qubit is <TooltipMath>|1⟩</TooltipMath>, it flips the
+        target qubit. The Bloch sphere only visualizes single-qubit states, so watch the truth
+        table for this one.
+      </>
+    ),
   },
   [Gate.CONTROLLED_Z]: {
-    text: "A two-qubit gate. Applies a phase flip to the target qubit when both qubits are |1⟩. Check the truth table to see its effect.",
+    content: (
+      <>
+        A two-qubit gate. Applies a phase flip to the target qubit when both qubits are{" "}
+        <TooltipMath>|1⟩</TooltipMath>. Check the truth table to see its effect.
+      </>
+    ),
   },
   [Gate.SWAP]: {
-    text: "Exchanges the states of two qubits. Whatever qubit 0 was holding, qubit 1 now has, and vice versa.",
+    content: (
+      <>
+        Exchanges the states of two qubits. Whatever qubit 0 was holding, qubit 1 now has, and vice
+        versa.
+      </>
+    ),
   },
 };
+
+export const BLOCH_SPHERE_TOOLTIP = (
+  <>
+    Every possible state of a single qubit lives somewhere on this sphere. The north pole is{" "}
+    <TooltipMath>|0⟩</TooltipMath>, the south pole is <TooltipMath>|1⟩</TooltipMath>, and the
+    equator is where superpositions live — <TooltipMath>|+⟩</TooltipMath>,{" "}
+    <TooltipMath>|−⟩</TooltipMath>, <TooltipMath>|i⟩</TooltipMath>, and{" "}
+    <TooltipMath>|−i⟩</TooltipMath>. When you place gates, watch the state vector move.
+  </>
+);
 
 function shouldShowGateTooltip(gate: Gate, completed: string[]): boolean {
   const cfg = GATE_TOOLTIPS[gate];
@@ -147,15 +211,11 @@ const blochToggleBtn = (active: boolean) =>
       : "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted"
   }`;
 
-const BLOCH_SPHERE_TOOLTIP =
-  "Every possible state of a single qubit lives somewhere on this sphere. The north pole is |0⟩, the south pole is |1⟩, and the equator is where superpositions live — |+⟩, |−⟩, |i⟩, and |−i⟩. When you place gates, watch the state vector move.";
-
-/** Bloch sphere section header with info tooltip */
+/** Bloch sphere section header */
 export function BlochSphereHeader() {
   return (
-    <p className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase w-full text-left flex items-center">
+    <p className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase w-full text-left">
       Bloch Sphere
-      <Tooltip text={BLOCH_SPHERE_TOOLTIP} />
     </p>
   );
 }
@@ -187,7 +247,7 @@ export function Toolbox({ availableGates }: ToolboxProps) {
   const { completedLevels } = useLevelProgress();
 
   return (
-    <div className="shrink-0">
+    <div className="relative shrink-0">
       <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase mb-2">
         Toolbox
       </h2>
@@ -202,7 +262,7 @@ export function Toolbox({ availableGates }: ToolboxProps) {
           return (
             <div
               key={gate}
-              className="flex items-center gap-1 bg-[#0a1628] border border-grid rounded-[5px] px-2 py-2 hover:border-cyan transition-colors min-w-0"
+              className="relative flex items-center gap-1 bg-[#0a1628] border border-grid rounded-[5px] pl-2 pr-5 pb-5 pt-2 hover:border-cyan transition-colors min-w-0"
             >
               <DraggableTool id={config.toolId}>
                 <div className="flex items-center gap-2 flex-1 min-w-0 cursor-grab">
@@ -217,7 +277,7 @@ export function Toolbox({ availableGates }: ToolboxProps) {
                 </div>
               </DraggableTool>
               {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
-                <Tooltip text={tooltipCfg.text} />
+                <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
               )}
             </div>
           );

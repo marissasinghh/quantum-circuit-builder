@@ -16,7 +16,8 @@ import { useRandomUnitary } from "../hooks/useRandomUnitary";
 import { useDragAndDrop } from "../hooks/useDragAndDrop";
 
 import { TaskCard } from "../components/TaskCard";
-import { Toolbox, BlochPreviewToggle, BlochSphereHeader } from "../components/Toolbox";
+import { Toolbox, BlochPreviewToggle, BlochSphereHeader, BLOCH_SPHERE_TOOLTIP } from "../components/Toolbox";
+import { Tooltip, TooltipProvider } from "../components/Tooltip";
 import { CircuitCanvas } from "../components/CircuitCanvas";
 import { OutputTable } from "../components/OutputTable";
 import { LevelCompleteModal } from "../components/LevelCompleteModal";
@@ -178,6 +179,7 @@ function SolveLevelContent({
   };
 
   return (
+    <TooltipProvider>
     <div className="flex flex-1 min-h-0 w-full">
       <DndContext
         sensors={sensors}
@@ -212,7 +214,7 @@ function SolveLevelContent({
           <aside className="w-[220px] shrink-0 bg-navy border-l border-grid p-3 overflow-y-auto flex flex-col gap-4">
             <Toolbox availableGates={unlockedGates} activeId={activeId} />
             {currentLevel.number_of_qubits === 1 && (
-              <div className="flex flex-col items-center gap-0 w-full">
+              <div className="relative flex flex-col items-center gap-0 w-full">
                 <BlochSphereHeader />
                 <BlochPreviewToggle
                   initialState={initialState}
@@ -235,6 +237,7 @@ function SolveLevelContent({
                     </p>
                   </div>
                 )}
+                <Tooltip id="bloch-sphere">{BLOCH_SPHERE_TOOLTIP}</Tooltip>
               </div>
             )}
             <OutputTable
@@ -267,5 +270,6 @@ function SolveLevelContent({
         hasNextLevel={getNextLevel(currentLevel) !== null}
       />
     </div>
+    </TooltipProvider>
   );
 }

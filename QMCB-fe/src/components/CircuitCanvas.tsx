@@ -70,7 +70,12 @@ export function CircuitCanvas({
 
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
-      <div className="relative flex-1 min-h-[180px] overflow-x-auto overflow-y-hidden rounded-panel">
+      <div className="relative flex-1 min-h-[180px] min-w-0 rounded-panel">
+        <Tooltip id="circuit-canvas">
+          A qubit is the quantum version of a classical bit. Unlike a bit which is always 0 or 1, a
+          qubit can exist in a superposition of both until it is measured.
+        </Tooltip>
+        <div className="absolute inset-0 overflow-x-auto overflow-y-hidden rounded-panel">
         <div
           className="relative w-full h-full"
           style={{ minWidth: CANVAS_W, height: CANVAS_H }}
@@ -106,37 +111,19 @@ export function CircuitCanvas({
             className="relative block z-10"
             style={{ minWidth: "100%" }}
           >
-            {wireYs.map((y, i) =>
-              i === 0 ? (
-                <foreignObject
-                  key={`label-${i}`}
-                  x={0}
-                  y={y - 10}
-                  width={LABEL_PAD + 50}
-                  height={22}
-                >
-                  <div
-                    className="flex items-center justify-end h-full"
-                    style={{ fontFamily: fonts.mono, fontSize: 13, color: WIRE_CYAN }}
-                  >
-                    {`|q${i}⟩`}
-                    <Tooltip text="A qubit is the quantum version of a classical bit. Unlike a bit which is always 0 or 1, a qubit can exist in a superposition of both until it is measured." />
-                  </div>
-                </foreignObject>
-              ) : (
-                <text
-                  key={`label-${i}`}
-                  x={LABEL_PAD - 4}
-                  y={y + 4}
-                  fontSize={13}
-                  fontFamily={fonts.mono}
-                  fill={WIRE_CYAN}
-                  textAnchor="end"
-                >
-                  {`|q${i}⟩`}
-                </text>
-              )
-            )}
+            {wireYs.map((y, i) => (
+              <text
+                key={`label-${i}`}
+                x={LABEL_PAD - 4}
+                y={y + 4}
+                fontSize={13}
+                fontFamily={fonts.mono}
+                fill={WIRE_CYAN}
+                textAnchor="end"
+              >
+                {`|q${i}⟩`}
+              </text>
+            ))}
 
             {gates.map((g, i) => {
             const xCenter = PAD_X + i * COL_W;
@@ -221,6 +208,7 @@ export function CircuitCanvas({
             return null;
           })}
           </svg>
+        </div>
         </div>
       </div>
 

@@ -3,7 +3,7 @@
  */
 
 import type { TruthRow } from "../interfaces/truthTable";
-import { Tooltip } from "./Tooltip";
+import { Tooltip, TooltipMath } from "./Tooltip";
 
 interface OutputTableProps {
   rows: TruthRow[] | null;
@@ -31,11 +31,10 @@ export function OutputTable({
   const twoQubit = rows ? isTwoQubitRows(rows) : false;
 
   return (
-    <div>
+    <div className="relative">
       <div className="flex items-center justify-between mb-2">
-        <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase flex items-center">
+        <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase">
           Circuit Output
-          <Tooltip text="Quantum gates are linear operations. This means if your circuit produces the right output for every basis state — |0⟩ and |1⟩ — it is guaranteed to work correctly on any superposition too. That is why matching all rows here is enough to prove your circuit is correct." />
         </h2>
         {isCorrect && (
           <span className="font-mono text-[10px] text-cyan">Complete ✓</span>
@@ -114,6 +113,13 @@ export function OutputTable({
           )}
         </>
       )}
+
+      <Tooltip id="circuit-output">
+        Quantum gates are linear operations. This means if your circuit produces the right output
+        for every basis state — <TooltipMath>|0⟩</TooltipMath> and <TooltipMath>|1⟩</TooltipMath>{" "}
+        — it is guaranteed to work correctly on any superposition too. That is why matching all rows
+        here is enough to prove your circuit is correct.
+      </Tooltip>
     </div>
   );
 }

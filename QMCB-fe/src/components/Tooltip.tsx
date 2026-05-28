@@ -1,110 +1,164 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { fonts } from "../design-tokens";
 
-interface TooltipProps {
-  text: string;
-  className?: string;
+interface TooltipContextValue {
+  openId: string | null;
+  setOpenId: (id: string | null) => void;
 }
 
-export function Tooltip({ text, className }: TooltipProps) {
-  const [open, setOpen] = useState(false);
-  const [shiftX, setShiftX] = useState(0);
-  const wrapperRef = useRef<HTMLSpanElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+const TooltipContext = createContext<TooltipContextValue | null>(null);
+
+function useTooltipContext() {
+  const ctx = useContext(TooltipContext);
+  if (!ctx) {
+    throw new Error("Tooltip must be used within a TooltipProvider");
+  }
+  return ctx;
+}
+
+export function TooltipProvider({ children }: { children: ReactNode }) {
+  const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return;
-
     function handleMouseDown(event: MouseEvent) {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
+      const target = event.target as Node;
+      const inside = (target as Element).closest?.("[data-tooltip-root]");
+      if (!inside) setOpenId(null);
     }
 
     document.addEventListener("mousedown", handleMouseDown);
     return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [open]);
+  }, []);
+
+  const value = { openId, setOpenId };
+  return <TooltipContext.Provider value={value}>{children}</TooltipContext.Provider>;
+}
+
+export function TooltipMath({ children }: { children: ReactNode }) {
+  return (
+    <span
+      style={{
+        fontFamily: "Georgia, serif",
+        fontStyle: "italic",
+        color: "#7dd3fc",
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+interface TooltipProps {
+  id?: string;
+  children: ReactNode;
+}
+
+export function Tooltip({ id: idProp, children }: TooltipProps) {
+  const autoId = useId();
+  const id = idProp ?? autoId;
+  const { openId, setOpenId } = useTooltipContext();
+  const open = openId === id;
+  const popupRef = useRef<HTMLDivElement>(null);
+  const [popupRight, setPopupRight] = useState(0);
+  const [hovered, setHovered] = useState(false);
 
   useLayoutEffect(() => {
     if (!open) {
-      setShiftX(0);
+      setPopupRight(0);
       return;
     }
 
-    const rect = tooltipRef.current?.getBoundingClientRect();
+    const rect = popupRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const overflow = rect.right - (window.innerWidth - 8);
-    setShiftX(overflow > 0 ? -overflow : 0);
-  }, [open, text]);
+    let adjust = 0;
+    if (rect.right > window.innerWidth - 8) {
+      adjust += rect.right - (window.innerWidth - 8);
+    }
+    if (rect.left < 8) {
+      adjust -= 8 - rect.left;
+    }
+    setPopupRight(adjust);
+  }, [open, children]);
+
+  const toggle = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+      setOpenId(open ? null : id);
+    },
+    [id, open, setOpenId]
+  );
+
+  const iconColor = open || hovered ? "#7dd3fc" : "#4a8ab5";
 
   return (
     <span
-      ref={wrapperRef}
-      className={className}
+      data-tooltip-root
       style={{
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        marginLeft: 6,
+        position: "absolute",
+        bottom: 6,
+        right: 8,
+        zIndex: open ? 100 : 1,
       }}
     >
-      <button
-        type="button"
+      <span
+        role="button"
+        tabIndex={0}
         aria-label="More info"
         aria-expanded={open}
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={toggle}
+        onMouseDown={(e) => e.stopPropagation()}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOpenId(open ? null : id);
+          }
+        }}
+        className="italic cursor-pointer select-none"
         style={{
-          width: 16,
-          height: 16,
-          borderRadius: "50%",
-          background: "transparent",
-          border: "1px solid #546e7a",
-          color: "#546e7a",
-          fontFamily: "Space Mono, monospace",
-          fontSize: 9,
-          fontWeight: 700,
-          cursor: "pointer",
-          lineHeight: 1,
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 0,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "#4fc3f7";
-          e.currentTarget.style.color = "#4fc3f7";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "#546e7a";
-          e.currentTarget.style.color = "#546e7a";
+          fontFamily: "Georgia, serif",
+          fontSize: 13,
+          color: iconColor,
+          transition: "color 0.15s",
         }}
       >
         i
-      </button>
+      </span>
       {open && (
         <div
-          ref={tooltipRef}
+          ref={popupRef}
+          data-tooltip-root
           style={{
             position: "absolute",
-            bottom: "100%",
-            left: "50%",
-            transform: `translateX(calc(-50% + ${shiftX}px))`,
-            zIndex: 50,
+            bottom: 28,
+            right: popupRight,
+            maxWidth: 280,
+            zIndex: 100,
             background: "#0d1226",
             border: "1px solid #1e3a5f",
             borderRadius: 6,
             padding: "10px 12px",
-            maxWidth: 260,
-            fontFamily: "Inter, sans-serif",
-            fontSize: 12,
+            fontFamily: fonts.mono,
+            fontSize: 13,
             lineHeight: 1.6,
             color: "#b0bec5",
             boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
-            marginBottom: 6,
             whiteSpace: "normal",
           }}
         >
-          {text}
+          {children}
         </div>
       )}
     </span>
