@@ -22,6 +22,7 @@ function levelNumber(index: number): string {
 export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
   const truth = dynamicTruth ?? level.expectedTruth;
   const [shownHint, setShownHint] = useState<1 | 2 | null>(null);
+  const [hint1Viewed, setHint1Viewed] = useState(false);
 
   const levelIndex = LEVEL_ORDER.findIndex(
     (l) => l.target_unitary === level.target_unitary
@@ -29,41 +30,48 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
   const levelLabel = levelIndex >= 0 ? levelNumber(levelIndex) : level.target_unitary;
 
   function toggleHint(n: 1 | 2) {
+    if (n === 2 && !hint1Viewed) return;
     setShownHint((prev) => (prev === n ? null : n));
+  }
+
+  function handleHint1Click() {
+    setHint1Viewed(true);
+    toggleHint(1);
   }
 
   const hintText = shownHint === 1 ? level.hint1 : shownHint === 2 ? level.hint2 : null;
 
   const hintBtnBase =
     "font-mono text-[11px] px-2 py-0.5 rounded-gate border transition-colors";
-  const hintBtnActive = "bg-grid border-cyan text-cyan";
-  const hintBtnIdle =
-    "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted";
+  const hintBtnActive = "border-tier2 text-tier2";
+  const hintBtnIdle = "border-tier2 text-tier2 hover:bg-bg-hover";
+  const hint2Locked =
+    "border-tier1 text-text-muted opacity-50 cursor-not-allowed";
 
   return (
-    <div className="bg-navy border border-grid rounded-panel px-2.5 py-2 shrink-0">
-      <p className="font-mono text-[11px] tracking-[0.1em] text-cyan mb-1">
+    <div className="bg-bg-panel border border-tier1 rounded-panel px-2.5 py-2 shrink-0">
+      <p className="font-mono text-[11px] tracking-[0.1em] text-text-muted mb-1">
         {`// LEVEL ${levelLabel}`}
       </p>
       <MathText
         text={level.description ?? ""}
-        className="font-sans text-[13px] text-cyan-muted leading-relaxed"
+        className="task-description font-sans text-sm text-text-body leading-relaxed"
       />
 
       <div className="mt-2">
-        <div className="font-mono text-[10px] text-slate-muted uppercase tracking-wide mb-1">
-          Expected Output
+        <div className="font-mono text-[10px] text-text-muted uppercase tracking-wide mb-1">
+          EXPECTED OUTPUT
         </div>
         {truth ? (
           <>
             <table className="inline-table font-mono text-[11px] border-collapse [&_th]:text-left [&_td]:text-left">
               <thead>
-                <tr className="text-slate-muted border-b border-grid">
+                <tr className="text-text-muted border-b border-tier1">
                   <th className="py-0.5 pr-6 max-w-[60px]">In</th>
                   <th className="py-0.5">Out</th>
                 </tr>
               </thead>
-              <tbody className="text-cyan-muted">
+              <tbody className="text-tier2">
                 {truth.input.map((inp, idx) => (
                   <tr key={inp}>
                     <td className="py-0.5 pr-6 max-w-[60px]">{inp}</td>
@@ -75,42 +83,52 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
             {onNewUnitary && (
               <button
                 onClick={onNewUnitary}
-                className="mt-2 font-mono text-[11px] text-cyan hover:text-cyan-muted underline"
+                className="mt-2 font-mono text-[11px] text-tier3 hover:text-tier3/80 underline"
               >
                 Try a different unitary
               </button>
             )}
           </>
         ) : (
-          <p className="font-sans text-[12px] text-slate italic">
+          <p className="font-sans text-[12px] text-tier2 italic">
             Parameterized gate — output depends on θ. The backend checks your unitary for any angle.
           </p>
         )}
       </div>
 
       {(level.hint1 || level.hint2) && (
-        <div className="mt-3 border-t border-grid pt-2">
-          <div className="flex gap-2">
+        <div className="mt-3 border-t border-tier1 pt-2">
+          <div className="flex gap-2 items-start">
             {level.hint1 && (
               <button
-                onClick={() => toggleHint(1)}
+                onClick={handleHint1Click}
                 className={`${hintBtnBase} ${shownHint === 1 ? hintBtnActive : hintBtnIdle}`}
               >
                 Hint 1
               </button>
             )}
             {level.hint2 && (
-              <button
-                onClick={() => toggleHint(2)}
-                className={`${hintBtnBase} ${shownHint === 2 ? hintBtnActive : hintBtnIdle}`}
-              >
-                Hint 2
-              </button>
+              <div className="flex flex-col items-start">
+                <button
+                  onClick={() => toggleHint(2)}
+                  disabled={!hint1Viewed}
+                  className={`${hintBtnBase} ${
+                    !hint1Viewed
+                      ? hint2Locked
+                      : shownHint === 2
+                        ? hintBtnActive
+                        : hintBtnIdle
+                  }`}
+                >
+                  Hint 2
+                </button>
+                <span className="text-xs text-text-muted mt-0.5">more revealing</span>
+              </div>
             )}
           </div>
 
           {hintText && (
-            <p className="mt-2 font-sans text-[12px] text-cyan-muted bg-navy-light border border-grid rounded-panel px-2 py-1.5 leading-relaxed">
+            <p className="mt-2 font-sans text-[12px] text-text-body bg-bg-elevated border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed">
               {hintText}
             </p>
           )}

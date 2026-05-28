@@ -10,10 +10,32 @@ export default {
         cyan: { DEFAULT: "#4fc3f7", muted: "#80deea" },
         slate: { DEFAULT: "#546e7a", muted: "#37474f" },
         "wire-off": "#1e3a5f",
+
+        // Background layers (deepest → most elevated)
+        "bg-app": "#0d1526",
+        "bg-sidebar": "#0a1220",
+        "bg-panel": "#111d35",
+        "bg-elevated": "#162840",
+        "bg-hover": "#1c2e4a",
+
+        // 3-tier accent hierarchy
+        tier1: "rgba(89, 155, 195, 0.14)",
+        tier2: "#3d6880",
+        tier3: "#7dc4e0",
+
+        // Body text
+        "text-body": "#aecce0",
+        "text-muted": "#2e5268",
+
+        // Semantic
+        "match-bg": "rgba(40, 100, 70, 0.12)",
+        "mismatch-bg": "rgba(150, 55, 55, 0.10)",
+        "mismatch-text": "#a06868",
+        "error-action": "#a05555",
       },
       fontFamily: {
-        mono: ["Space Mono", "monospace"],
-        sans: ["Inter", "sans-serif"],
+        mono: ["JetBrains Mono", "monospace"],
+        sans: ["Figtree", "sans-serif"],
       },
       borderRadius: {
         gate: "4px",

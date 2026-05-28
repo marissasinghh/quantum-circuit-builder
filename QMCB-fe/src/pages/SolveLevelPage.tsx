@@ -150,10 +150,12 @@ function SolveLevelContent({
 
   React.useEffect(() => {
     if (allCorrect && rows && rows.length > 0) {
-      setShowCompletionModal(true);
       markLevelComplete(currentLevel);
+      const t = setTimeout(() => setShowCompletionModal(true), 1500);
+      return () => clearTimeout(t);
     }
-  }, [allCorrect, rows, markLevelComplete, currentLevel]);
+    setShowCompletionModal(false);
+  }, [allCorrect, rows, markLevelComplete, currentLevel, setShowCompletionModal]);
 
   const handleClear = () => {
     clearAll();
@@ -192,7 +194,7 @@ function SolveLevelContent({
       >
         <div className="flex flex-1 min-h-0 w-full">
           {/* Center: Task + Circuit Canvas */}
-          <section className="flex-1 flex flex-col min-w-0 bg-space canvas-grid p-4 overflow-hidden gap-3">
+          <section className="flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 overflow-hidden gap-3">
             <TaskCard
               level={currentLevel}
               dynamicTruth={isSeedDrivenLevel ? randomUnitaryQuery.data?.truth_table : undefined}
@@ -211,41 +213,51 @@ function SolveLevelContent({
           </section>
 
           {/* Right: Toolbox + Bloch + Output */}
-          <aside className="w-[220px] shrink-0 bg-navy border-l border-grid p-3 overflow-y-auto flex flex-col gap-4">
-            <Toolbox availableGates={unlockedGates} activeId={activeId} />
+          <aside className="w-[220px] shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto flex flex-col gap-0">
+            <div className="rounded-md border border-tier1 p-3 mb-3">
+              <Toolbox availableGates={unlockedGates} activeId={activeId} />
+            </div>
             {currentLevel.number_of_qubits === 1 && (
-              <div className="relative flex flex-col items-center gap-0 w-full">
-                <BlochSphereHeader />
-                <BlochPreviewToggle
-                  initialState={initialState}
-                  onSelect0={() => setInitialState(0)}
-                  onSelect1={() => setInitialState(1)}
-                />
-                <BlochSphere theta={blochState.theta} phi={blochState.phi} />
-                {showOrderTip && (
-                  <div className="relative w-full text-[10px] text-cyan-muted bg-navy-light border border-grid rounded-panel px-2 py-1.5 leading-relaxed font-sans">
-                    <button
-                      type="button"
-                      onClick={() => setShowOrderTip(false)}
-                      className="absolute top-0.5 right-1 text-slate hover:text-cyan leading-none"
-                      aria-label="Dismiss tip"
-                    >
-                      ×
-                    </button>
-                    <p className="pr-4">
-                      Gate order matters — Rz has nothing to rotate yet. Try placing sqrt(X) first.
-                    </p>
+              <>
+                <div className="border-t border-tier1 my-3" />
+                <div className="rounded-md border border-tier1 p-3 mb-3">
+                  <div className="relative flex flex-col items-center gap-0 w-full">
+                    <BlochSphereHeader />
+                    <BlochPreviewToggle
+                      initialState={initialState}
+                      onSelect0={() => setInitialState(0)}
+                      onSelect1={() => setInitialState(1)}
+                    />
+                    <BlochSphere theta={blochState.theta} phi={blochState.phi} />
+                    {showOrderTip && (
+                      <div className="relative w-full text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
+                        <button
+                          type="button"
+                          onClick={() => setShowOrderTip(false)}
+                          className="absolute top-0.5 right-1 text-tier2 hover:text-tier3 leading-none"
+                          aria-label="Dismiss tip"
+                        >
+                          ×
+                        </button>
+                        <p className="pr-4">
+                          Gate order matters — Rz has nothing to rotate yet. Try placing sqrt(X) first.
+                        </p>
+                      </div>
+                    )}
+                    <Tooltip id="bloch-sphere">{BLOCH_SPHERE_TOOLTIP}</Tooltip>
                   </div>
-                )}
-                <Tooltip id="bloch-sphere">{BLOCH_SPHERE_TOOLTIP}</Tooltip>
-              </div>
+                </div>
+              </>
             )}
-            <OutputTable
-              rows={rows}
-              isCorrect={allCorrect}
-              error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
-              showGlobalPhaseNote={currentLevel.target_unitary === Gate.H}
-            />
+            <div className="border-t border-tier1 my-3" />
+            <div className="rounded-md border border-tier1 p-3 mb-3">
+              <OutputTable
+                rows={rows}
+                isCorrect={allCorrect}
+                error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
+                showGlobalPhaseNote={currentLevel.target_unitary === Gate.H}
+              />
+            </div>
           </aside>
         </div>
 

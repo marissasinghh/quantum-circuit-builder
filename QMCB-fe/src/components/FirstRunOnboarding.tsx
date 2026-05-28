@@ -208,8 +208,8 @@ function BlochIllustration() {
           strokeDasharray="4,3"
         />
         {/* Z axis positive */}
-        <line x1={140} y1={140} x2={140} y2={52} stroke="#4fc3f7" strokeWidth={1.2} />
-        <polygon points="140,48 136,58 144,58" fill="#4fc3f7" />
+        <line x1={140} y1={140} x2={140} y2={52} stroke="#7dc4e0" strokeWidth={1.2} />
+        <polygon points="140,48 136,58 144,58" fill="#7dc4e0" />
 
         {/* Y axis negative (dashed) */}
         <line
@@ -222,8 +222,8 @@ function BlochIllustration() {
           strokeDasharray="4,3"
         />
         {/* Y axis positive */}
-        <line x1={140} y1={140} x2={228} y2={140} stroke="#4fc3f7" strokeWidth={1.2} />
-        <polygon points="232,140 222,136 222,144" fill="#4fc3f7" />
+        <line x1={140} y1={140} x2={228} y2={140} stroke="#7dc4e0" strokeWidth={1.2} />
+        <polygon points="232,140 222,136 222,144" fill="#7dc4e0" />
 
         {/* X axis negative (dashed) */}
         <line
@@ -236,11 +236,11 @@ function BlochIllustration() {
           strokeDasharray="4,3"
         />
         {/* X axis positive */}
-        <line x1={140} y1={140} x2={107} y2={159} stroke="#4fc3f7" strokeWidth={1.2} />
-        <polygon points="105,160 115.7,158.5 111.7,151.5" fill="#4fc3f7" />
+        <line x1={140} y1={140} x2={107} y2={159} stroke="#7dc4e0" strokeWidth={1.2} />
+        <polygon points="105,160 115.7,158.5 111.7,151.5" fill="#7dc4e0" />
 
         {/* State vector */}
-        <line x1={140} y1={140} x2={140} y2={55} stroke="#4fc3f7" strokeWidth={2.5} />
+        <line x1={140} y1={140} x2={140} y2={55} stroke="#7dc4e0" strokeWidth={2.5} />
         {/* North pole dot: red */}
         <circle cx={140} cy={55} r={5} fill="#e94560" />
 
@@ -253,7 +253,7 @@ function BlochIllustration() {
           y={16}
           textAnchor="middle"
           fontSize={13}
-          fill="#4fc3f7"
+          fill="#7dc4e0"
           fontFamily="monospace"
           fontWeight={700}
         >
@@ -269,7 +269,7 @@ function BlochIllustration() {
           y={144}
           textAnchor="start"
           fontSize={13}
-          fill="#4fc3f7"
+          fill="#7dc4e0"
           fontFamily="monospace"
           fontWeight={700}
         >
@@ -285,7 +285,7 @@ function BlochIllustration() {
           y={183}
           textAnchor="end"
           fontSize={13}
-          fill="#4fc3f7"
+          fill="#7dc4e0"
           fontFamily="monospace"
           fontWeight={700}
         >

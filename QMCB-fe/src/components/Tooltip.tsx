@@ -10,7 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { fonts } from "../design-tokens";
+import { colors, fonts } from "../design-tokens";
 
 const TOOLTIP_MARGIN = 8;
 const TOOLTIP_GAP = 22;
@@ -59,7 +59,7 @@ export function TooltipMath({ children }: { children: ReactNode }) {
       style={{
         fontFamily: "Georgia, serif",
         fontStyle: "italic",
-        color: "#7dd3fc",
+        color: colors.cyan,
       }}
     >
       {children}
@@ -111,7 +111,7 @@ export function TooltipIcon({
       onKeyDown={onKeyDown}
       style={{
         ...TOOLTIP_ICON_STYLE,
-        color: open || hovered ? "#7dd3fc" : "#4a8ab5",
+        color: open || hovered ? colors.cyan : colors.cyanMuted,
       }}
     >
       i
@@ -229,14 +229,14 @@ export function Tooltip({
           visibility: popupPos ? "visible" : "hidden",
           maxWidth: TOOLTIP_MAX_WIDTH,
           zIndex: 100,
-          background: "#0d1226",
-          border: "1px solid #1e3a5f",
+          background: colors.panel,
+          border: `1px solid ${colors.grid}`,
           borderRadius: 6,
           padding: "10px 12px",
           fontFamily: fonts.mono,
           fontSize: 13,
           lineHeight: 1.6,
-          color: "#b0bec5",
+          color: colors.body,
           boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
           whiteSpace: "normal",
         }}

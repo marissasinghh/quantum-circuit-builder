@@ -197,25 +197,18 @@ function shouldShowGateTooltip(gate: Gate, completed: string[]): boolean {
   return true;
 }
 
-function iconAbbrev(label: string): string {
-  if (label === "√X") return "√X";
-  if (label.startsWith("R")) return label.slice(0, 2);
-  if (label.includes("(")) return label.split("(")[0];
-  return label.length > 3 ? label.slice(0, 3) : label;
-}
-
 const blochToggleBtn = (active: boolean) =>
   `font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
     active
-      ? "bg-grid border-cyan text-cyan"
-      : "border-grid text-slate hover:border-cyan-muted hover:text-cyan-muted"
+      ? "bg-bg-elevated border-tier3 text-tier3"
+      : "border-tier1 text-tier2 hover:border-tier2 hover:text-tier3"
   }`;
 
 /** Bloch sphere section header */
 export function BlochSphereHeader() {
   return (
-    <p className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase w-full text-left">
-      Bloch Sphere
+    <p className="font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase mb-2 w-full text-left">
+      BLOCH SPHERE
     </p>
   );
 }
@@ -232,7 +225,7 @@ export function BlochPreviewToggle({
 }) {
   return (
     <div className="flex items-center gap-2 w-full mt-1.5">
-      <span className="font-sans text-[11px] text-slate shrink-0">Preview from:</span>
+      <span className="font-sans text-[11px] text-tier2 shrink-0">Preview from:</span>
       <button type="button" onClick={onSelect0} className={blochToggleBtn(initialState === 0)}>
         {BASIS_0}
       </button>
@@ -248,42 +241,47 @@ export function Toolbox({ availableGates }: ToolboxProps) {
 
   return (
     <div className="relative shrink-0">
-      <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase mb-2">
-        Toolbox
+      <h2 className="font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase mb-2">
+        TOOLBOX
       </h2>
-      <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto shrink-0">
-        {availableGates.map((gate) => {
-          const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
-          if (!config) return null;
+      <div className="bg-bg-panel border border-tier1 rounded-md p-2">
+        <div className="grid grid-cols-1 gap-2 max-h-[160px] overflow-y-auto shrink-0">
+          {availableGates.map((gate) => {
+            const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
+            if (!config) return null;
 
-          const abbrev = iconAbbrev(config.label);
-          const tooltipCfg = GATE_TOOLTIPS[gate];
+            const tooltipCfg = GATE_TOOLTIPS[gate];
 
-          return (
-            <div
-              key={gate}
-              className="relative flex items-center gap-1 bg-[#0a1628] border border-grid rounded-[5px] pl-2 pr-5 pb-5 pt-2 hover:border-cyan transition-colors min-w-0"
-            >
-              <DraggableTool id={config.toolId}>
-                <div className="flex items-center gap-2 flex-1 min-w-0 cursor-grab">
-                  <span className="w-9 h-9 shrink-0 bg-grid border border-cyan rounded-[5px] flex items-center justify-center pointer-events-none">
-                    <span className="font-mono text-[13px] font-bold text-cyan-muted">
-                      {abbrev}
+            return (
+              <div
+                key={gate}
+                className="relative flex items-center gap-2 bg-bg-elevated border border-tier1 rounded-[5px] px-2 py-1.5 hover:border-tier2 hover:scale-[1.02] transition-transform duration-100 min-w-0"
+              >
+                <DraggableTool id={config.toolId}>
+                  <div className="flex flex-col flex-1 min-w-0 cursor-grab active:cursor-grabbing pr-4 pointer-events-none">
+                    <span className="font-mono font-medium text-[13px] text-tier3 leading-tight">
+                      {config.label}
                     </span>
-                  </span>
-                  <span className="font-mono text-[13px] font-bold text-cyan leading-tight truncate min-w-0 pointer-events-none">
-                    {config.label}
-                  </span>
-                </div>
-              </DraggableTool>
-              {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
-                <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
-              )}
-            </div>
-          );
-        })}
+                    <span className="font-mono text-xs text-text-muted leading-tight mt-0.5">
+                      {config.description}
+                    </span>
+                  </div>
+                </DraggableTool>
+                <span
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-text-muted pointer-events-none select-none"
+                  aria-hidden
+                >
+                  ⠿
+                </span>
+                {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
+                  <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <p className="mt-2 font-sans text-[12px] text-slate leading-relaxed">
+      <p className="mt-2 font-sans text-xs text-text-muted leading-relaxed">
         Drag a gate onto the wires. For 2-qubit gates, set the order after placement.
       </p>
     </div>

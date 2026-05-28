@@ -54,7 +54,7 @@ function LevelSidebar() {
   function renderTier(title: string, items: typeof tier1) {
     return (
       <div>
-        <div className="px-[14px] pt-2 pb-1 font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase">
+        <div className="px-[14px] pt-2 pb-1 font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase">
           {title}
         </div>
         {items.map(({ level, index, status }) => {
@@ -62,15 +62,15 @@ function LevelSidebar() {
           const isActive = activeId === level.target_unitary;
           const isCompleted = status === "completed";
 
-          let rowColor = "text-slate";
-          let dotColor = "bg-slate";
+          let rowColor = "text-tier2";
+          let dotColor = "bg-tier2";
           if (isCompleted) {
-            rowColor = "text-cyan-muted";
-            dotColor = "bg-cyan-muted";
+            rowColor = "text-tier2";
+            dotColor = "bg-tier2";
           }
           if (isActive) {
-            rowColor = "text-cyan";
-            dotColor = "bg-cyan";
+            rowColor = "text-tier3";
+            dotColor = "bg-tier3";
           }
 
           return (
@@ -80,8 +80,8 @@ function LevelSidebar() {
               className={[
                 "flex items-center gap-1.5 px-[14px] py-1.5 font-sans text-[12px] cursor-pointer select-none",
                 rowColor,
-                isLocked ? "cursor-not-allowed opacity-60" : "hover:bg-navy-light",
-                isActive ? "bg-grid border-l-2 border-cyan" : "",
+                isLocked ? "cursor-not-allowed opacity-60" : "hover:bg-bg-hover",
+                isActive ? "bg-bg-elevated border-l-2 border-tier3" : "",
               ].join(" ")}
             >
               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
@@ -96,10 +96,40 @@ function LevelSidebar() {
   }
 
   return (
-    <aside className="w-[180px] shrink-0 bg-navy border-r border-grid overflow-y-auto h-full">
+    <aside className="w-[180px] shrink-0 bg-bg-sidebar border-r border-tier1 overflow-y-auto h-full">
       {renderTier("Tier 1 — Single Qubit", tier1)}
       {renderTier("Tier 2 — Two Qubit", tier2)}
     </aside>
+  );
+}
+
+function AppShell() {
+  const location = useLocation();
+  const showSidebar = location.pathname !== "/levels";
+
+  return (
+    <div className="h-screen flex flex-col bg-bg-app text-text-body">
+      <AppHeader />
+      <div className="flex flex-1 min-h-0">
+        {showSidebar && <LevelSidebar />}
+        <div className="flex flex-1 min-w-0 min-h-0 w-full flex-col">
+          <Routes>
+            <Route path="/" element={<Navigate to="/levels" replace />} />
+            <Route path="/levels" element={<LevelsPage />} />
+            <Route
+              path="/level/:id"
+              element={
+                <div className="flex flex-1 min-h-0 w-full [&_section]:flex-[1.1] [&_section]:min-w-0 [&_aside]:flex-[0.9] [&_aside]:min-w-0 [&_aside]:!w-auto">
+                  <SolveLevelPage />
+                </div>
+              }
+            />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+          </Routes>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -112,28 +142,7 @@ export default function App() {
 
   return (
     <LevelProgressProvider>
-      <div className="h-screen flex flex-col bg-space text-[#e8eaf6]">
-        <AppHeader />
-        <div className="flex flex-1 min-h-0">
-          <LevelSidebar />
-          <div className="flex flex-1 min-w-0 min-h-0 w-full flex-col">
-            <Routes>
-              <Route path="/" element={<Navigate to="/levels" replace />} />
-              <Route path="/levels" element={<LevelsPage />} />
-              <Route
-                path="/level/:id"
-                element={
-                  <div className="flex flex-1 min-h-0 w-full [&_section]:flex-[1.1] [&_section]:min-w-0 [&_aside]:flex-[0.9] [&_aside]:min-w-0 [&_aside]:!w-auto">
-                    <SolveLevelPage />
-                  </div>
-                }
-              />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
-          </div>
-        </div>
-      </div>
+      <AppShell />
     </LevelProgressProvider>
   );
 }

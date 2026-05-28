@@ -71,21 +71,24 @@ export function OutputTable({
 }: OutputTableProps) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="font-mono text-[10px] tracking-[0.12em] text-slate-muted uppercase">
-          Circuit Output
+      <div className="mb-2">
+        <h2 className="font-mono text-[10px] tracking-[0.12em] text-text-muted uppercase">
+          CIRCUIT OUTPUT
         </h2>
-        {isCorrect && (
-          <span className="font-mono text-[10px] text-cyan">Complete ✓</span>
-        )}
       </div>
 
+      {isCorrect && (
+        <div className="mb-3 bg-match-bg border border-tier1 rounded-md px-3 py-2 text-sm font-sans text-text-body">
+          All rows match — circuit verified ✓
+        </div>
+      )}
+
       {error && (
-        <div className="font-sans text-[12px] text-[#ef5350] mb-2">{error.message}</div>
+        <div className="font-sans text-[12px] text-error-action mb-2">{error.message}</div>
       )}
 
       {!rows && !error && (
-        <div className="font-sans text-[12px] text-slate">
+        <div className="font-sans text-[12px] text-tier2">
           Submit to see the truth tables.
         </div>
       )}
@@ -105,7 +108,7 @@ export function OutputTable({
               style={{ tableLayout: "auto", whiteSpace: "nowrap" }}
             >
               <thead>
-                <tr className="text-slate-muted border-b border-grid">
+                <tr className="text-text-muted border-b border-tier1">
                   <th className="text-left" style={{ padding: CELL_PADDING }}>
                     Input
                   </th>
@@ -113,7 +116,7 @@ export function OutputTable({
                     Trial
                   </th>
                   <th className="text-left" style={{ padding: CELL_PADDING }}>
-                    P
+                    P (trial)
                   </th>
                   <th className="text-left" style={{ padding: CELL_PADDING }}>
                     Expected
@@ -122,7 +125,7 @@ export function OutputTable({
                     className="text-left"
                     style={{ position: "relative", padding: CELL_PADDING }}
                   >
-                    P
+                    P (exp.)
                     <ExpectedPHeaderTooltip />
                   </th>
                   <th className="text-left" style={{ padding: CELL_PADDING }}>
@@ -134,34 +137,44 @@ export function OutputTable({
                 {rows.map((r) => (
                   <tr
                     key={r.input}
-                    className={
-                      r.ok
-                        ? "bg-cyan/10 text-cyan"
-                        : "bg-[rgba(233,69,96,0.08)] text-[#ef5350]"
-                    }
+                    className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}
                   >
-                    <td className="text-left align-top" style={{ padding: CELL_PADDING }}>
+                    <td
+                      className="font-mono text-tier3 text-left align-top"
+                      style={{ padding: CELL_PADDING }}
+                    >
                       {r.input}
                     </td>
                     <td
-                      className="text-cyan-muted text-left align-top"
+                      className={`font-mono text-left align-top ${
+                        r.ok ? "text-tier3" : "text-mismatch-text"
+                      }`}
                       style={{ padding: CELL_PADDING }}
                     >
                       <AmplitudeCell value={r.trial} />
                     </td>
-                    <td className="text-left align-top" style={{ padding: CELL_PADDING }}>
+                    <td
+                      className="font-mono text-text-muted text-left align-top"
+                      style={{ padding: CELL_PADDING }}
+                    >
                       <ProbabilityCell probs={r.trialProbabilities} />
                     </td>
                     <td
-                      className="text-cyan-muted text-left align-top"
+                      className="font-mono text-tier3 text-left align-top"
                       style={{ padding: CELL_PADDING }}
                     >
                       <AmplitudeCell value={r.target} />
                     </td>
-                    <td className="text-left align-top" style={{ padding: CELL_PADDING }}>
+                    <td
+                      className="font-mono text-text-muted text-left align-top"
+                      style={{ padding: CELL_PADDING }}
+                    >
                       <ProbabilityCell probs={r.targetProbabilities} />
                     </td>
-                    <td className="text-left align-top" style={{ padding: CELL_PADDING }}>
+                    <td
+                      className={`text-left align-top ${r.ok ? "text-tier3" : "text-error-action"}`}
+                      style={{ padding: CELL_PADDING }}
+                    >
                       {r.ok ? "✓" : "✗"}
                     </td>
                   </tr>
@@ -179,7 +192,7 @@ export function OutputTable({
           </div>
 
           {showGlobalPhaseNote && (
-            <p className="mt-2 font-sans text-[12px] text-cyan-muted bg-navy-light border border-grid rounded-panel px-2 py-1.5 leading-relaxed">
+            <p className="mt-2 font-sans text-[12px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed">
               Circuits that differ only by a global phase produce identical measurement
               probabilities. Trial and Expected outputs may show different complex amplitudes,
               but matching probability columns mean the circuits are physically equivalent.

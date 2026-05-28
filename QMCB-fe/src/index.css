@@ -9,9 +9,9 @@ body,
 }
 
 body {
-  background-color: #080c18;
-  color: #e8eaf6;
-  font-family: "Inter", sans-serif;
+  background-color: #0d1526;
+  font-family: "Figtree", sans-serif;
+  color: #aecce0;
 }
 
 * {
@@ -19,12 +19,17 @@ body {
 }
 
 ::selection {
-  background: rgba(79, 195, 247, 0.3);
+  background: rgba(89, 155, 195, 0.3);
 }
 
 .canvas-grid {
   background-image:
-    linear-gradient(rgba(79, 195, 247, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(79, 195, 247, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(89, 155, 195, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(89, 155, 195, 0.04) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+.task-description .katex {
+  font-family: "JetBrains Mono", monospace;
+  color: #7dc4e0;
 }
