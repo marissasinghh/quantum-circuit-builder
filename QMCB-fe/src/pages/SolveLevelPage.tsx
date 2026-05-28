@@ -243,6 +243,7 @@ function SolveLevelContent({
               rows={rows}
               isCorrect={allCorrect}
               error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
+              showGlobalPhaseNote={currentLevel.target_unitary === Gate.H}
             />
           </aside>
         </div>

@@ -15,6 +15,7 @@ export interface TruthRow {
   trial: string;
   target: string;
   ok: boolean;
-  probabilities?: readonly number[];
+  trialProbabilities?: readonly number[];
+  targetProbabilities?: readonly number[];
   amplitudes?: readonly (readonly [number, number])[];
 }

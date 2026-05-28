@@ -39,7 +39,8 @@ export function toTruthRows(res: SimulationResponseDTO): TruthRow[] {
     // the circuit matches up to global phase (all_match=true) even if the
     // Dirac-notation strings differ (e.g. H canonical Rz·SQRT_X·Rz).
     ok: res.all_match || t.output[i] === target.output[i],
-    probabilities: t.probabilities?.[i],
+    trialProbabilities: t.probabilities?.[i],
+    targetProbabilities: target.probabilities?.[i],
     amplitudes: t.amplitudes?.[i],
   }));
 }
