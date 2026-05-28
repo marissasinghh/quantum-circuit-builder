@@ -5,7 +5,7 @@ export default function AboutPage() {
     <main className="flex-1 overflow-y-auto canvas-grid p-6">
       <div className="max-w-[620px] mx-auto">
         <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
-          // about
+          {"// about"}
         </p>
         <h1 className="font-mono text-[28px] font-bold text-cyan tracking-[0.04em] leading-[1.2] mb-2">
           About

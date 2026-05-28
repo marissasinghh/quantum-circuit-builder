@@ -38,7 +38,7 @@ import { LEVEL_ORDER, getNextLevel } from "../config/levels";
 import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
-import { Gate, type PlacedGate } from "../types/global";
+import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
   return gates.length > 0 && gates.every((g) => g.type === Gate.RZ);
@@ -46,7 +46,7 @@ function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
 
 function rzThetaSignature(gates: PlacedGate[]): string {
   return gates
-    .filter((g) => g.type === Gate.RZ)
+    .filter((g): g is PlacedSingleQubitGate => g.type === Gate.RZ)
     .map((g) => `${g.id}:${g.theta ?? 0}`)
     .join("|");
 }

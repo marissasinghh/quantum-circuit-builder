@@ -1,3 +1,5 @@
+[![CI](https://github.com/marissasinghh/quantum-circuit-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/marissasinghh/quantum-circuit-builder/actions/workflows/ci.yml)
+
 # # QMCB-BE — Quantum Circuit Builder (Backend)
 This project is the **prototype backend** for a web application that allows users to build quantum circuits from scratch, test output results, and compare the results via a truth table with the target circuit output results.
 

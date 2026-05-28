@@ -4,7 +4,7 @@
 
 import type { ReactNode } from "react";
 import { ONBOARDING_COMPLETE_KEY } from "../utils/constants";
-import { colors, fonts } from "../design-tokens";
+import { colors } from "../design-tokens";
 
 export { ONBOARDING_COMPLETE_KEY };
 
@@ -325,7 +325,7 @@ function OnboardingContent({
   return (
     <>
       <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
-        // welcome
+        {"// welcome"}
       </p>
       <h1 className="font-mono text-[28px] font-bold text-cyan tracking-[0.04em] leading-[1.2] mb-2">
         ⟨ψ| CNOT GAME |ψ⟩
@@ -403,7 +403,7 @@ function OnboardingContent({
       </BodyParagraph>
 
       <p className="font-mono text-[22px] font-bold text-cyan tracking-[0.06em] mt-5">
-        // Good luck!
+        {"// Good luck!"}
       </p>
 
       {showCta && (

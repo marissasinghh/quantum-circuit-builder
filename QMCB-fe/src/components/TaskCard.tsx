@@ -46,7 +46,7 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
         {`// LEVEL ${levelLabel}`}
       </p>
       <MathText
-        text={level.description}
+        text={level.description ?? ""}
         className="font-sans text-[13px] text-cyan-muted leading-relaxed"
       />
 

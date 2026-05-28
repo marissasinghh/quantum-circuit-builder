@@ -111,7 +111,7 @@ export default function LevelsPage() {
   return (
     <main className="flex-1 overflow-y-auto canvas-grid p-6 space-y-8">
       <div>
-        <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">// levels</p>
+        <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">{"// levels"}</p>
         <h1 className="font-mono text-[28px] font-bold text-cyan tracking-[0.04em] leading-[1.2] mb-2">
           Choose a Level
         </h1>
