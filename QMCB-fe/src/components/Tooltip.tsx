@@ -67,6 +67,58 @@ export function TooltipMath({ children }: { children: ReactNode }) {
   );
 }
 
+export const TOOLTIP_ICON_STYLE = {
+  fontFamily: "Georgia, serif",
+  fontStyle: "italic" as const,
+  fontSize: 13,
+  fontWeight: 400,
+  lineHeight: 1,
+  cursor: "pointer",
+  transition: "color 0.15s",
+};
+
+interface TooltipIconProps {
+  open: boolean;
+  hovered: boolean;
+  onClick: (event: React.MouseEvent) => void;
+  onMouseDown?: (event: React.MouseEvent) => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onKeyDown: (event: React.KeyboardEvent) => void;
+  ariaLabel?: string;
+}
+
+export function TooltipIcon({
+  open,
+  hovered,
+  onClick,
+  onMouseDown,
+  onMouseEnter,
+  onMouseLeave,
+  onKeyDown,
+  ariaLabel = "More info",
+}: TooltipIconProps) {
+  return (
+    <span
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
+      aria-expanded={open}
+      onClick={onClick}
+      onMouseDown={onMouseDown}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onKeyDown={onKeyDown}
+      style={{
+        ...TOOLTIP_ICON_STYLE,
+        color: open || hovered ? "#7dd3fc" : "#4a8ab5",
+      }}
+    >
+      i
+    </span>
+  );
+}
+
 interface TooltipProps {
   id?: string;
   children: ReactNode;
@@ -156,8 +208,6 @@ export function Tooltip({ id: idProp, children, bottom = 6, right = 8 }: Tooltip
     [id, open, setOpenId]
   );
 
-  const iconColor = open || hovered ? "#7dd3fc" : "#4a8ab5";
-
   const popup =
     open &&
     createPortal(
@@ -201,11 +251,9 @@ export function Tooltip({ id: idProp, children, bottom = 6, right = 8 }: Tooltip
           zIndex: open ? 100 : 1,
         }}
       >
-        <span
-          role="button"
-          tabIndex={0}
-          aria-label="More info"
-          aria-expanded={open}
+        <TooltipIcon
+          open={open}
+          hovered={hovered}
           onClick={toggle}
           onMouseDown={(e) => e.stopPropagation()}
           onMouseEnter={() => setHovered(true)}
@@ -216,16 +264,7 @@ export function Tooltip({ id: idProp, children, bottom = 6, right = 8 }: Tooltip
               setOpenId(open ? null : id);
             }
           }}
-          className="italic cursor-pointer select-none"
-          style={{
-            fontFamily: "Georgia, serif",
-            fontSize: 13,
-            color: iconColor,
-            transition: "color 0.15s",
-          }}
-        >
-          i
-        </span>
+        />
       </span>
       {popup}
     </>

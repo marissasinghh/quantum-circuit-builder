@@ -4,7 +4,7 @@
 
 import { useCallback, useState } from "react";
 import type { TruthRow } from "../interfaces/truthTable";
-import { Tooltip, TooltipMath, useTooltip } from "./Tooltip";
+import { Tooltip, TooltipIcon, TooltipMath, useTooltip } from "./Tooltip";
 
 interface OutputTableProps {
   rows: TruthRow[] | null;
@@ -60,39 +60,31 @@ function ExpectedPHeaderTooltip() {
     [open, setOpenId]
   );
 
-  const iconColor = open || hovered ? "#7dd3fc" : "#4a8ab5";
-
   return (
     <>
       <span
-        role="button"
-        tabIndex={0}
-        aria-label="Measurement probability info"
-        aria-expanded={open}
         data-tooltip-root
-        onClick={toggle}
-        onMouseDown={(e) => e.stopPropagation()}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setOpenId(open ? null : EXPECTED_P_TOOLTIP_ID);
-          }
-        }}
         style={{
           position: "absolute",
           bottom: 4,
           right: 6,
-          fontStyle: "italic",
-          fontFamily: "Georgia, serif",
-          fontSize: 13,
-          color: iconColor,
-          cursor: "pointer",
-          transition: "color 0.15s",
         }}
       >
-        i
+        <TooltipIcon
+          open={open}
+          hovered={hovered}
+          onClick={toggle}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setOpenId(open ? null : EXPECTED_P_TOOLTIP_ID);
+            }
+          }}
+          ariaLabel="Measurement probability info"
+        />
       </span>
       {open && (
         <div
@@ -153,7 +145,14 @@ export function OutputTable({
 
       {rows && (
         <>
-          <div style={{ display: "inline-block", position: "relative" }}>
+          <div
+            style={{
+              display: "inline-block",
+              position: "relative",
+              paddingRight: 14,
+              paddingBottom: 20,
+            }}
+          >
             <table
               className="font-mono text-[11px] border-collapse"
               style={{ tableLayout: "auto", whiteSpace: "nowrap" }}
