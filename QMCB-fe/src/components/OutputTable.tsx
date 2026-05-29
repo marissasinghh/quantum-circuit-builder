@@ -103,7 +103,7 @@ export function OutputTable({
 
       {rows && (
         <>
-          <div className="relative w-full box-border pb-5 overflow-visible">
+          <div className="relative w-full box-border pb-8 overflow-visible">
             <div className="font-mono text-[10px] w-full box-border overflow-visible">
               <div className="text-text-muted border-b border-tier1" style={rowGridStyle}>
                 <span className="py-1">Input</span>

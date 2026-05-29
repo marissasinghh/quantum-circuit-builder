@@ -20,9 +20,11 @@ export function LevelCompleteModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-[rgba(8,12,24,0.92)]" />
-
+    <div
+      className="absolute inset-0 z-10 flex items-center justify-center bg-[rgba(9,15,29,0.85)]"
+      aria-modal="true"
+      role="dialog"
+    >
       <div className="relative bg-bg-panel border border-tier1 rounded-panel p-6 max-w-md w-full mx-4">
         <div className="text-center">
           <h2 className="font-mono text-base uppercase text-tier3 mb-2">LEVEL COMPLETE</h2>

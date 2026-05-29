@@ -23,10 +23,10 @@ interface BlochSphereProps {
 // ---------------------------------------------------------------------------
 // Canvas constants
 // ---------------------------------------------------------------------------
-const SIZE = 220;
+const SIZE = 255;
 const CX   = SIZE / 2;
 const CY   = SIZE / 2;
-const R    = 65;
+const R    = 75;
 
 const DIST_LABEL = R + 10;
 

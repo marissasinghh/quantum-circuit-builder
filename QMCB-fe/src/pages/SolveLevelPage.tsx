@@ -200,7 +200,7 @@ function SolveLevelContent({
           style={{ gridTemplateColumns: `minmax(0, 1fr) ${RIGHT_PANEL_WIDTH_PX}px` }}
         >
           {/* Center: Task + Circuit Canvas */}
-          <section className="flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 overflow-hidden gap-3">
+          <section className="relative flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 overflow-hidden gap-3">
             <TaskCard
               level={currentLevel}
               dynamicTruth={isSeedDrivenLevel ? randomUnitaryQuery.data?.truth_table : undefined}
@@ -215,6 +215,12 @@ function SolveLevelContent({
               onCheck={handleCheck}
               onClear={handleClear}
               isChecking={mutation.isPending}
+            />
+            <LevelCompleteModal
+              isOpen={showCompletionModal}
+              onRepeat={handleRepeat}
+              onNext={handleNextLevel}
+              hasNextLevel={getNextLevel(currentLevel) !== null}
             />
           </section>
 
@@ -286,13 +292,6 @@ function SolveLevelContent({
           {activeId === "tool-u" && <UGlyph width={64} height={44} />}
         </DragOverlay>
       </DndContext>
-
-      <LevelCompleteModal
-        isOpen={showCompletionModal}
-        onRepeat={handleRepeat}
-        onNext={handleNextLevel}
-        hasNextLevel={getNextLevel(currentLevel) !== null}
-      />
     </div>
     </TooltipProvider>
   );

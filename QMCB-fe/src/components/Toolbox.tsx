@@ -252,19 +252,21 @@ export function Toolbox({ availableGates }: ToolboxProps) {
           const tooltipCfg = GATE_TOOLTIPS[gate];
 
           return (
-            <div
+            <DraggableTool
               key={gate}
-              className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 cursor-grab active:cursor-grabbing min-w-0"
+              id={config.toolId}
+              className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 min-w-0 w-full"
             >
-              <DraggableTool id={config.toolId}>
-                <span className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none pr-4">
-                  {config.label}
-                </span>
-              </DraggableTool>
+              <span
+                draggable={false}
+                className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
+              >
+                {config.label}
+              </span>
               {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
                 <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
               )}
-            </div>
+            </DraggableTool>
           );
         })}
       </div>

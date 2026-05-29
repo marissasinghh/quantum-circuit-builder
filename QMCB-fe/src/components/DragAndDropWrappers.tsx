@@ -2,21 +2,26 @@ import React from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 /** Wrap any toolbox glyph to make it draggable by id. */
-export function DraggableTool({ id, children }: { id: string; children: React.ReactNode }) {
+export function DraggableTool({
+  id,
+  children,
+  className = "",
+}: {
+  id: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   const { attributes, listeners, setNodeRef } = useDraggable({ id });
   return (
-    <div className="relative inline-block">
-      {/* static visual */}
-      <div>{children}</div>
-      {/* invisible drag handle that sits on top */}
-      <div
-        ref={setNodeRef}
-        {...listeners}
-        {...attributes}
-        className="absolute inset-0 cursor-grab active:cursor-grabbing"
-        style={{ background: "transparent" }}
-        aria-label={`drag ${id}`}
-      />
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      className={`cursor-grab active:cursor-grabbing select-none ${className}`}
+      style={{ userSelect: "none", WebkitUserSelect: "none" }}
+      aria-label={`drag ${id}`}
+    >
+      {children}
     </div>
   );
 }
