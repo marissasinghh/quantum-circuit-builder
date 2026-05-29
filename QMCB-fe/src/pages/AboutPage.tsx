@@ -7,7 +7,10 @@ export default function AboutPage() {
         <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
           {"// about"}
         </p>
-        <h1 className="font-display text-[28px] font-semibold text-tier3 leading-[1.2] mb-2">
+        <h1
+          className="page-heading text-[28px] text-tier3 leading-[1.2] mb-2"
+          style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 600 }}
+        >
           About
         </h1>
         <p className="font-sans text-[14px] text-slate italic mb-10">

@@ -12,7 +12,7 @@ interface OutputTableProps {
   showGlobalPhaseNote?: boolean;
 }
 
-const GRID_COLS = "34px 60px 34px 40px 34px 20px";
+const GRID_COLS = "52px 90px 52px 72px 52px 28px";
 const EXPECTED_P_TOOLTIP_ID = "expected-p-probability";
 
 function splitAmplitudeTerms(value: string): string[] {

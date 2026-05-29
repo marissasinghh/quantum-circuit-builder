@@ -33,6 +33,9 @@ function levelNumber(index: number): string {
   return `2.${index - 6}`;
 }
 
+/** Fits longest label (e.g. "2.1 CNOT_FLIPPED") at 11px mono + 12px horizontal padding each side. */
+const SIDEBAR_WIDTH_PX = 180;
+
 function LevelSidebar() {
   const { completedLevels } = useLevelProgress();
   const navigate = useNavigate();
@@ -66,7 +69,7 @@ function LevelSidebar() {
               key={level.target_unitary}
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
               className={[
-                "py-1 font-mono text-[11px] cursor-pointer select-none truncate",
+                "py-1 font-mono text-[11px] cursor-pointer select-none whitespace-nowrap",
                 isActive ? "text-tier3 bg-bg-elevated border-l-2 border-tier3 pl-[10px]" : "text-text-muted pl-3",
                 isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover" : "",
               ].join(" ")}
@@ -80,7 +83,10 @@ function LevelSidebar() {
   }
 
   return (
-    <aside className="w-[142px] shrink-0 bg-bg-sidebar border-r border-tier1 overflow-y-auto h-full px-3">
+    <aside
+      className="shrink-0 bg-bg-sidebar border-r border-tier1 overflow-y-auto h-full px-3"
+      style={{ width: SIDEBAR_WIDTH_PX }}
+    >
       {renderTier("TIER 1 — SINGLE QUBIT", tier1)}
       {renderTier("TIER 2 — TWO QUBIT", tier2)}
     </aside>
@@ -103,7 +109,7 @@ function AppShell() {
             <Route
               path="/level/:id"
               element={
-                <div className="flex flex-1 min-h-0 w-full [&_section]:flex-1 [&_section]:min-w-0 [&_aside]:w-[242px] [&_aside]:shrink-0">
+                <div className="flex flex-1 min-h-0 w-full min-w-0">
                   <SolveLevelPage />
                 </div>
               }
