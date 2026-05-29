@@ -12,7 +12,7 @@ interface OutputTableProps {
   showGlobalPhaseNote?: boolean;
 }
 
-const GRID_COLS = "52px 90px 52px 72px 52px 28px";
+const GRID_COLS = "64px 120px 64px 96px 64px 32px";
 const EXPECTED_P_TOOLTIP_ID = "expected-p-probability";
 
 function splitAmplitudeTerms(value: string): string[] {
@@ -70,7 +70,7 @@ export function OutputTable({
   showGlobalPhaseNote = false,
 }: OutputTableProps) {
   return (
-    <div className="min-w-0 overflow-hidden">
+    <div className="min-w-0 overflow-visible">
       <div className="mb-2">
         <h2 className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase">
           CIRCUIT OUTPUT
@@ -95,7 +95,7 @@ export function OutputTable({
 
       {rows && (
         <>
-          <div className="relative min-w-0 pb-5">
+          <div className="relative min-w-0 pb-5 overflow-visible">
             <div
               className="font-mono text-[10px] w-full min-w-0"
               style={{ display: "grid" }}

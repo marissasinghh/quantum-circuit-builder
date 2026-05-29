@@ -41,7 +41,8 @@ import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 
-const RIGHT_PANEL_WIDTH_PX = 380;
+const RIGHT_PANEL_WIDTH_PX = 480;
+const APP_HEADER_HEIGHT_PX = 40;
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
   return gates.length > 0 && gates.every((g) => g.type === Gate.RZ);
@@ -184,7 +185,7 @@ function SolveLevelContent({
 
   return (
     <TooltipProvider>
-    <div className="flex flex-1 min-h-0 w-full">
+    <div className="flex flex-1 min-h-0 w-full h-full">
       <DndContext
         sensors={sensors}
         onDragStart={(e) => setActiveId(String(e.active.id))}
@@ -195,7 +196,7 @@ function SolveLevelContent({
         }}
       >
         <div
-          className="flex-1 min-h-0 w-full min-w-0 grid"
+          className="flex-1 min-h-0 w-full min-w-0 grid h-full"
           style={{ gridTemplateColumns: `minmax(0, 1fr) ${RIGHT_PANEL_WIDTH_PX}px` }}
         >
           {/* Center: Task + Circuit Canvas */}
@@ -219,16 +220,19 @@ function SolveLevelContent({
 
           {/* Right: Toolbox + Bloch + Output */}
           <aside
-            className="shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto overflow-x-hidden flex flex-col gap-0 min-w-0"
-            style={{ width: RIGHT_PANEL_WIDTH_PX }}
+            className="shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto overflow-x-hidden flex flex-col gap-0 min-w-0 min-h-0 h-full"
+            style={{
+              width: RIGHT_PANEL_WIDTH_PX,
+              maxHeight: `calc(100vh - ${APP_HEADER_HEIGHT_PX}px)`,
+            }}
           >
-            <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-hidden">
+            <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
               <Toolbox availableGates={unlockedGates} activeId={activeId} />
             </div>
             {currentLevel.number_of_qubits === 1 && (
               <>
-                <div className="border-t border-tier1 my-3" />
-                <div className="rounded-md border border-tier1 p-3 mb-3">
+                <div className="border-t border-tier1 my-3 shrink-0" />
+                <div className="rounded-md border border-tier1 p-3 mb-3 overflow-visible">
                   <div className="relative flex flex-col items-center gap-0 w-full">
                     <BlochSphereHeader />
                     <BlochPreviewToggle
@@ -257,8 +261,8 @@ function SolveLevelContent({
                 </div>
               </>
             )}
-            <div className="border-t border-tier1 my-3" />
-            <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-hidden">
+            <div className="border-t border-tier1 my-3 shrink-0" />
+            <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
               <OutputTable
                 rows={rows}
                 isCorrect={allCorrect}

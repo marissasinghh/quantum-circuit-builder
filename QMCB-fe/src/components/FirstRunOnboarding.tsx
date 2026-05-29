@@ -27,16 +27,21 @@ function markOnboardingComplete(): void {
 }
 
 // ---------------------------------------------------------------------------
-// Shared primitives
+// Shared primitives (match About page design system)
 // ---------------------------------------------------------------------------
 
 function Bold({ children }: { children: ReactNode }) {
-  return <strong className="text-cyan-muted font-semibold">{children}</strong>;
+  return <strong className="font-semibold text-tier3">{children}</strong>;
+}
+
+/** Inline quantum notation — JetBrains Mono + tier3 */
+function Q({ children }: { children: ReactNode }) {
+  return <span className="font-mono text-tier3">{children}</span>;
 }
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
-    <h2 className="font-mono text-[10px] tracking-[0.14em] text-cyan uppercase opacity-80 mt-9 mb-2.5">
+    <h2 className="font-mono text-[8px] tracking-[0.09em] text-text-muted uppercase mt-9 mb-2.5">
       {children}
     </h2>
   );
@@ -44,208 +49,71 @@ function SectionHeader({ children }: { children: ReactNode }) {
 
 function BodyParagraph({ children }: { children: ReactNode }) {
   return (
-    <p className="font-sans text-[14px] text-[#b0bec5] leading-[1.8]">{children}</p>
+    <p className="font-sans text-[14px] text-text-body leading-relaxed">{children}</p>
   );
 }
 
 function SectionDivider() {
-  return <div className="w-full h-px bg-grid opacity-50 my-7" />;
-}
-
-function DotCluster({ count }: { count: number }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="w-1 h-1 rounded-full bg-cyan opacity-20" />
-      ))}
-    </div>
-  );
-}
-
-function DecoLine() {
-  return <div className="w-px flex-1 min-h-[60px] bg-grid opacity-50" />;
-}
-
-function AtomDecoration() {
-  return (
-    <svg
-      viewBox="0 0 56 56"
-      width={56}
-      height={56}
-      className="opacity-[0.15]"
-      aria-hidden
-    >
-      <ellipse
-        cx={28}
-        cy={28}
-        rx={11}
-        ry={25}
-        fill="none"
-        stroke={colors.cyan}
-        strokeWidth={1}
-        transform="rotate(0 28 28)"
-      />
-      <ellipse
-        cx={28}
-        cy={28}
-        rx={11}
-        ry={25}
-        fill="none"
-        stroke={colors.cyan}
-        strokeWidth={1}
-        transform="rotate(60 28 28)"
-      />
-      <ellipse
-        cx={28}
-        cy={28}
-        rx={11}
-        ry={25}
-        fill="none"
-        stroke={colors.cyan}
-        strokeWidth={1}
-        transform="rotate(120 28 28)"
-      />
-      <circle cx={28} cy={28} r={4} fill={colors.cyan} />
-    </svg>
-  );
-}
-
-function CrosshairDecoration() {
-  return (
-    <svg
-      viewBox="0 0 44 44"
-      width={44}
-      height={44}
-      className="opacity-[0.15]"
-      aria-hidden
-    >
-      <circle
-        cx={22}
-        cy={22}
-        r={18}
-        fill="none"
-        stroke={colors.cyan}
-        strokeWidth={0.8}
-      />
-      <circle
-        cx={22}
-        cy={22}
-        r={10}
-        fill="none"
-        stroke={colors.cyan}
-        strokeWidth={0.5}
-        strokeDasharray="3,2"
-      />
-      <circle cx={22} cy={22} r={3} fill={colors.cyan} />
-      <line x1={4} y1={22} x2={40} y2={22} stroke={colors.cyan} strokeWidth={0.5} />
-      <line x1={22} y1={4} x2={22} y2={40} stroke={colors.cyan} strokeWidth={0.5} />
-    </svg>
-  );
-}
-
-function DecoColumn({ side }: { side: "left" | "right" }) {
-  const label = side === "left" ? "quantum" : "circuits";
-  const Decoration = side === "left" ? AtomDecoration : CrosshairDecoration;
-
-  return (
-    <div className="w-[160px] shrink-0 flex flex-col items-center py-12 gap-3 self-stretch">
-      <DotCluster count={5} />
-      <DecoLine />
-      <Decoration />
-      <DecoLine />
-      <span
-        className="font-mono text-[9px] tracking-[0.15em] text-cyan uppercase opacity-30"
-        style={{ writingMode: "vertical-rl" }}
-      >
-        {label}
-      </span>
-      <DecoLine />
-      <DotCluster count={3} />
-    </div>
-  );
+  return <div className="w-full border-t border-tier1 my-7" />;
 }
 
 function BlochIllustration() {
+  const wire = colors.wireframe;
   return (
-    <div className="flex flex-col items-center py-5 pb-4">
+    <div className="flex flex-col items-center py-5 pb-4 overflow-visible">
       <svg width="310" height="320" viewBox="0 0 310 320" aria-hidden>
-        {/* Back half of equatorial ellipse (dashed) */}
         <path
           d="M 50 140 a 90 22 0 0 0 180 0"
           fill="none"
-          stroke="#1e3a5f"
+          stroke={wire}
           strokeWidth={1}
           strokeDasharray="5,3"
         />
-
-        {/* Sphere outline */}
-        <ellipse
-          cx={140}
-          cy={140}
-          rx={90}
-          ry={90}
-          fill="none"
-          stroke="#1e3a5f"
-          strokeWidth={1.5}
-        />
-
-        {/* Front half of equatorial ellipse (solid) */}
-        <path
-          d="M 50 140 a 90 22 0 0 1 180 0"
-          fill="none"
-          stroke="#1e3a5f"
-          strokeWidth={1}
-        />
-
-        {/* Z axis negative (dashed) */}
+        <ellipse cx={140} cy={140} rx={90} ry={90} fill="none" stroke={wire} strokeWidth={1.5} />
+        <path d="M 50 140 a 90 22 0 0 1 180 0" fill="none" stroke={wire} strokeWidth={1} />
         <line
           x1={140}
           y1={140}
           x2={140}
           y2={230}
-          stroke="#1e3a5f"
+          stroke={wire}
           strokeWidth={0.8}
           strokeDasharray="4,3"
         />
-        {/* Z axis positive */}
-        <line x1={140} y1={140} x2={140} y2={52} stroke="#7dc4e0" strokeWidth={1.2} />
-        <polygon points="140,48 136,58 144,58" fill="#7dc4e0" />
-
-        {/* Y axis negative (dashed) */}
+        <line x1={140} y1={140} x2={140} y2={52} stroke={colors.cyan} strokeWidth={1.2} />
+        <polygon points="140,48 136,58 144,58" fill={colors.cyan} />
         <line
           x1={140}
           y1={140}
           x2={52}
           y2={140}
-          stroke="#1e3a5f"
+          stroke={wire}
           strokeWidth={0.8}
           strokeDasharray="4,3"
         />
-        {/* Y axis positive */}
-        <line x1={140} y1={140} x2={228} y2={140} stroke="#7dc4e0" strokeWidth={1.2} />
-        <polygon points="232,140 222,136 222,144" fill="#7dc4e0" />
-
-        {/* X axis negative (dashed) */}
+        <line x1={140} y1={140} x2={228} y2={140} stroke={colors.cyan} strokeWidth={1.2} />
+        <polygon points="232,140 222,136 222,144" fill={colors.cyan} />
         <line
           x1={140}
           y1={140}
           x2={175}
           y2={120}
-          stroke="#1e3a5f"
+          stroke={wire}
           strokeWidth={0.8}
           strokeDasharray="4,3"
         />
-        {/* X axis positive */}
-        <line x1={140} y1={140} x2={107} y2={159} stroke="#7dc4e0" strokeWidth={1.2} />
-        <polygon points="105,160 115.7,158.5 111.7,151.5" fill="#7dc4e0" />
-
-        {/* State vector */}
-        <line x1={140} y1={140} x2={140} y2={55} stroke="#7dc4e0" strokeWidth={2.5} />
-        {/* North pole dot: red */}
+        <line x1={140} y1={140} x2={107} y2={159} stroke={colors.cyan} strokeWidth={1.2} />
+        <polygon points="105,160 115.7,158.5 111.7,151.5" fill={colors.cyan} />
+        <line x1={140} y1={140} x2={140} y2={55} stroke={colors.cyan} strokeWidth={2.5} />
         <circle cx={140} cy={55} r={5} fill="#e94560" />
-
-        {/* Z+ labels: stacked above, centered */}
-        <text x={140} y={34} textAnchor="middle" fontSize={11} fill="#546e7a" fontFamily="monospace">
+        <text
+          x={140}
+          y={34}
+          textAnchor="middle"
+          fontSize={11}
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
+        >
           |0⟩
         </text>
         <text
@@ -253,15 +121,20 @@ function BlochIllustration() {
           y={16}
           textAnchor="middle"
           fontSize={13}
-          fill="#7dc4e0"
-          fontFamily="monospace"
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
           fontWeight={700}
         >
           Z
         </text>
-
-        {/* Y+ labels: state then letter, reading outward */}
-        <text x={244} y={144} textAnchor="start" fontSize={11} fill="#546e7a" fontFamily="monospace">
+        <text
+          x={244}
+          y={144}
+          textAnchor="start"
+          fontSize={11}
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
+        >
           |+⟩
         </text>
         <text
@@ -269,15 +142,20 @@ function BlochIllustration() {
           y={144}
           textAnchor="start"
           fontSize={13}
-          fill="#7dc4e0"
-          fontFamily="monospace"
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
           fontWeight={700}
         >
           Y
         </text>
-
-        {/* X+ labels: state then letter, reading outward along X axis */}
-        <text x={108} y={174} textAnchor="end" fontSize={11} fill="#546e7a" fontFamily="monospace">
+        <text
+          x={108}
+          y={174}
+          textAnchor="end"
+          fontSize={11}
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
+        >
           |i⟩
         </text>
         <text
@@ -285,26 +163,45 @@ function BlochIllustration() {
           y={183}
           textAnchor="end"
           fontSize={13}
-          fill="#7dc4e0"
-          fontFamily="monospace"
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
           fontWeight={700}
         >
           X
         </text>
-
-        {/* Negative axis state labels */}
-        <text x={140} y={250} textAnchor="middle" fontSize={11} fill="#546e7a" fontFamily="monospace">
+        <text
+          x={140}
+          y={250}
+          textAnchor="middle"
+          fontSize={11}
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
+        >
           |1⟩
         </text>
-        <text x={34} y={144} textAnchor="end" fontSize={11} fill="#546e7a" fontFamily="monospace">
+        <text
+          x={34}
+          y={144}
+          textAnchor="end"
+          fontSize={11}
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
+        >
           |−⟩
         </text>
-        <text x={190} y={112} textAnchor="start" fontSize={11} fill="#546e7a" fontFamily="monospace">
+        <text
+          x={190}
+          y={112}
+          textAnchor="start"
+          fontSize={11}
+          fill={colors.blochLabel}
+          fontFamily="'JetBrains Mono', monospace"
+        >
           |−i⟩
         </text>
       </svg>
-      <p className="font-mono text-[9px] text-slate-muted tracking-[0.1em] mt-2">
-        The Bloch sphere — state vector at |0⟩
+      <p className="font-sans text-[10px] text-text-muted mt-2">
+        The Bloch sphere — state vector at <Q>|0⟩</Q>
       </p>
     </div>
   );
@@ -312,9 +209,11 @@ function BlochIllustration() {
 
 function OnboardingContent({
   showCta,
+  showPageHeader = true,
   onComplete,
 }: {
   showCta: boolean;
+  showPageHeader?: boolean;
   onComplete?: () => void;
 }) {
   const handleStart = () => {
@@ -324,15 +223,22 @@ function OnboardingContent({
 
   return (
     <>
-      <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
-        {"// welcome"}
-      </p>
-      <h1 className="font-mono text-[28px] font-bold text-cyan tracking-[0.04em] leading-[1.2] mb-2">
-        ⟨ψ| CNOT GAME |ψ⟩
-      </h1>
-      <p className="font-sans text-[14px] text-slate italic mb-10">
-        A quick intro before you start building circuits.
-      </p>
+      {showPageHeader && (
+        <>
+          <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
+            {"// welcome"}
+          </p>
+          <h1
+            className="page-heading text-[28px] text-tier3 leading-[1.2] mb-2"
+            style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 600 }}
+          >
+            Welcome
+          </h1>
+          <p className="font-sans text-[14px] text-slate italic mb-10">
+            A quick intro before you start building circuits.
+          </p>
+        </>
+      )}
 
       <SectionHeader>Bits vs. qubits</SectionHeader>
       <BodyParagraph>
@@ -355,12 +261,13 @@ function OnboardingContent({
       <BlochIllustration />
       <BodyParagraph>
         It is a unit sphere where every possible single-qubit state maps to exactly one point on
-        its surface. The north pole is |0⟩, the south pole is |1⟩, and the equator is where things
-        get interesting! |+⟩, |−⟩, |i⟩, and |−i⟩ all live there. Each points in a different
-        direction around the middle and represents a different equal superposition of 0 and 1. The
-        X axis captures one flavor of superposition, the Y axis another, and the Z axis is your
-        classical north/south pole axis. State vector pointing straight up? You are at |0⟩.
-        Straight down? |1⟩. Anywhere else on the sphere and you are in superposition.
+        its surface. The north pole is <Q>|0⟩</Q>, the south pole is <Q>|1⟩</Q>, and the equator
+        is where things get interesting! <Q>|+⟩</Q>, <Q>|−⟩</Q>, <Q>|i⟩</Q>, and <Q>|−i⟩</Q> all
+        live there. Each points in a different direction around the middle and represents a
+        different equal superposition of 0 and 1. The X axis captures one flavor of
+        superposition, the Y axis another, and the Z axis is your classical north/south pole axis.
+        State vector pointing straight up? You are at <Q>|0⟩</Q>. Straight down? <Q>|1⟩</Q>.
+        Anywhere else on the sphere and you are in superposition.
       </BodyParagraph>
 
       <SectionDivider />
@@ -402,7 +309,7 @@ function OnboardingContent({
         Build circuits. Watch the state vector on the bloch sphere move. Match the goal. Learn.
       </BodyParagraph>
 
-      <p className="font-mono text-[22px] font-bold text-cyan tracking-[0.06em] mt-5">
+      <p className="font-mono text-[22px] font-bold text-tier3 tracking-[0.06em] mt-5">
         {"// Good luck!"}
       </p>
 
@@ -411,7 +318,7 @@ function OnboardingContent({
           <button
             type="button"
             onClick={handleStart}
-            className="bg-navy border border-cyan rounded-gate text-cyan-muted font-mono text-[12px] px-7 py-3 cursor-pointer tracking-[0.1em] uppercase hover:bg-grid transition-colors"
+            className="bg-tier3/5 border border-tier3/35 rounded-gate text-tier3 font-mono text-[12px] px-7 py-3 cursor-pointer tracking-[0.1em] uppercase hover:bg-tier3/10 hover:border-tier3/60 transition-colors"
           >
             Got it, start playing
           </button>
@@ -427,28 +334,22 @@ function OnboardingContent({
 
 export function FirstRunOnboarding({ variant = "fullscreen", onComplete }: FirstRunOnboardingProps) {
   if (variant === "inline") {
-    return (
-      <div className="max-w-[620px] mx-auto">
-        <OnboardingContent showCta={false} />
-      </div>
-    );
+    return <OnboardingContent showCta={false} showPageHeader={false} />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-space canvas-grid">
-      <header className="bg-navy border-b border-grid shrink-0 px-6 py-2.5">
-        <span className="font-mono text-[13px] font-bold text-cyan tracking-[0.05em]">
+    <div className="h-screen flex flex-col bg-bg-app text-text-body">
+      <header className="bg-[#090f1d] border-b border-tier1 h-10 shrink-0 px-4 flex items-center">
+        <span className="font-mono text-[14px] text-tier3 tracking-[0.05em]">
           ⟨ψ| CNOT GAME |ψ⟩
         </span>
       </header>
 
-      <div className="flex flex-1 justify-center overflow-y-auto min-h-0">
-        <DecoColumn side="left" />
-        <main className="flex-1 max-w-[620px] pt-12 pb-16 min-w-0">
+      <main className="flex-1 overflow-y-auto canvas-grid p-6 bg-bg-app">
+        <div className="max-w-[620px] mx-auto">
           <OnboardingContent showCta onComplete={onComplete} />
-        </main>
-        <DecoColumn side="right" />
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

@@ -111,7 +111,7 @@ def test_rotation_gate_unitary_with_theta_is_unitary(gate_name: str) -> None:
 
 def test_rx_without_theta_raises() -> None:
     q0 = cirq.LineQubit(0)
-    with pytest.raises(ValueError, match="theta is required"):
+    with pytest.raises(ValueError, match=r"(?i)theta is required"):
         CirqGateMapper.apply(Gate.RX.value, [0], q0)
 
 

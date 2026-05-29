@@ -2,7 +2,7 @@ import { FirstRunOnboarding } from "../components/FirstRunOnboarding";
 
 export default function AboutPage() {
   return (
-    <main className="flex-1 overflow-y-auto canvas-grid p-6">
+    <main className="flex-1 overflow-y-auto canvas-grid p-6 bg-bg-app">
       <div className="max-w-[620px] mx-auto">
         <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
           {"// about"}
