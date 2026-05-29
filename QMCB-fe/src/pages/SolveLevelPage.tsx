@@ -100,7 +100,7 @@ function SolveLevelContent({
 
   const [initialState, setInitialState] = React.useState<0 | 1>(0);
 
-  const { mutation, rows, allCorrect, handleCheck, validationError } = useCircuitValidation(
+  const { mutation, rows, allCorrect, handleCheck, validationError, isChecking } = useCircuitValidation(
     currentLevel,
     gates,
     randomSeed
@@ -275,6 +275,8 @@ function SolveLevelContent({
                 rows={rows}
                 isCorrect={allCorrect}
                 error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
+                isChecking={isChecking}
+                onClearAndRetry={handleClear}
                 levelInsight={
                   currentLevel.target_unitary === Gate.H && allCorrect ? (
                     <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">

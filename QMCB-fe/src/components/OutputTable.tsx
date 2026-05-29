@@ -5,12 +5,15 @@
 import type { ReactNode } from "react";
 import type { TruthRow } from "../interfaces/truthTable";
 import { Tooltip, TooltipMath } from "./Tooltip";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface OutputTableProps {
   rows: TruthRow[] | null;
   isCorrect: boolean;
   error: Error | null;
   levelInsight?: ReactNode;
+  isChecking?: boolean;
+  onClearAndRetry?: () => void;
 }
 
 const CELL_CLASS = "px-3 py-1.5";
@@ -70,7 +73,14 @@ export function OutputTable({
   isCorrect,
   error,
   levelInsight,
+  isChecking = false,
+  onClearAndRetry,
 }: OutputTableProps) {
+  const hasPartialMismatch =
+    rows && rows.length > 0 && !isCorrect && !error;
+  const matchCount = hasPartialMismatch ? rows.filter((r) => r.ok).length : 0;
+  const totalRows = rows?.length ?? 0;
+
   return (
     <div className="w-full box-border overflow-visible">
       <div className="mb-2">
@@ -82,6 +92,33 @@ export function OutputTable({
       {isCorrect && (
         <div className="mb-3 bg-match-bg border border-tier1 rounded-md px-3 py-2 text-sm font-sans text-text-body">
           All rows match — circuit verified ✓
+        </div>
+      )}
+
+      {hasPartialMismatch && (
+        <div className="mb-3 bg-mismatch-bg border border-tier1 rounded-md px-3 py-2">
+          <p className="text-sm font-sans text-mismatch-text font-medium">
+            {matchCount}/{totalRows} rows match
+          </p>
+          <p className="text-[12px] font-sans text-text-muted mt-1">
+            Double-check your qubit ordering
+          </p>
+          {onClearAndRetry && (
+            <button
+              type="button"
+              onClick={onClearAndRetry}
+              className="mt-2 font-mono text-[10px] tracking-wide uppercase px-3 py-1.5 border border-tier1 rounded-gate text-tier3 hover:bg-bg-hover transition"
+            >
+              Clear and try again
+            </button>
+          )}
+        </div>
+      )}
+
+      {isChecking && (
+        <div className="mb-3 flex items-center gap-2 bg-bg-panel border border-tier1 rounded-md px-3 py-2">
+          <LoadingSpinner size={16} />
+          <span className="font-sans text-[12px] text-tier2">Checking circuit…</span>
         </div>
       )}
 
@@ -99,7 +136,9 @@ export function OutputTable({
 
       {rows && (
         <>
-          <div className="relative w-full box-border pb-8 overflow-visible">
+          <div
+            className={`relative w-full box-border pb-8 overflow-visible${isChecking ? " opacity-50" : ""}`}
+          >
             <table
               className="font-mono text-[10px] w-full box-border overflow-visible"
               style={{ tableLayout: "auto" }}

@@ -56,5 +56,6 @@ export function useCircuitValidation(
     allCorrect,
     handleCheck,
     validationError,
+    isChecking: mutation.isPending,
   };
 }
