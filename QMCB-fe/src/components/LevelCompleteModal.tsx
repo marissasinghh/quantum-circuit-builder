@@ -31,7 +31,7 @@ export function LevelCompleteModal({
 
           <p className="font-sans text-[11px] text-text-body mb-6">
             Target circuit successfully verified{" "}
-            <span className="text-tier3">✓</span>. Proceed to the next level or repeat this one.
+            <span className="text-tier3">✓</span> Proceed to the next level or repeat this one.
           </p>
 
           <div className="flex flex-col gap-2">

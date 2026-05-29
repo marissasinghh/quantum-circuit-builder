@@ -10,7 +10,6 @@ interface OutputTableProps {
   rows: TruthRow[] | null;
   isCorrect: boolean;
   error: Error | null;
-  showGlobalPhaseNote?: boolean;
   levelInsight?: ReactNode;
 }
 
@@ -70,7 +69,6 @@ export function OutputTable({
   rows,
   isCorrect,
   error,
-  showGlobalPhaseNote = false,
   levelInsight,
 }: OutputTableProps) {
   return (
@@ -151,14 +149,6 @@ export function OutputTable({
               circuit is correct.
             </Tooltip>
           </div>
-
-          {showGlobalPhaseNote && (
-            <p className="mt-2 font-sans text-[12px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed">
-              Circuits that differ only by a global phase produce identical measurement
-              probabilities. Trial and Expected outputs may show different complex amplitudes,
-              but matching probability columns mean the circuits are physically equivalent.
-            </p>
-          )}
         </>
       )}
     </div>

@@ -275,7 +275,6 @@ function SolveLevelContent({
                 rows={rows}
                 isCorrect={allCorrect}
                 error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
-                showGlobalPhaseNote={currentLevel.target_unitary === Gate.H}
                 levelInsight={
                   currentLevel.target_unitary === Gate.H && allCorrect ? (
                     <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">
