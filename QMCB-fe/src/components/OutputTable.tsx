@@ -12,7 +12,15 @@ interface OutputTableProps {
   showGlobalPhaseNote?: boolean;
 }
 
-const GRID_COLS = "64px 120px 64px 96px 64px 32px";
+const GRID_COLS = "55px 150px 58px 75px 58px 52px";
+const COLUMN_GAP = "10px";
+
+const rowGridStyle = {
+  display: "grid" as const,
+  gridTemplateColumns: GRID_COLS,
+  columnGap: COLUMN_GAP,
+};
+
 const EXPECTED_P_TOOLTIP_ID = "expected-p-probability";
 
 function splitAmplitudeTerms(value: string): string[] {
@@ -25,7 +33,7 @@ function AmplitudeCell({ value }: { value: string }) {
   return (
     <>
       {terms.map((term, i) => (
-        <span key={i} className="block truncate">
+        <span key={i} className="block">
           {term}
         </span>
       ))}
@@ -70,7 +78,7 @@ export function OutputTable({
   showGlobalPhaseNote = false,
 }: OutputTableProps) {
   return (
-    <div className="min-w-0 overflow-visible">
+    <div className="w-full box-border overflow-visible">
       <div className="mb-2">
         <h2 className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase">
           CIRCUIT OUTPUT
@@ -95,50 +103,36 @@ export function OutputTable({
 
       {rows && (
         <>
-          <div className="relative min-w-0 pb-5 overflow-visible">
-            <div
-              className="font-mono text-[10px] w-full min-w-0"
-              style={{ display: "grid" }}
-            >
-              <div
-                className="text-text-muted border-b border-tier1"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: GRID_COLS,
-                  columnGap: "2px",
-                }}
-              >
-                <span className="py-1 truncate">Input</span>
-                <span className="py-1 truncate">Trial</span>
-                <span className="py-1 truncate">P(t)</span>
-                <span className="py-1 truncate">Expected</span>
-                <span className="py-1 truncate relative pr-3">
+          <div className="relative w-full box-border pb-5 overflow-visible">
+            <div className="font-mono text-[10px] w-full box-border overflow-visible">
+              <div className="text-text-muted border-b border-tier1" style={rowGridStyle}>
+                <span className="py-1">Input</span>
+                <span className="py-1">Trial</span>
+                <span className="py-1">P(t)</span>
+                <span className="py-1">Expected</span>
+                <span className="py-1 relative">
                   P(e)
                   <ExpectedPHeaderTooltip />
                 </span>
-                <span className="py-1 truncate">Match</span>
+                <span className="py-1">Match</span>
               </div>
 
               {rows.map((r) => (
                 <div
                   key={r.input}
                   className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: GRID_COLS,
-                    columnGap: "2px",
-                  }}
+                  style={rowGridStyle}
                 >
-                  <span className="py-1 text-tier3 truncate">{r.input}</span>
+                  <span className="py-1 text-tier3">{r.input}</span>
                   <span
-                    className={`py-1 truncate ${r.ok ? "text-tier3" : "text-mismatch-text"}`}
+                    className={`py-1 ${r.ok ? "text-tier3" : "text-mismatch-text"}`}
                   >
                     <AmplitudeCell value={r.trial} />
                   </span>
                   <span className="py-1 text-text-muted">
                     <ProbabilityCell probs={r.trialProbabilities} />
                   </span>
-                  <span className="py-1 text-tier3 truncate">
+                  <span className="py-1 text-tier3">
                     <AmplitudeCell value={r.target} />
                   </span>
                   <span className="py-1 text-text-muted">

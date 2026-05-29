@@ -41,7 +41,7 @@ import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 
-const RIGHT_PANEL_WIDTH_PX = 480;
+const RIGHT_PANEL_WIDTH_PX = 522;
 const APP_HEADER_HEIGHT_PX = 40;
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {

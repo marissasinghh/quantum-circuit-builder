@@ -88,7 +88,7 @@ export function CircuitCanvas({
           {wireYs.map((y, i) => (
             <div
               key={`wire-${i}`}
-              className="absolute left-[36px] right-0 pointer-events-none"
+              className="absolute left-[36px] right-5 pointer-events-none"
               style={{ top: y }}
             >
               <div
