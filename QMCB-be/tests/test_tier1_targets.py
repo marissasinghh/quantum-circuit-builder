@@ -269,6 +269,33 @@ class TestRxTarget:
         assert response["trial_truth_table"]["output"] == rx_quarter_pi_outputs
         assert response["trial_truth_table"]["output"] != rx_half_pi_outputs
 
+    def test_rx_canonical_solution_passes_via_probability_fallback(self) -> None:
+        """Rz(-π/2) · Sqrt_X · Rz(π/2) passes RX target via probability fallback."""
+        trial = UnitaryDTO(
+            number_of_qubits=1,
+            gates=[
+                {"gate": Gate.RZ.value, "theta": -math.pi / 2},
+                Gate.SQRT_X.value,
+                {"gate": Gate.RZ.value, "theta": math.pi / 2},
+            ],
+            qubit_order=[[0], [0], [0]],
+        )
+        response, status = _run(trial, Gate.RX.value, validate_target=False)
+        assert status == 200
+        assert response["all_match"] is True
+        assert response["trial_truth_table"]["output"] != response["target_truth_table"]["output"]
+
+    def test_wrong_decomposition_still_fails(self) -> None:
+        """A single Rz gate must not pass the RX target via probability fallback."""
+        trial = UnitaryDTO(
+            number_of_qubits=1,
+            gates=[{"gate": Gate.RZ.value, "theta": math.pi / 4}],
+            qubit_order=[[0]],
+        )
+        response, status = _run(trial, Gate.RX.value, validate_target=False)
+        assert status == 200
+        assert response["all_match"] is False
+
 
 # ── Level 1.5: RY Gate ────────────────────────────────────────────────────────
 

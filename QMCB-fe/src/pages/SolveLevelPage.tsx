@@ -154,7 +154,7 @@ function SolveLevelContent({
   React.useEffect(() => {
     if (allCorrect && rows && rows.length > 0) {
       markLevelComplete(currentLevel);
-      const t = setTimeout(() => setShowCompletionModal(true), 1500);
+      const t = setTimeout(() => setShowCompletionModal(true), 300);
       return () => clearTimeout(t);
     }
     setShowCompletionModal(false);
@@ -234,7 +234,7 @@ function SolveLevelContent({
             }}
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
-              <Toolbox availableGates={unlockedGates} activeId={activeId} />
+              <Toolbox availableGates={unlockedGates} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
             </div>
             {currentLevel.number_of_qubits === 1 && (
               <>
@@ -249,7 +249,7 @@ function SolveLevelContent({
                     />
                     <BlochSphere theta={blochState.theta} phi={blochState.phi} />
                     {showOrderTip && isSLevel && (
-                      <div className="relative w-full text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
+                      <div className="relative w-full mt-[14px] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                         <button
                           type="button"
                           onClick={() => setShowOrderTip(false)}

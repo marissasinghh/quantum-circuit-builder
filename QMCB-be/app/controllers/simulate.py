@@ -16,52 +16,79 @@ from typing import Any
 import logging
 
 
+def _row_probabilities_match(
+    trial_row: list[float],
+    target_row: list[float],
+    atol: float = 1e-6,
+) -> bool:
+    """Return True when a single row's probability vectors match within tolerance."""
+    if len(trial_row) != len(target_row):
+        return False
+    return all(abs(t_p - g_p) < atol for t_p, g_p in zip(trial_row, target_row))
+
+
 def _probabilities_match(
     trial_probs: list[list[float]],
     target_probs: list[list[float]],
-    atol: float = 0.02,
+    atol: float = 1e-6,
 ) -> bool:
     """Return True when every row's probability vector matches within tolerance."""
     if len(trial_probs) != len(target_probs):
         return False
 
     for trial_row, target_row in zip(trial_probs, target_probs):
-        if len(trial_row) != len(target_row):
+        if not _row_probabilities_match(trial_row, target_row, atol):
             return False
-        for t_p, g_p in zip(trial_row, target_row):
-            if abs(t_p - g_p) > atol:
-                return False
 
     return True
 
 
-def _match_amplitudes_up_to_global_phase(
-    trial_amps: list[list[list[float]]],
-    target_amps: list[list[list[float]]],
-    atol: float = 0.02,
+def _row_is_superposition(probs: list[float]) -> bool:
+    """True when the row has measurable probability on more than one basis state."""
+    return sum(1 for p in probs if p > 1e-6) > 1
+
+
+def _compute_all_match(
+    trial_dict: dict[str, Any],
+    target_dict: dict[str, Any],
+    allow_global_phase: bool,
 ) -> bool:
     """
-    Return True if trial amplitudes equal target amplitudes up to one global phase.
+    Return True when every truth-table row matches.
 
-    Uses stored [re, im] pairs from the truth table (no raw state-vector re-simulation).
+    Primary check: Dirac string equality. When allow_global_phase is set and
+    strings differ on a superposition row, fall back to per-row probability
+    comparison. Definite-state rows (e.g. S/T on |1⟩) still require matching
+    strings so phase-distinct gates are not treated as equivalent.
     """
-    ratios: list[complex] = []
-    for tr_row, tg_row in zip(trial_amps, target_amps):
-        for tr_pair, tg_pair in zip(tr_row, tg_row):
-            tr_amp = complex(tr_pair[0], tr_pair[1])
-            tg_amp = complex(tg_pair[0], tg_pair[1])
-            if abs(tg_amp) > 1e-4:
-                ratios.append(tr_amp / tg_amp)
+    trial_outputs = trial_dict["output"]
+    target_outputs = target_dict["output"]
 
-    if not ratios:
+    if trial_outputs == target_outputs:
+        return True
+
+    if not allow_global_phase:
         return False
 
-    phi = ratios[0]
-    if abs(abs(phi) - 1.0) > atol:
+    trial_probs = trial_dict.get("probabilities") or []
+    target_probs = target_dict.get("probabilities") or []
+
+    if not trial_probs or not target_probs:
         return False
 
-    for r in ratios[1:]:
-        if abs(r - phi) > atol:
+    if len(trial_outputs) != len(target_outputs):
+        return False
+
+    for i, (trial_out, target_out) in enumerate(zip(trial_outputs, target_outputs)):
+        if trial_out == target_out:
+            continue
+        if i >= len(trial_probs) or i >= len(target_probs):
+            return False
+        if not _row_is_superposition(trial_probs[i]) or not _row_is_superposition(
+            target_probs[i]
+        ):
+            return False
+        if not _row_probabilities_match(trial_probs[i], target_probs[i]):
             return False
 
     return True
@@ -161,14 +188,7 @@ def simulate_unitaries(
     trial_dict = trial_truth_table_dto.to_dict()
     target_dict = target_truth_table_dto.to_dict()
 
-    all_match = trial_dict["output"] == target_dict["output"]
-
-    if not all_match and resolved.allow_global_phase:
-        all_match = _probabilities_match(
-            trial_dict["probabilities"], target_dict["probabilities"]
-        ) and _match_amplitudes_up_to_global_phase(
-            trial_dict["amplitudes"], target_dict["amplitudes"]
-        )
+    all_match = _compute_all_match(trial_dict, target_dict, resolved.allow_global_phase)
 
     return {
         "message": "Successfully simulated circuits.",

@@ -100,9 +100,6 @@ export function OutputTable({
           <p className="text-sm font-sans text-mismatch-text font-medium">
             {matchCount}/{totalRows} rows match
           </p>
-          <p className="text-[12px] font-sans text-text-muted mt-1">
-            Double-check your qubit ordering
-          </p>
           {onClearAndRetry && (
             <button
               type="button"

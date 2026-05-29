@@ -12,6 +12,7 @@ import { Tooltip, TooltipMath } from "./Tooltip";
 interface ToolboxProps {
   availableGates: readonly Gate[];
   activeId: string | null;
+  numberOfQubits: number;
 }
 
 const GATE_CONFIG = {
@@ -236,7 +237,7 @@ export function BlochPreviewToggle({
   );
 }
 
-export function Toolbox({ availableGates }: ToolboxProps) {
+export function Toolbox({ availableGates, numberOfQubits }: ToolboxProps) {
   const { completedLevels } = useLevelProgress();
 
   return (
@@ -271,7 +272,9 @@ export function Toolbox({ availableGates }: ToolboxProps) {
         })}
       </div>
       <p className="mt-2 font-sans text-xs text-text-muted leading-relaxed">
-        Drag a gate onto the wires. For 2-qubit gates, set the order after placement.
+        {numberOfQubits === 1
+          ? "Drag a gate onto the wires."
+          : "Drag a gate onto the wires. For 2-qubit gates, set the order after placement."}
       </p>
     </div>
   );
