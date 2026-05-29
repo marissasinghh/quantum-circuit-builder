@@ -12,14 +12,7 @@ interface OutputTableProps {
   showGlobalPhaseNote?: boolean;
 }
 
-const GRID_COLS = "55px 150px 58px 75px 58px 52px";
-const COLUMN_GAP = "10px";
-
-const rowGridStyle = {
-  display: "grid" as const,
-  gridTemplateColumns: GRID_COLS,
-  columnGap: COLUMN_GAP,
-};
+const CELL_CLASS = "px-3 py-1.5";
 
 const EXPECTED_P_TOOLTIP_ID = "expected-p-probability";
 
@@ -33,7 +26,7 @@ function AmplitudeCell({ value }: { value: string }) {
   return (
     <>
       {terms.map((term, i) => (
-        <span key={i} className="block">
+        <span key={i} className="block whitespace-nowrap">
           {term}
         </span>
       ))}
@@ -104,46 +97,46 @@ export function OutputTable({
       {rows && (
         <>
           <div className="relative w-full box-border pb-8 overflow-visible">
-            <div className="font-mono text-[10px] w-full box-border overflow-visible">
-              <div className="text-text-muted border-b border-tier1" style={rowGridStyle}>
-                <span className="py-1">Input</span>
-                <span className="py-1">Trial</span>
-                <span className="py-1">P(t)</span>
-                <span className="py-1">Expected</span>
-                <span className="py-1 relative">
-                  P(e)
-                  <ExpectedPHeaderTooltip />
-                </span>
-                <span className="py-1">Match</span>
-              </div>
-
-              {rows.map((r) => (
-                <div
-                  key={r.input}
-                  className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}
-                  style={rowGridStyle}
-                >
-                  <span className="py-1 text-tier3">{r.input}</span>
-                  <span
-                    className={`py-1 ${r.ok ? "text-tier3" : "text-mismatch-text"}`}
-                  >
-                    <AmplitudeCell value={r.trial} />
-                  </span>
-                  <span className="py-1 text-text-muted">
-                    <ProbabilityCell probs={r.trialProbabilities} />
-                  </span>
-                  <span className="py-1 text-tier3">
-                    <AmplitudeCell value={r.target} />
-                  </span>
-                  <span className="py-1 text-text-muted">
-                    <ProbabilityCell probs={r.targetProbabilities} />
-                  </span>
-                  <span className={`py-1 ${r.ok ? "text-tier3" : "text-error-action"}`}>
-                    {r.ok ? "✓" : "✗"}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <table
+              className="font-mono text-[10px] w-full box-border overflow-visible"
+              style={{ tableLayout: "auto" }}
+            >
+              <thead>
+                <tr className="text-text-muted border-b border-tier1">
+                  <th className={`${CELL_CLASS} text-left font-normal`}>Input</th>
+                  <th className={`${CELL_CLASS} text-left font-normal`}>Trial</th>
+                  <th className={`${CELL_CLASS} text-left font-normal`}>P(t)</th>
+                  <th className={`${CELL_CLASS} text-left font-normal`}>Expected</th>
+                  <th className={`${CELL_CLASS} text-left font-normal relative`}>
+                    P(e)
+                    <ExpectedPHeaderTooltip />
+                  </th>
+                  <th className={`${CELL_CLASS} text-left font-normal`}>Match</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.input} className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}>
+                    <td className={`${CELL_CLASS} text-tier3`}>{r.input}</td>
+                    <td className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-mismatch-text"}`}>
+                      <AmplitudeCell value={r.trial} />
+                    </td>
+                    <td className={`${CELL_CLASS} text-text-muted`}>
+                      <ProbabilityCell probs={r.trialProbabilities} />
+                    </td>
+                    <td className={`${CELL_CLASS} text-tier3`}>
+                      <AmplitudeCell value={r.target} />
+                    </td>
+                    <td className={`${CELL_CLASS} text-text-muted`}>
+                      <ProbabilityCell probs={r.targetProbabilities} />
+                    </td>
+                    <td className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-error-action"}`}>
+                      {r.ok ? "✓" : "✗"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
             <Tooltip id="circuit-output" bottom={4} right={0}>
               Quantum gates are linear operations. This means if your circuit produces the right

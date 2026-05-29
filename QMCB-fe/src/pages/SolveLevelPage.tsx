@@ -41,7 +41,7 @@ import { gateSequenceToBlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 
-const RIGHT_PANEL_WIDTH_PX = 522;
+const RIGHT_PANEL_WIDTH_PX = 523;
 const APP_HEADER_HEIGHT_PX = 40;
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
@@ -226,7 +226,7 @@ function SolveLevelContent({
 
           {/* Right: Toolbox + Bloch + Output */}
           <aside
-            className="shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto overflow-x-hidden flex flex-col gap-0 min-w-0 min-h-0 h-full"
+            className="shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto flex flex-col gap-0 min-w-0 min-h-0 h-full"
             style={{
               width: RIGHT_PANEL_WIDTH_PX,
               maxHeight: `calc(100vh - ${APP_HEADER_HEIGHT_PX}px)`,
