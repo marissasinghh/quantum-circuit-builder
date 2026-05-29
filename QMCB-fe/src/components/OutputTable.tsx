@@ -2,10 +2,16 @@
  * Output Table: displays the circuit output truth table and validation results.
  */
 
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { TruthRow } from "../interfaces/truthTable";
 import { Tooltip, TooltipMath } from "./Tooltip";
 import { LoadingSpinner } from "./LoadingSpinner";
+import {
+  formatAmplitudeMultiLine,
+  formatAmplitudeOneLine,
+  parseAmplitudeTerms,
+} from "../utils/amplitudeDisplay";
 
 interface OutputTableProps {
   rows: TruthRow[] | null;
@@ -20,21 +26,65 @@ const CELL_CLASS = "px-3 py-1.5";
 
 const EXPECTED_P_TOOLTIP_ID = "expected-p-probability";
 
-function splitAmplitudeTerms(value: string): string[] {
-  if (!value.includes(" + ")) return [value];
-  return value.split(/\s+\+\s+/);
-}
-
 function AmplitudeCell({ value }: { value: string }) {
-  const terms = splitAmplitudeTerms(value);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const [useMultiLine, setUseMultiLine] = useState(false);
+
+  const terms = useMemo(() => parseAmplitudeTerms(value), [value]);
+  const oneLine = useMemo(() => formatAmplitudeOneLine(terms), [terms]);
+  const multiLines = useMemo(() => formatAmplitudeMultiLine(terms), [terms]);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const measure = measureRef.current;
+    if (!container || !measure) return;
+
+    const updateLayout = () => {
+      const availableWidth = container.clientWidth;
+      const measuredWidth = measure.getBoundingClientRect().width;
+
+      if (availableWidth <= 0) {
+        setUseMultiLine(false);
+        return;
+      }
+
+      if (terms.length <= 1) {
+        setUseMultiLine(false);
+        return;
+      }
+
+      setUseMultiLine(measuredWidth > availableWidth);
+    };
+
+    updateLayout();
+
+    const observer = new ResizeObserver(updateLayout);
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [oneLine, terms.length]);
+
+  const lines = useMultiLine ? multiLines : [oneLine];
+
   return (
-    <>
-      {terms.map((term, i) => (
-        <span key={i} className="block whitespace-nowrap">
-          {term}
-        </span>
+    <div
+      ref={containerRef}
+      className="relative whitespace-normal overflow-visible break-words min-w-0"
+    >
+      <span
+        ref={measureRef}
+        aria-hidden
+        className="invisible absolute font-mono text-[10px] whitespace-nowrap pointer-events-none"
+      >
+        {oneLine}
+      </span>
+      {lines.map((line, i) => (
+        <div key={i} className="block whitespace-normal overflow-visible break-words">
+          {line}
+        </div>
       ))}
-    </>
+    </div>
   );
 }
 
