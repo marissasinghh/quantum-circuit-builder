@@ -92,7 +92,7 @@ function SolveLevelContent({
   const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, clearAll } =
     useCircuit();
 
-  const { unlockedGates, markLevelComplete } = useLevelProgress();
+  const { unlockedGates, markLevelComplete, unlockGateForLevel } = useLevelProgress();
 
   const isSeedDrivenLevel = currentLevel.parameterMode === ParameterMode.SEED_ZXZ;
   const { query: randomUnitaryQuery, generateNew: generateNewUnitary, seed: randomSeed } =
@@ -121,13 +121,13 @@ function SolveLevelContent({
     [gates, initialState]
   );
 
-  const isTLevel = currentLevel.target_unitary === Gate.T;
+  const isSLevel = currentLevel.target_unitary === Gate.S;
   const [showOrderTip, setShowOrderTip] = React.useState(false);
   const prevGateCountRef = React.useRef(0);
   const prevRzThetaSigRef = React.useRef("");
 
   React.useEffect(() => {
-    if (!isTLevel) {
+    if (!isSLevel) {
       prevGateCountRef.current = gates.length;
       prevRzThetaSigRef.current = "";
       return;
@@ -149,7 +149,7 @@ function SolveLevelContent({
 
     prevGateCountRef.current = gateCount;
     prevRzThetaSigRef.current = onlyRz ? thetaSig : "";
-  }, [gates, isTLevel]);
+  }, [gates, isSLevel]);
 
   React.useEffect(() => {
     if (allCorrect && rows && rows.length > 0) {
@@ -178,6 +178,7 @@ function SolveLevelContent({
   const handleNextLevel = () => {
     const next = getNextLevel(currentLevel);
     if (next) {
+      unlockGateForLevel(currentLevel);
       setShowCompletionModal(false);
       navigate("/level/" + next.target_unitary);
     }
@@ -247,7 +248,7 @@ function SolveLevelContent({
                       onSelect1={() => setInitialState(1)}
                     />
                     <BlochSphere theta={blochState.theta} phi={blochState.phi} />
-                    {showOrderTip && (
+                    {showOrderTip && isSLevel && (
                       <div className="relative w-full text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                         <button
                           type="button"
@@ -258,7 +259,8 @@ function SolveLevelContent({
                           ×
                         </button>
                         <p className="pr-4">
-                          Gate order matters — Rz has nothing to rotate yet. Try placing sqrt(X) first.
+                          Gate order matters — to visually see how Rz(θ) rotates the Bloch sphere,
+                          try placing Sqrt_X first.
                         </p>
                       </div>
                     )}
@@ -274,6 +276,24 @@ function SolveLevelContent({
                 isCorrect={allCorrect}
                 error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
                 showGlobalPhaseNote={currentLevel.target_unitary === Gate.H}
+                levelInsight={
+                  currentLevel.target_unitary === Gate.H && allCorrect ? (
+                    <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">
+                      <p className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-1.5">
+                        LEVEL INSIGHT
+                      </p>
+                      <p className="font-sans text-sm text-text-body leading-relaxed">
+                        Notice! The outputs show different complex amplitudes but the circuit still
+                        passed. This is because the circuits differed by a{" "}
+                        <span className="font-semibold text-tier3">global phase</span>. Global phase
+                        differences are physically unobservable — the circuits will still have
+                        identical{" "}
+                        <span className="font-semibold text-tier3">probability</span> columns and be
+                        physically equivalent!
+                      </p>
+                    </div>
+                  ) : undefined
+                }
               />
             </div>
           </aside>

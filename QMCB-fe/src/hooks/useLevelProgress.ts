@@ -51,6 +51,7 @@ interface LevelProgressContextValue {
   completedLevels: string[];
   unlockedGates: Gate[];
   markLevelComplete: (level: LevelDefinition) => void;
+  unlockGateForLevel: (level: LevelDefinition) => void;
   resetProgress: () => void;
 }
 
@@ -60,21 +61,34 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<ProgressState>(loadProgress);
 
   /**
+   * Records level completion without updating the toolbox.
    * Idempotent: calling this multiple times for the same level is safe.
-   * RANDOM_U is a sentinel (not a real toolbox gate) and is skipped for unlock.
    */
   const markLevelComplete = useCallback((level: LevelDefinition) => {
     const levelId = level.target_unitary;
     setProgress((prev) => {
       if (prev.completedLevels.includes(levelId)) return prev;
-      const isRealGate = levelId !== Gate.RANDOM_U;
-      const alreadyUnlocked = prev.unlockedGates.includes(levelId as Gate);
       const next: ProgressState = {
         completedLevels: [...prev.completedLevels, levelId],
-        unlockedGates:
-          isRealGate && !alreadyUnlocked
-            ? [...prev.unlockedGates, levelId as Gate]
-            : prev.unlockedGates,
+        unlockedGates: prev.unlockedGates,
+      };
+      localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  /**
+   * Adds the completed level's target gate to the toolbox.
+   * RANDOM_U is a sentinel (not a real toolbox gate) and is skipped.
+   */
+  const unlockGateForLevel = useCallback((level: LevelDefinition) => {
+    const levelId = level.target_unitary;
+    const isRealGate = levelId !== Gate.RANDOM_U;
+    setProgress((prev) => {
+      if (!isRealGate || prev.unlockedGates.includes(levelId as Gate)) return prev;
+      const next: ProgressState = {
+        ...prev,
+        unlockedGates: [...prev.unlockedGates, levelId as Gate],
       };
       localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
       return next;
@@ -91,6 +105,7 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
     completedLevels: progress.completedLevels,
     unlockedGates: progress.unlockedGates,
     markLevelComplete,
+    unlockGateForLevel,
     resetProgress,
   };
 

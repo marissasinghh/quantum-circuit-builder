@@ -2,6 +2,7 @@
  * Output Table: displays the circuit output truth table and validation results.
  */
 
+import type { ReactNode } from "react";
 import type { TruthRow } from "../interfaces/truthTable";
 import { Tooltip, TooltipMath } from "./Tooltip";
 
@@ -10,6 +11,7 @@ interface OutputTableProps {
   isCorrect: boolean;
   error: Error | null;
   showGlobalPhaseNote?: boolean;
+  levelInsight?: ReactNode;
 }
 
 const CELL_CLASS = "px-3 py-1.5";
@@ -69,6 +71,7 @@ export function OutputTable({
   isCorrect,
   error,
   showGlobalPhaseNote = false,
+  levelInsight,
 }: OutputTableProps) {
   return (
     <div className="w-full box-border overflow-visible">
@@ -83,6 +86,8 @@ export function OutputTable({
           All rows match — circuit verified ✓
         </div>
       )}
+
+      {levelInsight}
 
       {error && (
         <div className="font-sans text-[12px] text-error-action mb-2">{error.message}</div>

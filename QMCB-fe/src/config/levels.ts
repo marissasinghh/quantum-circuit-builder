@@ -54,8 +54,8 @@ export const X_LEVEL: LevelDefinition = {
 
   description:
     "The X gate flips a qubit: $|0\\rangle \\mapsto |1\\rangle$ and $|1\\rangle \\mapsto |0\\rangle$. It is the quantum NOT gate. Synthesize a circuit whose unitary matches X exactly.",
-  hint1: "Check how sqrt_x moves the state on the Bloch sphere.",
-  hint2: "How could you use sqrt_x to move the state further south?",
+  hint1: "Check how Sqrt_X moves the state on the Bloch sphere.",
+  hint2: "How could you use Sqrt_X to move the state further south?",
 } as const;
 
 // ========================
@@ -79,7 +79,7 @@ export const S_LEVEL: LevelDefinition = {
 
   description:
     "The S gate applies a $\\frac{\\pi}{2}$ phase rotation: $|0\\rangle \\mapsto |0\\rangle$ and $|1\\rangle \\mapsto i|1\\rangle$. Synthesize a circuit whose unitary matches S exactly.",
-  hint1: "S is a pure Z-axis rotation; to better visualize this rotation, place a sqrt_x gate first to see how Rz(θ) rotates the state.",
+  hint1: "S is a pure Z-axis rotation; to better visualize this rotation, place a Sqrt_X gate first to see how Rz(θ) rotates the state.",
   hint2: "What angle do you need to use to make the π/2 phase rotation?",
 } as const;
 
@@ -131,8 +131,8 @@ export const H_LEVEL: LevelDefinition = {
 
   description:
     "The Hadamard gate creates equal superposition: $|0\\rangle \\mapsto \\frac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$ and $|1\\rangle \\mapsto \\frac{|0\\rangle - |1\\rangle}{\\sqrt{2}}$. Synthesize a circuit whose unitary matches H exactly.",
-  hint1: "H requires both rotation axes — combine Rz and SQRT_X in sequence.",
-  hint2: "Conjugating sqrt_x by Rz rotations changes the effective rotation axis — try sandwiching sqrt_x between two Rz gates.",
+  hint1: "H requires both rotation axes — combine Rz and Sqrt_X in sequence.",
+  hint2: "Conjugating Sqrt_X by Rz rotations changes the effective rotation axis — try sandwiching Sqrt_X between two Rz gates.",
 } as const;
 
 // ========================

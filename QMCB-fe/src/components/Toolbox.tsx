@@ -22,7 +22,7 @@ const GATE_CONFIG = {
   },
   [Gate.SQRT_X]: {
     label: "√X",
-    description: "Square-root of X",
+    description: "Sqrt_X gate",
     toolId: "tool-sqrt-x",
   },
   [Gate.CNOT]: {
