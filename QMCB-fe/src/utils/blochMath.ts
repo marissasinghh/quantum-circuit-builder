@@ -260,13 +260,16 @@ export function canonicalStepsToBlochState(
   canonical: readonly { gate: Gate; order: readonly number[]; theta?: number }[],
   initialState: 0 | 1 = 0,
 ): BlochState {
-  const pseudoGates: PlacedGate[] = canonical.map((step, i) => ({
+  // Cast is safe: gateSequenceToBlochState already casts gate.type to Gate
+  // internally, and skips any step without a "wire" key. All pseudo-gates here
+  // have "wire", so they pass the isSingleQubitGate guard.
+  const pseudoGates = canonical.map((step, i) => ({
     id: `__target_${i}`,
-    type: step.gate as Gate,
+    type: step.gate,
     wire: (step.order[0] ?? 0) as 0 | 1,
     column: i,
     ...(step.theta !== undefined && { theta: step.theta }),
-  }));
+  })) as unknown as PlacedGate[];
   return gateSequenceToBlochState(pseudoGates, initialState);
 }
 
