@@ -14,6 +14,7 @@ export const colors = {
   body: "#c8dde8",
   muted: "#3a6070",
   blochLabel: "#8ab4c8",
+  targetDot: "#ff4d4d",
   errorAction: "#a05555",
 };
 

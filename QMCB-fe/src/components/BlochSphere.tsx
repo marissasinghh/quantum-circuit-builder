@@ -18,6 +18,9 @@ import { colors, fonts } from "../design-tokens";
 interface BlochSphereProps {
   theta: number;
   phi: number;
+  /** When provided, a red dot is drawn at the target state's Bloch position. */
+  targetTheta?: number;
+  targetPhi?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -122,19 +125,29 @@ const CIRCLE_FRONT  = colors.wireframe;
 const AXIS_STROKE   = colors.wireframe;
 const LABEL_MAIN    = colors.blochLabel;
 const LABEL_AXIS    = colors.blochLabel;
-const ARROW_COLOR   = colors.cyan;
-const DOT_COLOR     = colors.cyan;
+const ARROW_COLOR      = colors.cyan;
+const DOT_COLOR        = colors.cyan;
+const TARGET_DOT_COLOR = colors.targetDot;
 const FONT = fonts.mono;
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export function BlochSphere({ theta, phi }: BlochSphereProps) {
+export function BlochSphere({ theta, phi, targetTheta, targetPhi }: BlochSphereProps) {
   const bx = Math.sin(theta) * Math.cos(phi);
   const by = Math.sin(theta) * Math.sin(phi);
   const bz = Math.cos(theta);
   const tip = project(bx, by, bz);
   const arrowAngleDeg = (Math.atan2(tip.y - CY, tip.x - CX) * 180) / Math.PI;
+
+  const hasTarget = targetTheta !== undefined && targetPhi !== undefined;
+  const targetTip = hasTarget
+    ? project(
+        Math.sin(targetTheta!) * Math.cos(targetPhi!),
+        Math.sin(targetTheta!) * Math.sin(targetPhi!),
+        Math.cos(targetTheta!),
+      )
+    : null;
 
   // Axis endpoints — exactly at sphere surface so lines stop at the equatorial cross-sections
   const A = 1.0;
@@ -212,7 +225,13 @@ export function BlochSphere({ theta, phi }: BlochSphereProps) {
         <text x={lbYneg.x - 4} y={lbYneg.y} fontSize={9} fontFamily={FONT} fontWeight={700}
               fill={LABEL_MAIN} textAnchor="end" dominantBaseline="middle">|−i⟩</text>
 
-        {/* ── 6. State arrow ── */}
+        {/* ── 6. Target-state dot (drawn before student arrow so cyan stays on top) ── */}
+        {targetTip && (
+          <circle cx={targetTip.x} cy={targetTip.y} r={5}
+                  fill={TARGET_DOT_COLOR} opacity={0.85} />
+        )}
+
+        {/* ── 7. State arrow ── */}
         <line x1={CX} y1={CY} x2={tip.x} y2={tip.y}
               stroke={ARROW_COLOR} strokeWidth={2.5} strokeLinecap="round" />
         <polygon

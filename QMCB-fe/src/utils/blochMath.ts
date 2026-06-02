@@ -221,6 +221,56 @@ export function gateSequenceToBlochState(
 }
 
 // ---------------------------------------------------------------------------
+// Target-state helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert a raw amplitude pair (each as [real, imag]) into Bloch-sphere angles.
+ * Mirrors the final two steps of gateSequenceToBlochState() so callers that
+ * already have a state vector (e.g. from the backend truth-table amplitudes)
+ * can get (θ, φ) without re-running the gate simulation.
+ */
+export function amplitudesToBlochState(
+  alpha: readonly [number, number],
+  beta:  readonly [number, number],
+): BlochState {
+  const a: C = { re: alpha[0], im: alpha[1] };
+  const b: C = { re: beta[0],  im: beta[1]  };
+
+  const absAlpha = Math.min(1, Math.max(0, cabs(a)));
+  const theta = 2 * Math.acos(absAlpha);
+
+  let phi = carg(b) - carg(a);
+  if (phi < 0) phi += 2 * Math.PI;
+
+  return { theta, phi };
+}
+
+/**
+ * Compute the target Bloch state for a level's canonical gate sequence.
+ *
+ * Adapts each GateStep into the PlacedSingleQubitGate shape expected by
+ * gateSequenceToBlochState() (two-qubit steps are silently skipped by that
+ * function when the order has length > 1 — the isSingleQubitGate guard
+ * requires a "wire" key, which we set from order[0]).
+ *
+ * Used to show the red target-state dot on the Bloch sphere for fixed levels.
+ */
+export function canonicalStepsToBlochState(
+  canonical: readonly { gate: Gate; order: readonly number[]; theta?: number }[],
+  initialState: 0 | 1 = 0,
+): BlochState {
+  const pseudoGates: PlacedGate[] = canonical.map((step, i) => ({
+    id: `__target_${i}`,
+    type: step.gate as Gate,
+    wire: (step.order[0] ?? 0) as 0 | 1,
+    column: i,
+    ...(step.theta !== undefined && { theta: step.theta }),
+  }));
+  return gateSequenceToBlochState(pseudoGates, initialState);
+}
+
+// ---------------------------------------------------------------------------
 // Inline sanity checks (dev only)
 // ---------------------------------------------------------------------------
 
