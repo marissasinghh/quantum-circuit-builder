@@ -5,6 +5,7 @@
 import type { ReactNode } from "react";
 import { ONBOARDING_COMPLETE_KEY } from "../utils/constants";
 import { colors } from "../design-tokens";
+import SuperpositionTable from "./SuperpositionTable";
 
 export { ONBOARDING_COMPLETE_KEY };
 
@@ -269,6 +270,7 @@ function OnboardingContent({
         State vector pointing straight up? You are at <Q>|0⟩</Q>. Straight down? <Q>|1⟩</Q>.
         Anywhere else on the sphere and you are in superposition.
       </BodyParagraph>
+      <SuperpositionTable />
 
       <SectionDivider />
 

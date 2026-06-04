@@ -8,6 +8,7 @@ import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { DraggableTool } from "./DragAndDropWrappers";
 import { Tooltip, TooltipMath } from "./Tooltip";
+import SuperpositionTable from "./SuperpositionTable";
 
 interface ToolboxProps {
   availableGates: readonly Gate[];
@@ -187,7 +188,8 @@ export const BLOCH_SPHERE_TOOLTIP = (
     <TooltipMath>|0⟩</TooltipMath>, the south pole is <TooltipMath>|1⟩</TooltipMath>, and the
     equator is where superpositions live — <TooltipMath>|+⟩</TooltipMath>,{" "}
     <TooltipMath>|−⟩</TooltipMath>, <TooltipMath>|i⟩</TooltipMath>, and{" "}
-    <TooltipMath>|−i⟩</TooltipMath>. When you place gates, watch the state vector move.
+    <TooltipMath>|−i⟩</TooltipMath>.
+    <SuperpositionTable compact />
   </>
 );
 
