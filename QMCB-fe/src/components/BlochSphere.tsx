@@ -227,7 +227,7 @@ export function BlochSphere({ theta, phi, targetTheta, targetPhi }: BlochSphereP
 
         {/* ── 6. Target-state dot (drawn before student arrow so cyan stays on top) ── */}
         {targetTip && (
-          <circle cx={targetTip.x} cy={targetTip.y} r={5}
+          <circle cx={targetTip.x} cy={targetTip.y} r={3.5}
                   fill={TARGET_DOT_COLOR} opacity={0.85} />
         )}
 
