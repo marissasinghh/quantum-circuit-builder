@@ -25,6 +25,8 @@ export interface LevelDefinition {
   description?: string;
   hint1?: string;
   hint2?: string;
+  /** Post-solve insight shown after the student first passes the level. */
+  insight?: string;
   /** When true, level appears on the picker but is not openable from the grid (stub / deferred). */
   locked?: boolean;
 }

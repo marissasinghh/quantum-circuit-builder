@@ -133,6 +133,8 @@ export const H_LEVEL: LevelDefinition = {
     "The Hadamard gate creates equal superposition: $|0\\rangle \\mapsto \\frac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$ and $|1\\rangle \\mapsto \\frac{|0\\rangle - |1\\rangle}{\\sqrt{2}}$. Synthesize a circuit whose unitary matches H exactly.",
   hint1: "H requires both rotation axes — combine Rz and Sqrt_X in sequence.",
   hint2: "Conjugating Sqrt_X by Rz rotations changes the effective rotation axis — try sandwiching Sqrt_X between two Rz gates.",
+  insight:
+    "Notice! The outputs show different complex amplitudes but the circuit still passed. This is because the circuits differed by a global phase. Global phase differences are physically unobservable — the circuits will still have identical probability columns and be physically equivalent!",
 } as const;
 
 // ========================
@@ -236,6 +238,8 @@ export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
     "CNOT with flipped control and target: if $|q_1\\rangle = |1\\rangle$, flip $|q_0\\rangle$. Synthesize a circuit whose unitary matches the flipped CNOT exactly.",
   hint1: "Think about how conjugating a gate by single-qubit operations can change which qubit plays which role.",
   hint2: "Hadamards can swap the control and target roles of a CNOT.",
+  insight:
+    "A flipped CNOT and a standard CNOT are the same gate in disguise. Wrap both qubits with Hadamards on either side (H\u2297H \u00b7 CNOT \u00b7 H\u2297H) and the control and target roles effectively swap. This is called H-conjugation. It is your first look at a powerful idea: you can change what a gate does just by choosing what surrounds it.",
 } as const;
 
 // ========================
@@ -263,6 +267,8 @@ export const CONTROLLED_Z_LEVEL: LevelDefinition = {
     "The CZ gate applies a $\\pi$ phase flip when both qubits are $|1\\rangle$: $|11\\rangle \\mapsto -|11\\rangle$. Synthesize a circuit whose unitary matches CZ exactly.",
   hint1: "CZ applies a phase flip — think about which single-qubit gate converts between the X and Z bases.",
   hint2: "Wrapping a CNOT with Hadamards on one qubit converts a bit-flip into a phase-flip.",
+  insight:
+    "The truth table shows |11\u27e9 mapping to |11\u27e9, but something is hidden: CZ actually applies a phase flip, sending |11\u27e9 to \u22121|11\u27e9. You cannot see this in the output label, but the grader enforces it. In a larger circuit, that sign would affect how states interfere with each other. This is relative phase. It is invisible on its own, but physically real the moment other gates get involved.",
 } as const;
 
 // =================

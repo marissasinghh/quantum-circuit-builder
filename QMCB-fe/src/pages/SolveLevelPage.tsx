@@ -299,19 +299,13 @@ function SolveLevelContent({
                 isChecking={isChecking}
                 onClearAndRetry={handleClear}
                 levelInsight={
-                  currentLevel.target_unitary === Gate.H && allCorrect ? (
+                  currentLevel.insight && allCorrect ? (
                     <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">
                       <p className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-1.5">
                         LEVEL INSIGHT
                       </p>
                       <p className="font-sans text-sm text-text-body leading-relaxed">
-                        Notice! The outputs show different complex amplitudes but the circuit still
-                        passed. This is because the circuits differed by a{" "}
-                        <span className="font-semibold text-tier3">global phase</span>. Global phase
-                        differences are physically unobservable — the circuits will still have
-                        identical{" "}
-                        <span className="font-semibold text-tier3">probability</span> columns and be
-                        physically equivalent!
+                        {currentLevel.insight}
                       </p>
                     </div>
                   ) : undefined

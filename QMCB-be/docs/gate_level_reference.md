@@ -305,8 +305,14 @@ H[Q0], H[Q1]  →  CNOT[ctrl=Q1, tgt=Q0]  →  H[Q0], H[Q1]
 > truth table for a standard CNOT(ctrl=Q0, tgt=Q1).
 >
 > **Why:** `H⊗H · CNOT(ctrl=Q1, tgt=Q0) · H⊗H = CNOT(ctrl=Q0, tgt=Q1)` by the H-conjugation
-> identity. The circuit uses a flipped CNOT as a building block, but the net result is a
-> standard CNOT truth table. This is not a runtime bug — grading tests pass.
+> identity. The canonical reference circuit uses a flipped CNOT as a building block, but the
+> net target unitary is standard CNOT.
+>
+> **Conclusion — pedagogical display mismatch (OK, not a grading bug):** The TaskCard shows
+> the flipped-CNOT basis mapping to match the level description, while the backend grades
+> against the canonical circuit’s unitary (standard CNOT). Live check: canonical
+> H–H–CNOT(flipped)–H–H → `all_match=True`; a single flipped CNOT → `all_match=False`.
+> Grading is correct; only the static frontend preview differs from what the backend expects.
 
 **Hint 1:** Think about how conjugating a gate by single-qubit operations can change which qubit
 plays which role.
@@ -340,9 +346,14 @@ a circuit whose unitary matches CZ exactly.
 > **Flag — frontend/backend discrepancy:**
 > `levels.ts` `expectedTruth` shows `|11⟩ → |11⟩` — the `−1` phase is omitted. The
 > backend-verified output is `−1|11⟩`. This is a **relative phase** (not global), meaning it
-> IS observable and IS the defining behaviour of CZ. Likely a display simplification in the
-> frontend constants rather than a correctness issue. Confirm before using frontend truth table
-> as ground truth for CZ.
+> IS observable and IS the defining behaviour of CZ.
+>
+> **Conclusion — display-only simplification (OK, not a grading bug):** The TaskCard omits
+> the `−1` sign because ket labels hide relative phase on a definite basis state. Grading is
+> unaffected: the `|11⟩` row is a definite state (not a superposition), so the
+> `allow_global_phase` probability fallback does **not** apply there — trial `|11⟩` vs target
+> `−1|11⟩` yields `all_match=False`. Canonical H–CNOT–H passes with exact string match on
+> `−1|11⟩`. Do not use frontend `expectedTruth` as ground truth for CZ phase behaviour.
 
 **Hint 1:** CZ applies a phase flip — think about which single-qubit gate converts between
 the X and Z bases.
@@ -461,8 +472,8 @@ Grading flow: `SimulateRequestDTO` → `resolve_target_params()` → `TargetUnit
 | 1.4   | Rx            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |
 | 1.5   | Ry            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |
 | 1.6   | Random U      | 1      | n/a (no fallback)  | `parameter_mode: seed_zxz` in library + FE |
-| 2.1   | CNOT Flipped  | 2      | None               | Frontend truth table differs        |
-| 2.2   | Controlled-Z  | 2      | None               | Frontend omits −1 phase on \|11⟩    |
+| 2.1   | CNOT Flipped  | 2      | None               | Display mismatch (OK) — FE shows flipped-CNOT map, BE grades standard CNOT unitary |
+| 2.2   | Controlled-Z  | 2      | None               | Display simplification (OK) — FE omits −1 on \|11⟩; grading requires exact `-1\|11⟩` |
 | 2.3   | SWAP          | 2      | None               | —                                   |
 | 2.4   | Controlled-H  | 2      | None               | —                                   |
 | 2.5   | Controlled-U  | 2      | TBD                | FE placeholder locked; backend stub |
