@@ -19,7 +19,7 @@ import { TaskCard } from "../components/TaskCard";
 import { Toolbox, BlochPreviewToggle, BlochSphereHeader, BLOCH_SPHERE_TOOLTIP } from "../components/Toolbox";
 import { Tooltip, TooltipProvider } from "../components/Tooltip";
 import { CircuitCanvas } from "../components/CircuitCanvas";
-import { OutputTable } from "../components/OutputTable";
+import { OutputTable, type GradingSummary } from "../components/OutputTable";
 import { LevelCompleteModal } from "../components/LevelCompleteModal";
 import { BlochSphere } from "../components/BlochSphere";
 import {
@@ -168,13 +168,16 @@ function SolveLevelContent({
   }, [gates, isSLevel]);
 
   React.useEffect(() => {
-    if (allCorrect && rows && rows.length > 0) {
+    // allCorrect is derived from mutation.data?.all_match, so it's only true when
+    // the server returned a passing grade. rows may be null for random-theta levels
+    // (Rx/Ry) where the backend grades via unitary comparison with no truth table.
+    if (allCorrect) {
       markLevelComplete(currentLevel);
       const t = setTimeout(() => setShowCompletionModal(true), 300);
       return () => clearTimeout(t);
     }
     setShowCompletionModal(false);
-  }, [allCorrect, rows, markLevelComplete, currentLevel, setShowCompletionModal]);
+  }, [allCorrect, markLevelComplete, currentLevel, setShowCompletionModal]);
 
   const handleClear = () => {
     clearAll();
@@ -298,6 +301,16 @@ function SolveLevelContent({
                 error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
                 isChecking={isChecking}
                 onClearAndRetry={handleClear}
+                gradingSummary={
+                  mutation.data?.grading_mode === "random_theta" &&
+                  mutation.data.samples_checked != null &&
+                  mutation.data.samples_passed != null
+                    ? ({
+                        samplesChecked: mutation.data.samples_checked,
+                        samplesPassed: mutation.data.samples_passed,
+                      } satisfies GradingSummary)
+                    : undefined
+                }
                 levelInsight={
                   currentLevel.insight && allCorrect ? (
                     <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">

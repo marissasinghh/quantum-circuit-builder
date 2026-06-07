@@ -46,10 +46,14 @@ export function buildRequestFromLevel(
   };
 }
 
-/** Convert backend DTO into rows the table can render easily. */
-export function toTruthRows(res: SimulationResponseDTO): TruthRow[] {
+/**
+ * Convert backend DTO into rows the table can render.
+ * Returns null for random-theta responses where the backend sends no truth tables.
+ */
+export function toTruthRows(res: SimulationResponseDTO): TruthRow[] | null {
   const t = res.trial_truth_table;
   const target = res.target_truth_table;
+  if (!t || !target) return null;
   return t.input.map((inp, i) => ({
     input: inp,
     trial: t.output[i],
