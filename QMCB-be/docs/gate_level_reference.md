@@ -230,6 +230,46 @@ decomposition). This is the universal single-qubit synthesis challenge.
 
 ---
 
+## Canonical solution ±θ test matrix
+
+Tests run against the live grading path (simulate_unitaries() called directly, no HTTP
+layer). Negated-angle tests use θ = π/2 unless otherwise noted.
+Full test file: tests/test_negated_theta_diagnostic.py
+
+| Level | Test case | Result | Reason |
+|-------|-----------|--------|--------|
+| 1.3 H | Submit ZXZ canonical — Rz(π/2) → √X → Rz(π/2) — which matches H up to global phase e^(iπ/4) | Accepted ✓ | Global-phase fallback fires; single constant φ = e^(iπ/4) across all rows |
+| 1.4 Rx | Submit canonical H → Rz(π/2) → H (correct decomposition, global phase e^(iθ/2)) | Accepted ✓ | trial_has_canonical_gate = False; allow_global_phase = True; probability fallback accepts |
+| 1.4 Rx | Submit Rx(−π/2) when target is Rx(+π/2) | Rejected ✓ | target normalised to abs(θ) = +π/2; allow_global_phase = False for direct canonical submissions; strings differ and no fallback runs |
+| 1.5 Ry | Submit Ry(−π/2) when target is Ry(+π/2) | Rejected ✓ | same fix as Rx |
+| 1.6 Random U | Negate any single ZXZ angle (e.g. Rz(−α)) | Rejected ✓ | parameter_mode = seed_zxz; allow_global_phase = False; exact string match required |
+
+**Design note — global phase vs. inverse gate:**
+Global phase (e.g. H vs ZXZ canonical): every amplitude in the trial output equals
+φ × the corresponding target amplitude for a single constant φ. This is physically
+unobservable and the grading correctly accepts it via the probability fallback.
+
+Negated-angle inverse (e.g. Rx(−θ) vs Rx(+θ)): the trial produces a genuinely different
+unitary. Measurement probabilities happen to be identical (|cos(θ/2)|² is even in θ),
+so a probability-only fallback would incorrectly accept these. The fix has two parts
+working together: (1) the target is normalised to abs(θ) when the student submits the
+canonical gate directly, so trial and target are no longer string-identical; (2)
+allow_global_phase is set to False for that submission path, disabling the probability
+fallback entirely. Canonical decomposition circuits (e.g. H·Rz·H for the Rx level)
+contain no RX gate, so trial_has_canonical_gate = False, allow_global_phase stays True,
+and the fallback correctly accepts them.
+
+**Bug fixed June 4, 2026:** Prior to this fix, TRIAL_THETA levels (Rx, Ry) built the
+target circuit from the student's own submitted theta, making trial and target
+string-identical regardless of sign. This caused Rx(−θ) to be accepted as a correct
+solution for an Rx(+θ) level. Fixed by normalising the target theta to abs(θ) when the
+trial contains the canonical gate directly, and disabling the global-phase fallback for
+that submission path.
+Regression test: tests/test_negated_theta_diagnostic.py — all four cases must pass on
+every CI run.
+
+---
+
 ## Tier 2 — Two-Qubit Levels
 
 Convention: input notation `|q0q1⟩` — leftmost digit is qubit 0, rightmost is qubit 1.
@@ -418,8 +458,8 @@ Grading flow: `SimulateRequestDTO` → `resolve_target_params()` → `TargetUnit
 | 1.1   | S             | 1      | None               | —                                   |
 | 1.2   | T             | 1      | None               | —                                   |
 | 1.3   | H             | 1      | e^(iπ/4)           | —                                   |
-| 1.4   | Rx            | 1      | e^(iθ/2) (θ-dep.)  | —                                   |
-| 1.5   | Ry            | 1      | θ-dependent        | —                                   |
+| 1.4   | Rx            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |
+| 1.5   | Ry            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |
 | 1.6   | Random U      | 1      | n/a (no fallback)  | `parameter_mode: seed_zxz` in library + FE |
 | 2.1   | CNOT Flipped  | 2      | None               | Frontend truth table differs        |
 | 2.2   | Controlled-Z  | 2      | None               | Frontend omits −1 phase on \|11⟩    |

@@ -14,6 +14,10 @@ export interface TargetParamsDTO {
   alpha?: number;
   beta?: number;
   gamma?: number;
+  /** Canonical target angle for TRIAL_THETA levels (Rx, Ry).
+   *  Abs-normalised by the caller so the backend can grade directly.
+   *  Absent when the student uses a decomposition (no parameterised gate). */
+  theta?: number;
 }
 
 /** Mirroring backend types. */

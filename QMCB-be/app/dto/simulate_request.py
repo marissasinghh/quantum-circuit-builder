@@ -12,6 +12,7 @@ class TargetParamsDTO:
     alpha: Optional[float] = None
     beta: Optional[float] = None
     gamma: Optional[float] = None
+    theta: Optional[float] = None
 
 
 @dataclass

@@ -11,6 +11,7 @@ import type { SimulationResponseDTO } from "../interfaces/responseDTO";
 import type { TruthRow } from "../interfaces/truthTable";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { serializeOrders, serializeUnitaryGateEntries } from "../utils/circuit";
+import { ParameterMode } from "../utils/constants";
 
 /** Build the POST body from the level's static info + student's gates. */
 export function buildRequestFromLevel(
@@ -18,12 +19,30 @@ export function buildRequestFromLevel(
   gates: PlacedGate[],
   seed?: number
 ): UnitaryRequestDTO {
+  // For TRIAL_THETA levels (Rx, Ry) supply the canonical target θ so the
+  // backend grades against the abs-normalised angle the student chose, not
+  // whatever it re-extracts from the trial circuit.  This blocks Rx(−θ) from
+  // trivially matching an Rx(+θ) target via the direct-gate path.  When the
+  // student uses a decomposition (no parameterised gate present), θ is not
+  // sent and the backend falls back to its own extraction logic.
+  let targetTheta: number | undefined;
+  if (level.parameterMode === ParameterMode.TRIAL_THETA) {
+    const gateWithTheta = gates.find(
+      (g): g is PlacedGate & { theta: number } =>
+        "theta" in g && typeof (g as { theta?: unknown }).theta === "number"
+    );
+    if (gateWithTheta) {
+      targetTheta = Math.abs((gateWithTheta as { theta: number }).theta);
+    }
+  }
+
   return {
     target_unitary: level.target_unitary,
     number_of_qubits: level.number_of_qubits,
     gates: serializeUnitaryGateEntries(gates),
     qubit_order: serializeOrders(gates),
     ...(seed !== undefined && { seed }),
+    ...(targetTheta !== undefined && { target_params: { theta: targetTheta } }),
   };
 }
 

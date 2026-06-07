@@ -68,6 +68,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         TargetLibraryField.PARAMETERIZED.value: True,
         TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_THETA.value,
         TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
+        "canonical_gate": Gate.RX.value,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.RX.value,
@@ -83,6 +84,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         TargetLibraryField.PARAMETERIZED.value: True,
         TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_THETA.value,
         TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
+        "canonical_gate": Gate.RY.value,
         TargetLibraryField.STEPS.value: [
             {
                 TargetLibraryField.GATE.value: Gate.RY.value,

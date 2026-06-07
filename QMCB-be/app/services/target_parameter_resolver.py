@@ -84,11 +84,55 @@ def resolve_target_params(
         )
 
     if mode == TargetParameterMode.TRIAL_THETA:
-        theta = extract_theta_from_trial(trial.gates, target_name)
+        canonical_gate = level.get("canonical_gate")
+        trial_has_canonical_gate = canonical_gate is not None and any(
+            isinstance(e, dict) and e.get("gate") == canonical_gate
+            for e in trial.gates
+        )
+
+        if target_params.theta is not None:
+            # Frontend supplied the canonical target θ (already abs-normalised).
+            # Use it directly.  The canonical-gate allow_global_phase rule still
+            # applies: a direct Rx(−θ) submission must not slip through the
+            # probability fallback even when the target θ is known.
+            effective_theta = target_params.theta
+            effective_allow_gp = False if trial_has_canonical_gate else allow_gp
+        else:
+            # Backward-compat / test mode: extract θ from the trial circuit.
+            #
+            # A global phase (e^{iφ}·I applied uniformly across the full state) is
+            # physically unobservable and must be accepted.  Canonical decompositions
+            # such as H·Rz(θ)·H produce a Dirac string that differs from the bare
+            # Rx(θ) target solely by a global phase; the probability fallback in
+            # _compute_all_match correctly accepts these via row-wise probability
+            # comparison.
+            #
+            # A negated-angle submission (e.g. Rx(−θ) when the target is Rx(+θ)) is
+            # NOT a global-phase difference: the per-row phase ratios between Rx(−θ)
+            # and Rx(+θ) vary across rows, making them genuinely distinct unitaries.
+            # Their measurement probabilities are identical (|cos(θ/2)|² = |cos(−θ/2)|²),
+            # so the probability fallback would incorrectly accept a negated submission.
+            #
+            # When the student submits the level's canonical gate directly (detected via
+            # the "canonical_gate" field in the library entry), no unobservable global
+            # phase can arise — any phase difference is per-row, not global.  We therefore:
+            #   1. Normalise the target theta to abs(θ) so the target is always the
+            #      positive-angle canonical form, preventing the trivial self-match of
+            #      Rx(−θ) vs target Rx(−θ).
+            #   2. Set allow_global_phase=False to disable the probability fallback and
+            #      require an exact string match against the normalised canonical target.
+            theta = extract_theta_from_trial(trial.gates, target_name)
+            if trial_has_canonical_gate and theta is not None:
+                effective_theta = abs(theta)
+                effective_allow_gp = False
+            else:
+                effective_theta = theta
+                effective_allow_gp = allow_gp
+
         return ResolvedTargetParams(
-            step_thetas=[theta],
+            step_thetas=[effective_theta],
             simulate_live=True,
-            allow_global_phase=allow_gp,
+            allow_global_phase=effective_allow_gp,
         )
 
     if mode == TargetParameterMode.SEED_ZXZ:
