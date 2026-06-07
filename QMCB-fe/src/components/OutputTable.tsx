@@ -13,6 +13,11 @@ import {
   parseAmplitudeTerms,
 } from "../utils/amplitudeDisplay";
 
+export interface GradingSummary {
+  samplesChecked: number;
+  samplesPassed: number;
+}
+
 interface OutputTableProps {
   rows: TruthRow[] | null;
   isCorrect: boolean;
@@ -20,6 +25,8 @@ interface OutputTableProps {
   levelInsight?: ReactNode;
   isChecking?: boolean;
   onClearAndRetry?: () => void;
+  /** Present for random-theta levels (Rx, Ry) where the backend grades via unitary comparison. */
+  gradingSummary?: GradingSummary;
 }
 
 const CELL_CLASS = "px-3 py-1.5";
@@ -125,6 +132,7 @@ export function OutputTable({
   levelInsight,
   isChecking = false,
   onClearAndRetry,
+  gradingSummary,
 }: OutputTableProps) {
   const hasPartialMismatch =
     rows && rows.length > 0 && !isCorrect && !error;
@@ -162,6 +170,23 @@ export function OutputTable({
         </div>
       )}
 
+      {gradingSummary && !isCorrect && !error && (
+        <div className="mb-3 bg-mismatch-bg border border-tier1 rounded-md px-3 py-2">
+          <p className="text-sm font-sans text-mismatch-text font-medium">
+            {gradingSummary.samplesPassed}/{gradingSummary.samplesChecked} angles passed
+          </p>
+          {onClearAndRetry && (
+            <button
+              type="button"
+              onClick={onClearAndRetry}
+              className="mt-2 font-mono text-[10px] tracking-wide uppercase px-3 py-1.5 border border-tier1 rounded-gate text-tier3 hover:bg-bg-hover transition"
+            >
+              Clear and try again
+            </button>
+          )}
+        </div>
+      )}
+
       {isChecking && (
         <div className="mb-3 flex items-center gap-2 bg-bg-panel border border-tier1 rounded-md px-3 py-2">
           <LoadingSpinner size={16} />
@@ -175,7 +200,7 @@ export function OutputTable({
         <div className="font-sans text-[12px] text-error-action mb-2">{error.message}</div>
       )}
 
-      {!rows && !error && (
+      {!rows && !error && !isCorrect && !gradingSummary && (
         <div className="font-sans text-[12px] text-tier2">
           Submit to see the truth tables.
         </div>
