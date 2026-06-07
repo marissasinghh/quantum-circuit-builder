@@ -20,6 +20,7 @@ class ResolvedTargetParams:
     step_thetas: list[Optional[float]]
     simulate_live: bool
     allow_global_phase: bool
+    is_sampling: bool = False
 
 
 def get_parameter_mode(target_name: str) -> TargetParameterMode:
@@ -71,11 +72,20 @@ def resolve_target_params(
 
     level = TARGET_LIBRARY[target_name]
     mode = get_parameter_mode(target_name)
-    n_steps = _step_count(target_name)
     allow_gp = _allow_global_phase(level)
+
+    if mode == TargetParameterMode.RANDOM_THETA:
+        return ResolvedTargetParams(
+            step_thetas=[],
+            simulate_live=True,
+            allow_global_phase=allow_gp,
+            is_sampling=True,
+        )
+
     has_stored_outputs = TargetLibraryField.EXPECTED_OUTPUTS.value in level
 
     if mode == TargetParameterMode.FIXED:
+        n_steps = _step_count(target_name)
         simulate_live = validate_target or not has_stored_outputs
         return ResolvedTargetParams(
             step_thetas=[None] * n_steps,

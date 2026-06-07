@@ -23,8 +23,8 @@ class TestGetParameterMode:
     def test_swap_is_fixed(self) -> None:
         assert get_parameter_mode(Gate.SWAP.value) == TargetParameterMode.FIXED
 
-    def test_rx_is_trial_theta(self) -> None:
-        assert get_parameter_mode(Gate.RX.value) == TargetParameterMode.TRIAL_THETA
+    def test_rx_is_random_theta(self) -> None:
+        assert get_parameter_mode(Gate.RX.value) == TargetParameterMode.RANDOM_THETA
 
     def test_random_u_is_seed_zxz(self) -> None:
         assert get_parameter_mode(Gate.RANDOM_U.value) == TargetParameterMode.SEED_ZXZ
@@ -62,16 +62,17 @@ class TestResolveTargetParams:
         )
         assert resolved.simulate_live is True
 
-    def test_trial_theta_extracts_angle(self) -> None:
-        theta = 1.23
+    def test_random_theta_returns_sampling_resolved(self) -> None:
+        """RANDOM_THETA mode: resolver sets is_sampling=True, step_thetas=[]."""
         resolved = resolve_target_params(
             Gate.RX.value,
-            _trial({"gate": Gate.RX.value, "theta": theta}),
+            _trial({"gate": Gate.RX.value, "theta": 1.23}),
             TargetParamsDTO(),
             validate_target=False,
         )
         assert resolved.simulate_live is True
-        assert resolved.step_thetas == [theta]
+        assert resolved.is_sampling is True
+        assert resolved.step_thetas == []
 
     def test_seed_zxz_matches_angles_from_seed(self) -> None:
         seed = 42

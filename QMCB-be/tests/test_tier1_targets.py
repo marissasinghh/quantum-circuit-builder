@@ -233,68 +233,60 @@ class TestHTarget:
 
 class TestRxTarget:
     """
-    Target: RX (parameterized X-axis rotation).
-    Output depends on theta submitted by the student — no pre-stored strings.
-    The controller extracts theta from the trial gates and simulates the target live.
+    Target: RX — graded via random angle sampling (RANDOM_THETA mode).
 
-    All Dirac strings below verified against Cirq (decimals=3):
-      RX(π/4)|0⟩ = '0.924|0⟩ - 0.383j|1⟩'
-      RX(π/4)|1⟩ = '-0.383j|0⟩ + 0.924|1⟩'
-      RX(π/2)|0⟩ = '0.707|0⟩ - 0.707j|1⟩'
-      RX(π/2)|1⟩ = '-0.707j|0⟩ + 0.707|1⟩'
+    The backend samples 10 random angles and checks the student's circuit unitary
+    against cirq.rx(θ) at each angle.  No truth table is returned; the response
+    carries ``grading_mode``, ``samples_checked``, ``samples_passed``, and
+    ``all_match``.
+
+    Correct decomposition: H · Rz(θ) · H ≡ Rx(θ) up to global phase.
+    Correct decomposition: Rz(−π/2) · Sqrt_X · Rz(π/2) ≡ Rx(π/2) — but this is
+    a *fixed* circuit (not parameterised), so with theta substitution it maps to
+    Rx(θᵢ) and will still pass when the Rz with the sampled theta is substituted.
+    Incorrect: bare Rz(θ) — Rz ≠ Rx in general.
     """
 
-    @pytest.mark.parametrize("theta", [math.pi / 4, math.pi / 2])
-    def test_correct_circuit_matches_at_theta(self, theta: float) -> None:
-        """Student submits RX at the exact target theta → all outputs match."""
-        trial = _single({"gate": Gate.RX.value, "theta": theta})
-        response, status = _run(trial, "RX", validate_target=False)
-        assert status == 200
-        assert response["all_match"] is True
-
-    def test_wrong_theta_does_not_match(self) -> None:
-        """Student submits RX(π/4) when target is RX(π/2) → outputs differ."""
-        trial_wrong = _single({"gate": Gate.RX.value, "theta": math.pi / 4})
-
-        # To get target RX(π/2), we need a separate call using the correct theta.
-        # Here we check that submitting π/4 while the controller extracts π/4
-        # as the target theta gives all_match=True (same angle), so we instead
-        # compare trial at π/4 directly against the known RX(π/2) output strings.
-        response, status = _run(trial_wrong, "RX", validate_target=False)
-        assert status == 200
-
-        # Outputs for RX(π/4) are NOT the same as RX(π/2) — verify the strings differ.
-        rx_quarter_pi_outputs = ["0.924|0⟩ - 0.383j|1⟩", "-0.383j|0⟩ + 0.924|1⟩"]
-        rx_half_pi_outputs = ["0.707|0⟩ - 0.707j|1⟩", "-0.707j|0⟩ + 0.707|1⟩"]
-        assert response["trial_truth_table"]["output"] == rx_quarter_pi_outputs
-        assert response["trial_truth_table"]["output"] != rx_half_pi_outputs
-
-    def test_rx_canonical_solution_passes_via_probability_fallback(self) -> None:
-        """Rz(-π/2) · Sqrt_X · Rz(π/2) passes RX target via probability fallback."""
+    def test_h_rz_h_decomposition_passes_all_samples(self) -> None:
+        """H · Rz(θ) · H is a valid Rx decomposition → all 10 samples pass."""
         trial = UnitaryDTO(
             number_of_qubits=1,
             gates=[
-                {"gate": Gate.RZ.value, "theta": -math.pi / 2},
-                Gate.SQRT_X.value,
-                {"gate": Gate.RZ.value, "theta": math.pi / 2},
+                Gate.H.value,
+                {"gate": Gate.RZ.value, "theta": math.pi / 4},
+                Gate.H.value,
             ],
             qubit_order=[[0], [0], [0]],
         )
-        response, status = _run(trial, Gate.RX.value, validate_target=False)
+        response, status = _run(trial, Gate.RX.value)
         assert status == 200
+        assert response["grading_mode"] == "random_theta"
+        assert response["samples_checked"] == 10
+        assert response["trial_truth_table"] is None
+        assert response["target_truth_table"] is None
         assert response["all_match"] is True
-        assert response["trial_truth_table"]["output"] != response["target_truth_table"]["output"]
+        assert response["samples_passed"] == 10
 
-    def test_wrong_decomposition_still_fails(self) -> None:
-        """A single Rz gate must not pass the RX target via probability fallback."""
+    def test_rz_only_fails_sampling(self) -> None:
+        """A bare Rz(θ) circuit is not equivalent to Rx(θ) → sampling fails."""
         trial = UnitaryDTO(
             number_of_qubits=1,
             gates=[{"gate": Gate.RZ.value, "theta": math.pi / 4}],
             qubit_order=[[0]],
         )
-        response, status = _run(trial, Gate.RX.value, validate_target=False)
+        response, status = _run(trial, Gate.RX.value)
         assert status == 200
+        assert response["grading_mode"] == "random_theta"
         assert response["all_match"] is False
+        assert response["samples_passed"] < response["samples_checked"]
+
+    def test_response_shape_for_rx_level(self) -> None:
+        """Verify all expected keys exist in an RX grading response."""
+        trial = _single({"gate": Gate.RZ.value, "theta": math.pi / 2})
+        response, status = _run(trial, Gate.RX.value)
+        assert status == 200
+        for key in ("grading_mode", "samples_checked", "samples_passed", "all_match"):
+            assert key in response, f"Missing key: {key!r}"
 
 
 # ── Level 1.5: RY Gate ────────────────────────────────────────────────────────
@@ -302,33 +294,44 @@ class TestRxTarget:
 
 class TestRyTarget:
     """
-    Target: RY (parameterized Y-axis rotation).
+    Target: RY — graded via random angle sampling (RANDOM_THETA mode).
 
-    All Dirac strings below verified against Cirq (decimals=3):
-      RY(π/4)|0⟩ = '0.924|0⟩ + 0.383|1⟩'
-      RY(π/4)|1⟩ = '-0.383|0⟩ + 0.924|1⟩'
-      RY(π/2)|0⟩ = '0.707|0⟩ + 0.707|1⟩'
-      RY(π/2)|1⟩ = '-0.707|0⟩ + 0.707|1⟩'
+    Correct decomposition: Rz(−π/2) · Rx(θ) · Rz(π/2) ≡ Ry(θ) up to global phase.
+    Incorrect: bare Rx(θ) — Rx ≠ Ry in general.
     """
 
-    @pytest.mark.parametrize("theta", [math.pi / 4, math.pi / 2])
-    def test_correct_circuit_matches_at_theta(self, theta: float) -> None:
-        """Student submits RY at the exact target theta → all outputs match."""
-        trial = _single({"gate": Gate.RY.value, "theta": theta})
-        response, status = _run(trial, "RY", validate_target=False)
+    def test_rz_rx_rz_decomposition_passes_all_samples(self) -> None:
+        """Rz(−π/2) · Rx(θ) · Rz(π/2) is a valid Ry decomposition → all 10 samples pass."""
+        trial = UnitaryDTO(
+            number_of_qubits=1,
+            gates=[
+                {"gate": Gate.RZ.value, "theta": -(math.pi / 2)},
+                {"gate": Gate.RX.value, "theta": math.pi / 4},
+                {"gate": Gate.RZ.value, "theta": math.pi / 2},
+            ],
+            qubit_order=[[0], [0], [0]],
+        )
+        response, status = _run(trial, Gate.RY.value)
         assert status == 200
+        assert response["grading_mode"] == "random_theta"
+        assert response["samples_checked"] == 10
+        assert response["trial_truth_table"] is None
+        assert response["target_truth_table"] is None
         assert response["all_match"] is True
+        assert response["samples_passed"] == 10
 
-    def test_wrong_theta_does_not_match(self) -> None:
-        """Verify RY(π/4) and RY(π/2) produce distinct output strings."""
-        trial = _single({"gate": Gate.RY.value, "theta": math.pi / 4})
-        response, status = _run(trial, "RY", validate_target=False)
+    def test_rx_only_fails_ry_sampling(self) -> None:
+        """A bare Rx(θ) circuit is not equivalent to Ry(θ) → sampling fails."""
+        trial = UnitaryDTO(
+            number_of_qubits=1,
+            gates=[{"gate": Gate.RX.value, "theta": math.pi / 4}],
+            qubit_order=[[0]],
+        )
+        response, status = _run(trial, Gate.RY.value)
         assert status == 200
-
-        ry_quarter_pi_outputs = ["0.924|0⟩ + 0.383|1⟩", "-0.383|0⟩ + 0.924|1⟩"]
-        ry_half_pi_outputs = ["0.707|0⟩ + 0.707|1⟩", "-0.707|0⟩ + 0.707|1⟩"]
-        assert response["trial_truth_table"]["output"] == ry_quarter_pi_outputs
-        assert response["trial_truth_table"]["output"] != ry_half_pi_outputs
+        assert response["grading_mode"] == "random_theta"
+        assert response["all_match"] is False
+        assert response["samples_passed"] < response["samples_checked"]
 
 
 # ── Level 1.6: Random Unitary ─────────────────────────────────────────────────

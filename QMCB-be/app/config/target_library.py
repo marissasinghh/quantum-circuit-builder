@@ -66,15 +66,10 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     Gate.RX.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
         TargetLibraryField.PARAMETERIZED.value: True,
-        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_THETA.value,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.RANDOM_THETA.value,
         TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
         "canonical_gate": Gate.RX.value,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.RX.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-        ],
+        # No steps — target is cirq.rx(theta_i) built directly inside the sampling loop.
     },
     # ========================
     # LEVEL 1.5: RY GATE
@@ -82,15 +77,10 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     Gate.RY.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
         TargetLibraryField.PARAMETERIZED.value: True,
-        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_THETA.value,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.RANDOM_THETA.value,
         TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
         "canonical_gate": Gate.RY.value,
-        TargetLibraryField.STEPS.value: [
-            {
-                TargetLibraryField.GATE.value: Gate.RY.value,
-                TargetLibraryField.ORDER.value: Q0,
-            },
-        ],
+        # No steps — target is cirq.ry(theta_i) built directly inside the sampling loop.
     },
     # ========================
     # LEVEL 1.6: RANDOM UNITARY

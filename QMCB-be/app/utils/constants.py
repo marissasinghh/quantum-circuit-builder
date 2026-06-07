@@ -49,6 +49,7 @@ class TargetParameterMode(str, Enum):
     TRIAL_THETA = "trial_theta"
     SEED_ZXZ = "seed_zxz"
     TRIAL_ZXZ = "trial_zxz"
+    RANDOM_THETA = "random_theta"
 
 
 class TargetLibraryField(Enum):

@@ -2,18 +2,28 @@ from app.services.circuit_builder import CircuitBuilder
 from app.services.simulator import CircuitSimulator
 from app.services.target_builder import TargetUnitaryBuilder
 from app.services.target_parameter_resolver import (
+    ResolvedTargetParams,
     resolve_target_params,
     resolved_for_library_simulation,
 )
+from app.config.gates import CirqGateMapper
+from app.config.target_library import TARGET_LIBRARY
 from app.utils.helpers import (
     generate_basis_states,
     initialize_qubit_sequence,
     build_target_truth_table,
 )
+from app.utils.constants import Gate, TargetLibraryField
 from app.dto.simulate_request import SimulateRequestDTO
 from app.dto.truth_table import TruthTableDTO
+from app.utils.types import UnitaryGateEntry
 from typing import Any
+import copy
 import logging
+import math
+
+import cirq
+import numpy as np
 
 
 def _row_probabilities_match(
@@ -94,6 +104,105 @@ def _compute_all_match(
     return True
 
 
+def _substitute_theta_in_gates(
+    gates: list[UnitaryGateEntry],
+    target_name: str,
+    theta: float,
+) -> list[UnitaryGateEntry]:
+    """
+    Return a deep copy of ``gates`` with exactly one gate's theta replaced by
+    ``theta`` — the gate that carries the free parameter for this level.
+
+    Search order mirrors ``extract_theta_from_trial``:
+      1. First dict-gate whose ``"gate"`` key matches ``target_name`` (canonical gate).
+      2. Fallback for RX: first Rz gate.
+      3. Fallback for RY: first Rx gate.
+
+    If no suitable gate is found the copy is returned unmodified (the sampling
+    comparison will then fail naturally, which is the correct result).
+    """
+    new_gates: list[UnitaryGateEntry] = copy.deepcopy(gates)
+
+    for i, entry in enumerate(new_gates):
+        if isinstance(entry, dict) and entry.get("gate") == target_name:
+            new_gates[i] = {**entry, "theta": theta}
+            return new_gates
+
+    if target_name == Gate.RX.value:
+        for i, entry in enumerate(new_gates):
+            if isinstance(entry, dict) and entry.get("gate") == Gate.RZ.value:
+                new_gates[i] = {**entry, "theta": theta}
+                return new_gates
+
+    if target_name == Gate.RY.value:
+        for i, entry in enumerate(new_gates):
+            if isinstance(entry, dict) and entry.get("gate") == Gate.RX.value:
+                new_gates[i] = {**entry, "theta": theta}
+                return new_gates
+
+    return new_gates
+
+
+def _grade_random_theta(
+    request: SimulateRequestDTO,
+    resolved: ResolvedTargetParams,
+    n_samples: int = 10,
+) -> tuple[dict[str, Any], int]:
+    """
+    Grade a parameterized level by sampling ``n_samples`` random angles.
+
+    For each sampled angle θᵢ:
+      - Substitute θᵢ into the student's circuit (replacing the free-parameter gate).
+      - Compare the resulting unitary to cirq.rx(θᵢ) / cirq.ry(θᵢ) using
+        ``cirq.allclose_up_to_global_phase`` (allow_global_phase is True for RX/RY).
+
+    Returns a simplified response without truth tables so the frontend can
+    render a summary message instead of a row-by-row table.
+    """
+    trial_dto = request.trial
+    target_name = request.target_unitary
+
+    level = TARGET_LIBRARY[target_name]
+    canonical_gate: str = level["canonical_gate"]
+
+    qubits = initialize_qubit_sequence(trial_dto.number_of_qubits)
+
+    samples_passed = 0
+    for _ in range(n_samples):
+        theta_i = np.random.uniform(0, 2 * math.pi)
+
+        modified_gates = _substitute_theta_in_gates(trial_dto.gates, target_name, theta_i)
+
+        trial_base = CircuitBuilder.build_circuit_base(
+            modified_gates, trial_dto.qubit_order, qubits
+        )
+
+        target_op = CirqGateMapper.apply(canonical_gate, [0], *qubits, theta=theta_i)
+        target_base = cirq.Circuit(target_op)
+
+        trial_U = cirq.unitary(trial_base)
+        target_U = cirq.unitary(target_base)
+
+        if resolved.allow_global_phase:
+            match = cirq.allclose_up_to_global_phase(trial_U, target_U)
+        else:
+            match = bool(np.allclose(trial_U, target_U))
+
+        if match:
+            samples_passed += 1
+
+    return {
+        "message": "Successfully simulated circuits.",
+        "grading_mode": "random_theta",
+        "samples_checked": n_samples,
+        "samples_passed": samples_passed,
+        "all_match": samples_passed == n_samples,
+        "trial_truth_table": None,
+        "target_truth_table": None,
+        "validation_mode": False,
+    }, 200
+
+
 def simulate_unitaries(
     request: SimulateRequestDTO,
     validate_target: bool = False,
@@ -124,6 +233,9 @@ def simulate_unitaries(
         request.target_params,
         validate_target=validate_target,
     )
+
+    if resolved.is_sampling:
+        return _grade_random_theta(request, resolved)
 
     if not resolved.simulate_live:
         logging.info("Skipping target circuit validation - Using stored outputs.")
@@ -192,6 +304,9 @@ def simulate_unitaries(
 
     return {
         "message": "Successfully simulated circuits.",
+        "grading_mode": None,
+        "samples_checked": None,
+        "samples_passed": None,
         "trial_truth_table": trial_dict,
         "target_truth_table": target_dict,
         "all_match": all_match,
