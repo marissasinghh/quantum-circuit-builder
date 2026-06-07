@@ -204,8 +204,9 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
   description:
     "A random single-qubit unitary has been generated for you. Synthesize a circuit whose " +
     "truth table matches it exactly. Use any combination of your unlocked gates.",
-  hint1: "Any single-qubit unitary can be decomposed into at most three rotation gates (ZXZ decomposition).",
-  hint2: "Try Rz(α) · Rx(β) · Rz(γ) — adjust the three angles until the outputs match.",
+  hint1:
+    "Any single-qubit gate can be expressed as rotations about the X, Y, and Z axes for some angles θ_X, θ_Y, and θ_Z.",
+  hint2: "The angles θ_X, θ_Y, and θ_Z can be solved for given the matrix elements.",
 } as const;
 
 // ========================
