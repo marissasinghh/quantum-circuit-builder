@@ -32,6 +32,18 @@ def _run(trial: UnitaryDTO, target_name: str, *, validate_target: bool = False):
 
 
 def _report(label: str, response: dict) -> None:
+    print(f"\n{'='*60}")
+    print(f"TEST: {label}")
+    print(f"  all_match = {response['all_match']}")
+
+    grading_mode = response.get("grading_mode")
+    if grading_mode == "random_theta":
+        print(f"  grading_mode   = {grading_mode}")
+        print(f"  samples_checked = {response.get('samples_checked')}")
+        print(f"  samples_passed  = {response.get('samples_passed')}")
+        print(f"{'='*60}")
+        return
+
     trial_tt = response["trial_truth_table"]
     target_tt = response["target_truth_table"]
 
@@ -41,10 +53,6 @@ def _report(label: str, response: dict) -> None:
     target_probs = target_tt.get("probabilities") or []
     trial_amps = trial_tt.get("amplitudes") or []
     target_amps = target_tt.get("amplitudes") or []
-
-    print(f"\n{'='*60}")
-    print(f"TEST: {label}")
-    print(f"  all_match = {response['all_match']}")
 
     for i, (t_out, g_out) in enumerate(zip(trial_outputs, target_outputs)):
         string_match = t_out == g_out
@@ -88,7 +96,7 @@ def test_1_h_zxz_canonical():
 # ── Test 2: Rx level, correct canonical decomposition ────────────────────────
 
 def test_2_rx_canonical_correct():
-    """H → Rz(π/2) → H vs Rx(+π/2) target.  Expect all_match=True."""
+    """H → Rz(π/2) → H vs Rx target.  Expect all_match=True (RANDOM_THETA grading)."""
     trial = UnitaryDTO(
         number_of_qubits=1,
         gates=[
@@ -100,29 +108,46 @@ def test_2_rx_canonical_correct():
     )
     response = _run(trial, Gate.RX.value, validate_target=False)
     _report("Test 2 — Rx canonical H·Rz(π/2)·H (expect True)", response)
+    assert response["all_match"] is True
 
 
-# ── Test 3: Rx level, negated angle ──────────────────────────────────────────
+# ── Test 3: Rx level, original theta sign is irrelevant under RANDOM_THETA ───
 
 def test_3_rx_negated_angle():
-    """Single Rx(−π/2) vs Rx(+π/2) target.  Expect all_match=False (BUG: may be True)."""
+    """
+    Single Rx(−π/2) vs Rx target.
+
+    Under RANDOM_THETA grading the original theta value in the trial gate is
+    replaced with each sampled angle, so the sign of the submitted theta is
+    immaterial.  Submitting Rx(any_theta) is structurally equivalent to the
+    target Rx gate — all samples pass.
+    """
     trial = UnitaryDTO(
         number_of_qubits=1,
         gates=[{"gate": Gate.RX.value, "theta": -math.pi / 2}],
         qubit_order=[[0]],
     )
     response = _run(trial, Gate.RX.value, validate_target=False)
-    _report("Test 3 — Rx(−π/2) vs Rx(+π/2) (expect False)", response)
+    _report("Test 3 — Rx(−π/2) under RANDOM_THETA (expect True — theta replaced by samples)", response)
+    assert response["grading_mode"] == "random_theta"
+    assert response["all_match"] is True
 
 
-# ── Test 4: Ry level, negated angle ──────────────────────────────────────────
+# ── Test 4: Ry level, original theta sign is irrelevant under RANDOM_THETA ───
 
 def test_4_ry_negated_angle():
-    """Single Ry(−π/2) vs Ry(+π/2) target.  Expect all_match=False (BUG: may be True)."""
+    """
+    Single Ry(−π/2) vs Ry target.
+
+    Same reasoning as test_3: the submitted theta is replaced with sampled angles
+    during grading, so the circuit is always structurally equivalent.
+    """
     trial = UnitaryDTO(
         number_of_qubits=1,
         gates=[{"gate": Gate.RY.value, "theta": -math.pi / 2}],
         qubit_order=[[0]],
     )
     response = _run(trial, Gate.RY.value, validate_target=False)
-    _report("Test 4 — Ry(−π/2) vs Ry(+π/2) (expect False)", response)
+    _report("Test 4 — Ry(−π/2) under RANDOM_THETA (expect True — theta replaced by samples)", response)
+    assert response["grading_mode"] == "random_theta"
+    assert response["all_match"] is True

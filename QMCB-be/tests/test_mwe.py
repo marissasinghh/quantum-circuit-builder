@@ -120,29 +120,22 @@ def test_simulate_unitaries_mixed_string_and_dict_gates() -> None:
         ("RY", "RY"),
     ],
 )
-def test_parameterized_target_trial_matches_target_when_theta_identical(
+def test_parameterized_target_random_theta_response_shape(
     gate_name: str, target_name: str
 ) -> None:
     """
-    **What it does:** Submits a single parameterized gate (RX or RY) at a fixed theta
-    as the student's trial, with the same gate name as the target. Because the student
-    submitted the exact target gate at the exact same angle, the controller must build
-    the target circuit using that theta (extracted from the trial gates) and the
-    resulting wavefunction outputs must be identical row-by-row.
+    **What it does:** Submits a single parameterized gate (RX or RY) and verifies
+    that the RANDOM_THETA grading path returns the correct response shape (no truth
+    tables, sampling fields present, all_match True).
 
-    **What it is for:** End-to-end regression for the parameterized target path in
-    ``simulate_unitaries``:
-    - ``is_target_parameterized`` returns True → ``simulate_target_live`` is forced True
-      even with ``validate_target=False``.
-    - ``extract_theta_from_trial`` correctly pulls theta from a dict gate entry.
-    - ``TargetUnitaryBuilder.build`` receives and applies the same theta.
-    - Trial and target truth tables match when the student is correct.
-
-    **Why validate_target=False:** Tests that the parameterized path overrides the
-    stored-output shortcut; if the flag were ignored, target outputs would be empty
-    or raise a KeyError (no ``expected_outputs`` in the library entry).
+    **What it is for:** End-to-end regression for the RANDOM_THETA grading path:
+    - Resolver returns ``is_sampling=True`` → ``_grade_random_theta`` is invoked.
+    - ``trial_truth_table`` and ``target_truth_table`` are ``None``.
+    - ``grading_mode``, ``samples_checked``, ``samples_passed`` are present.
+    - Submitting the bare canonical gate passes all samples (substitution makes it
+      identical to the target at each sampled angle).
     """
-    theta = 1.0  # arbitrary non-trivial angle; neither 0 nor π/2
+    theta = 1.0  # arbitrary non-trivial angle
 
     trial = UnitaryDTO(
         number_of_qubits=1,
@@ -153,20 +146,12 @@ def test_parameterized_target_trial_matches_target_when_theta_identical(
     response, status = run_simulate(trial, target_name, validate_target=False)
 
     assert status == 200
-
-    trial_tt = response["trial_truth_table"]
-    target_tt = response["target_truth_table"]
-
-    # Both sides must have the same two basis inputs (|0>, |1> for one qubit).
-    assert trial_tt["input"] == ["|0>", "|1>"]
-    assert target_tt["input"] == ["|0>", "|1>"]
-
-    # Because the student submitted the exact target gate at the same theta,
-    # every wavefunction output string must match.
-    assert trial_tt["output"] == target_tt["output"], (
-        f"{gate_name}(theta={theta}): trial outputs {trial_tt['output']!r} "
-        f"do not match target outputs {target_tt['output']!r}"
-    )
+    assert response["grading_mode"] == "random_theta"
+    assert response["trial_truth_table"] is None
+    assert response["target_truth_table"] is None
+    assert response["samples_checked"] == 10
+    assert isinstance(response["samples_passed"], int)
+    assert response["all_match"] is True
 
 
 def test_hadamard_probabilities() -> None:
