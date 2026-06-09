@@ -19,14 +19,14 @@ export function buildRequestFromLevel(
   gates: PlacedGate[],
   seed?: number
 ): UnitaryRequestDTO {
-  // For TRIAL_THETA levels (Rx, Ry) supply the canonical target θ so the
+  // For RANDOM_THETA levels (Rx, Ry) supply the canonical target θ so the
   // backend grades against the abs-normalised angle the student chose, not
   // whatever it re-extracts from the trial circuit.  This blocks Rx(−θ) from
   // trivially matching an Rx(+θ) target via the direct-gate path.  When the
   // student uses a decomposition (no parameterised gate present), θ is not
   // sent and the backend falls back to its own extraction logic.
   let targetTheta: number | undefined;
-  if (level.parameterMode === ParameterMode.TRIAL_THETA) {
+  if (level.parameterMode === ParameterMode.RANDOM_THETA) {
     const gateWithTheta = gates.find(
       (g): g is PlacedGate & { theta: number } =>
         "theta" in g && typeof (g as { theta?: unknown }).theta === "number"

@@ -6,6 +6,45 @@ from app.utils.types import Qubit, Circuit
 from app.utils.constants import Gate, TargetLibraryField
 
 
+def _build_composite(
+    name: str,
+    qubits: list[Qubit],
+    resolved: ResolvedTargetParams,
+) -> Circuit:
+    """
+    Build a target circuit for gates that have no single Cirq primitive
+    (composite_gate: True in TARGET_LIBRARY).
+
+    Each entry here receives the full resolved step_thetas list and decides
+    how to interpret those angles.  Currently only CONTROLLED_U is supported;
+    add a branch here whenever a new composite-gate level is introduced.
+
+    Args:
+        name: Gate name key from TARGET_LIBRARY (e.g. Gate.CONTROLLED_U.value).
+        qubits: Ordered qubit list for this circuit.
+        resolved: Resolved parameters including step_thetas = [alpha, beta, gamma].
+    """
+    if name == Gate.CONTROLLED_U.value:
+        if len(resolved.step_thetas) != 3:
+            raise ValueError(
+                f"CONTROLLED_U requires exactly 3 resolved thetas (alpha, beta, gamma); "
+                f"got {len(resolved.step_thetas)}."
+            )
+        alpha, beta, gamma = resolved.step_thetas
+        operation = CirqGateMapper.apply(
+            Gate.CONTROLLED_U.value,
+            [0, 1],
+            *qubits,
+            angles=(alpha, beta, gamma),
+        )
+        return cirq.Circuit(operation)
+
+    raise NotImplementedError(
+        f"No composite builder registered for target {name!r}. "
+        "Add a branch to _build_composite() in target_builder.py."
+    )
+
+
 class TargetUnitaryBuilder:
 
     @staticmethod
@@ -14,12 +53,20 @@ class TargetUnitaryBuilder:
         qubits: list[Qubit],
         resolved: ResolvedTargetParams,
     ) -> Circuit:
-        """Build target unitary circuit from TARGET_LIBRARY steps and resolved thetas."""
+        """Build target unitary circuit from TARGET_LIBRARY steps and resolved thetas.
+
+        For levels with composite_gate: True the generic step iteration is
+        bypassed and _build_composite() handles construction directly.
+        """
 
         if name not in TARGET_LIBRARY:
             raise ValueError(f"Unknown target unitary: {name}")
 
         level_def = TARGET_LIBRARY[name]
+
+        if level_def.get(TargetLibraryField.COMPOSITE_GATE.value):
+            return _build_composite(name, qubits, resolved)
+
         steps = level_def[TargetLibraryField.STEPS.value]
 
         if len(resolved.step_thetas) != len(steps):
