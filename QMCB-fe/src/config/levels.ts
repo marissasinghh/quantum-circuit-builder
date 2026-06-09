@@ -153,7 +153,7 @@ export const RX_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  parameterMode: ParameterMode.TRIAL_THETA,
+  parameterMode: ParameterMode.RANDOM_THETA,
 
   description:
     "The $R_x(\\theta)$ gate rotates the Bloch sphere around the X axis by angle $\\theta$. Synthesize a parameterized circuit whose unitary matches $R_x(\\theta)$ for any angle $\\theta$.",
@@ -177,7 +177,7 @@ export const RY_LEVEL: LevelDefinition = {
 
   uiMaxGates: MAX_GATES,
 
-  parameterMode: ParameterMode.TRIAL_THETA,
+  parameterMode: ParameterMode.RANDOM_THETA,
 
   description:
     "The $R_y(\\theta)$ gate rotates the Bloch sphere around the Y axis by angle $\\theta$. Synthesize a parameterized circuit whose unitary matches $R_y(\\theta)$ for any angle $\\theta$.",

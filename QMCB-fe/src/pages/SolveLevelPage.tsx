@@ -123,7 +123,7 @@ function SolveLevelContent({
 
   const targetBlochState = useMemo((): BlochState | null => {
     if (currentLevel.number_of_qubits !== 1) return null;
-    if (currentLevel.parameterMode === ParameterMode.TRIAL_THETA) return null;
+    if (currentLevel.parameterMode === ParameterMode.RANDOM_THETA) return null;
 
     if (isSeedDrivenLevel) {
       const amps = randomUnitaryQuery.data?.truth_table?.amplitudes?.[initialState];

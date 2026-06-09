@@ -1,8 +1,24 @@
 import cirq
 import math
+import numpy as np
 from app.utils.types import Operation, Qubit
 from app.utils.constants import Gate
 from typing import Optional
+
+
+def _zxz_matrix(alpha: float, beta: float, gamma: float) -> np.ndarray:
+    """
+    Compute the 2x2 unitary for U = Rz(gamma) · Rx(beta) · Rz(alpha).
+
+    Uses the same phase-consistent Rz convention as the rest of the mapper:
+    Rz(θ) = [[1, 0], [0, e^(iθ)]]  (no global-phase offset).
+    Rx(θ) uses cirq.rx which applies e^(-iθX/2), consistent with circuit steps.
+    """
+    def rz(t: float) -> np.ndarray:
+        return np.array([[1, 0], [0, np.exp(1j * t)]], dtype=complex)
+
+    rx_mat = cirq.unitary(cirq.rx(beta))
+    return rz(gamma) @ rx_mat @ rz(alpha)
 
 
 class CirqGateMapper:
@@ -13,25 +29,35 @@ class CirqGateMapper:
         qubit_order: Optional[list[int]] = None,
         *qubits: Qubit,
         theta: Optional[float] = None,
+        angles: Optional[tuple[float, float, float]] = None,
     ) -> Operation:
         """
         Apply the desired quantum gate to the provided qubit(s).
+
+        Args:
+            gate: Gate name string (matches Gate enum values).
+            qubit_order: Index list selecting and ordering from *qubits.
+            *qubits: All available qubits for this circuit.
+            theta: Single rotation angle for parameterised single-qubit gates
+                   (RX, RY, RZ).
+            angles: Three ZXZ Euler angles (alpha, beta, gamma) for gates that
+                    require a full single-qubit unitary (U, CONTROLLED_U).
         """
 
-        # To handle cases where qubit order is not necessary
         if qubit_order is None:
             qubit_order = list(range(len(qubits)))
 
         selected_qubits = [qubits[i] for i in qubit_order]
 
         print(
-            f"[DEBUG] Gate: {gate}, theta: {theta!r}, Qubit Order: {qubit_order}, "
+            f"[DEBUG] Gate: {gate}, theta: {theta!r}, angles: {angles!r}, "
+            f"Qubit Order: {qubit_order}, "
             f"Selected Qubits: {[str(q) for q in selected_qubits]}"
         )
 
         if gate == Gate.X.value:
             return cirq.X(selected_qubits[0])
-        
+
         elif gate == Gate.SQRT_X.value:
             return cirq.X(selected_qubits[0])**0.5
 
@@ -47,7 +73,7 @@ class CirqGateMapper:
         elif gate == Gate.RX.value:
             if theta is None:
                 raise ValueError("Theta is required for RX gate")
-            return cirq.rx(theta)(selected_qubits[0]) 
+            return cirq.rx(theta)(selected_qubits[0])
 
         elif gate == Gate.RY.value:
             if theta is None:
@@ -64,8 +90,20 @@ class CirqGateMapper:
             return (cirq.Z ** (theta / math.pi))(selected_qubits[0])
 
         elif gate == Gate.U.value:
-            # Generic single-qubit gate (placeholder - needs parameters)
-            return cirq.H(selected_qubits[0])  # Temporary: just use H
+            if angles is None:
+                raise ValueError("angles=(alpha, beta, gamma) is required for U gate")
+            alpha, beta, gamma = angles
+            matrix = _zxz_matrix(alpha, beta, gamma)
+            return cirq.MatrixGate(matrix)(selected_qubits[0])
+
+        elif gate == Gate.CONTROLLED_U.value:
+            if angles is None:
+                raise ValueError("angles=(alpha, beta, gamma) is required for CONTROLLED_U gate")
+            alpha, beta, gamma = angles
+            u_matrix = _zxz_matrix(alpha, beta, gamma)
+            u_gate = cirq.MatrixGate(u_matrix)
+            ctrl, tgt = selected_qubits[0], selected_qubits[1]
+            return cirq.ControlledGate(u_gate)(ctrl, tgt)
 
         elif gate == Gate.CNOT.value:
             return cirq.CNOT(selected_qubits[0], selected_qubits[1])

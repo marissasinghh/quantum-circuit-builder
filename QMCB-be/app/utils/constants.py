@@ -61,6 +61,7 @@ class TargetLibraryField(Enum):
     PARAMETER_MODE = "parameter_mode"
     ALLOW_GLOBAL_PHASE = "allow_global_phase"
     EXPECTED_OUTPUTS = "expected_outputs"
+    COMPOSITE_GATE = "composite_gate"
 
 
 class HttpStatus(Enum):

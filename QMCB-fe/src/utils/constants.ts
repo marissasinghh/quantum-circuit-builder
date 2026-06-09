@@ -36,6 +36,7 @@ export const DEFAULT_QUBIT_ORDER: ControlTargetOrder = C0_T1;
 export enum ParameterMode {
   FIXED = "fixed",
   TRIAL_THETA = "trial_theta",
+  RANDOM_THETA = "random_theta",
   SEED_ZXZ = "seed_zxz",
   TRIAL_ZXZ = "trial_zxz",
 }
