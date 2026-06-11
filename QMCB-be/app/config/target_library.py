@@ -5,10 +5,11 @@ from app.utils.constants import (
     Gate,
     LEVEL1_QUBITS,
     LEVEL2_QUBITS,
+    LEVEL3_QUBITS,
     TargetLibraryField,
     TargetParameterMode,
 )
-from app.utils.qubit_orders import Q0, Q1, C0_T1, C1_T0
+from app.utils.qubit_orders import Q0, Q1, C0_T1, C1_T0, C0_C1_T2, C0_T1_T2
 
 
 def _fixed_level(
@@ -175,6 +176,50 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
             Basis.STATE_01.value,
             "0.707|10⟩ + 0.707|11⟩",
             "0.707|10⟩ - 0.707|11⟩",
+        ],
+    ),
+    # ========================
+    # LEVEL 3.1: TOFFOLI (CCX)
+    # ========================
+    Gate.TOFFOLI.value: _fixed_level(
+        LEVEL3_QUBITS,
+        [
+            {
+                TargetLibraryField.GATE.value: Gate.TOFFOLI.value,
+                TargetLibraryField.ORDER.value: C0_C1_T2,
+            }
+        ],
+        [
+            Basis.STATE_000.value,
+            Basis.STATE_001.value,
+            Basis.STATE_010.value,
+            Basis.STATE_011.value,
+            Basis.STATE_100.value,
+            Basis.STATE_101.value,
+            Basis.STATE_111.value,  # |110⟩ → |111⟩ (both controls = 1, target flipped)
+            Basis.STATE_110.value,  # |111⟩ → |110⟩
+        ],
+    ),
+    # ========================
+    # LEVEL 3.2: FREDKIN (CSWAP)
+    # ========================
+    Gate.FREDKIN.value: _fixed_level(
+        LEVEL3_QUBITS,
+        [
+            {
+                TargetLibraryField.GATE.value: Gate.FREDKIN.value,
+                TargetLibraryField.ORDER.value: C0_T1_T2,
+            }
+        ],
+        [
+            Basis.STATE_000.value,
+            Basis.STATE_001.value,
+            Basis.STATE_010.value,
+            Basis.STATE_011.value,
+            Basis.STATE_100.value,
+            Basis.STATE_110.value,  # |101⟩ → |110⟩ (control = 1, q1/q2 swapped)
+            Basis.STATE_101.value,  # |110⟩ → |101⟩
+            Basis.STATE_111.value,
         ],
     ),
     # ========================

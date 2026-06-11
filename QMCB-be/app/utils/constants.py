@@ -23,6 +23,7 @@ LEVEL2_QUBITS = 2
 LEVEL3_QUBITS = 3
 
 
+
 class Gate(Enum):
     X = "X"
     SQRT_X = "SQRT_X"
@@ -40,6 +41,8 @@ class Gate(Enum):
     SWAP = "SWAP"
     CONTROLLED_H = "CONTROLLED_H"
     CONTROLLED_U = "CONTROLLED_U"
+    TOFFOLI = "TOFFOLI"
+    FREDKIN = "FREDKIN"
 
 
 class TargetParameterMode(str, Enum):
