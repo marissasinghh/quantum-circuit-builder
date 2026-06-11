@@ -58,14 +58,23 @@ class CircuitBuilder:
             if isinstance(entry, str):
                 gate_name = entry
                 theta = None
+                angles_tuple = None
             else:
                 gate_name = entry["gate"]
                 theta = entry.get("theta")
+                angles_tuple = (
+                    (entry["alpha"], entry["beta"], entry["gamma"])
+                    if "alpha" in entry and "beta" in entry and "gamma" in entry
+                    else None
+                )
 
-            print(f"Applying {gate_name} (theta={theta!r}) for order {qubit_order[i]}")
+            print(
+                f"Applying {gate_name} (theta={theta!r}, angles={angles_tuple!r}) "
+                f"for order {qubit_order[i]}"
+            )
             operations.append(
                 CirqGateMapper.apply(
-                    gate_name, qubit_order[i], *qubits, theta=theta
+                    gate_name, qubit_order[i], *qubits, theta=theta, angles=angles_tuple
                 )
             )
 

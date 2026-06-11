@@ -29,8 +29,8 @@ class TestGetParameterMode:
     def test_random_u_is_seed_zxz(self) -> None:
         assert get_parameter_mode(Gate.RANDOM_U.value) == TargetParameterMode.SEED_ZXZ
 
-    def test_controlled_u_is_trial_zxz(self) -> None:
-        assert get_parameter_mode(Gate.CONTROLLED_U.value) == TargetParameterMode.TRIAL_ZXZ
+    def test_controlled_u_is_seed_zxz(self) -> None:
+        assert get_parameter_mode(Gate.CONTROLLED_U.value) == TargetParameterMode.SEED_ZXZ
 
 
 class TestIsTargetParameterized:
@@ -87,11 +87,16 @@ class TestResolveTargetParams:
         assert resolved.allow_global_phase is False
         assert resolved.step_thetas == [alpha, beta, gamma]
 
-    def test_trial_zxz_raises_not_implemented(self) -> None:
-        with pytest.raises(NotImplementedError, match="TRIAL_ZXZ"):
-            resolve_target_params(
-                Gate.CONTROLLED_U.value,
-                _trial({"gate": Gate.RX.value, "theta": 0.5}),
-                TargetParamsDTO(),
-                validate_target=False,
-            )
+    def test_controlled_u_seed_zxz_matches_angles_from_seed(self) -> None:
+        """CONTROLLED_U now uses SEED_ZXZ — resolver returns step_thetas=[α,β,γ] from seed."""
+        seed = 42
+        alpha, beta, gamma = angles_from_seed(seed)
+        resolved = resolve_target_params(
+            Gate.CONTROLLED_U.value,
+            UnitaryDTO(2, [], []),
+            TargetParamsDTO(seed=seed),
+            validate_target=False,
+        )
+        assert resolved.simulate_live is True
+        assert resolved.allow_global_phase is False
+        assert resolved.step_thetas == [alpha, beta, gamma]

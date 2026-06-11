@@ -183,8 +183,8 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
     Gate.CONTROLLED_U.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
         TargetLibraryField.PARAMETERIZED.value: True,
-        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.TRIAL_ZXZ.value,
-        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
+        TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.SEED_ZXZ.value,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: False,
         # composite_gate: True tells TargetUnitaryBuilder to bypass the generic
         # step iteration and call _build_composite() instead.  CirqGateMapper
         # has no single named Cirq primitive for this gate; it is built from
