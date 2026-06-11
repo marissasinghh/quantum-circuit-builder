@@ -1,5 +1,5 @@
 """
-Tier-2 target tests: correct and wrong student circuits for Levels 2.1–2.4.
+Tier-2 target tests: correct and wrong student circuits for Levels 2.1–2.5.
 
 Level 2.4 (CONTROLLED_H): control=qubit0, target=qubit1.
 When control=0 the state passes through unchanged; when control=1, H is applied
@@ -24,6 +24,7 @@ from unittest.mock import patch
 
 import pytest
 
+from app.controllers.controlled_unitary import generate_controlled_unitary_response
 from app.dto.unitary import UnitaryDTO
 from app.utils.constants import Gate
 from tests.simulate_helpers import run_simulate
@@ -147,3 +148,123 @@ class TestControlledHTarget:
         assert status == 200
         assert stored_response["target_truth_table"]["output"] == \
                live_response["target_truth_table"]["output"]
+
+
+# ── Level 2.5: Controlled-U ───────────────────────────────────────────────────
+
+
+def _run_controlled_u(trial: UnitaryDTO, seed: int):
+    """Call simulate_unitaries for a CONTROLLED_U target with print suppressed."""
+    return run_simulate(trial, Gate.CONTROLLED_U.value, seed=seed)
+
+
+class TestControlledUnitaryLevel:
+    """
+    Level 2.5: random controlled-U challenge.
+
+    Mirrors TestRandomUnitaryLevel from test_tier1_targets.py.
+
+    Four kinds of checks:
+    1. Shape / format: truth table has exactly 4 rows; outputs are valid
+       Dirac-notation ket strings.
+    2. session_id: non-negative integer.
+    3. Reproducibility: same seed → identical truth table on repeated calls;
+       two unseeded calls return different truth tables.
+    4. Integration wrong-circuit: submitting X on Q0 fails all_match.
+
+    The full-decomposition all_match=True test is deferred to Phase 2 (ABC
+    decomposition student path verification).
+    """
+
+    # ── Shape and format ──────────────────────────────────────────────────────
+
+    def test_truth_table_has_exactly_four_rows(self) -> None:
+        """Generated truth table has one row per two-qubit basis state."""
+        with patch("builtins.print"):
+            data = generate_controlled_unitary_response()
+        tt = data["truth_table"]
+        assert len(tt["input"]) == 4, "Expected 4 input rows (|00⟩ |01⟩ |10⟩ |11⟩)"
+        assert len(tt["output"]) == 4, "Expected 4 output rows"
+
+    def test_output_strings_are_valid_quantum_states(self) -> None:
+        """Each output is a non-empty Dirac-notation ket string referencing valid basis states."""
+        with patch("builtins.print"):
+            data = generate_controlled_unitary_response()
+        for s in data["truth_table"]["output"]:
+            assert isinstance(s, str) and len(s) > 0, f"Output must be non-empty string, got: {s!r}"
+            assert "⟩" in s, f"Expected Dirac ket notation (⟩), got: {s!r}"
+
+    def test_control_zero_rows_are_pass_through(self) -> None:
+        """
+        When control=|0⟩ the target passes through unchanged.
+
+        Rows 0 (|00⟩) and 1 (|01⟩) must always be |00⟩ and |01⟩ respectively,
+        regardless of seed — the inner U is only applied when control=|1⟩.
+        """
+        with patch("builtins.print"):
+            data = generate_controlled_unitary_response(seed=42)
+        outputs = data["truth_table"]["output"]
+        assert outputs[0] == "|00⟩", f"row 0 (|00⟩ input): expected |00⟩, got {outputs[0]!r}"
+        assert outputs[1] == "|01⟩", f"row 1 (|01⟩ input): expected |01⟩, got {outputs[1]!r}"
+
+    def test_session_id_is_a_non_negative_integer(self) -> None:
+        """Returned session_id is a valid integer seed for client-side storage."""
+        with patch("builtins.print"):
+            data = generate_controlled_unitary_response()
+        assert isinstance(data["session_id"], int)
+        assert data["session_id"] >= 0
+
+    def test_num_rotation_gates_hint_is_three(self) -> None:
+        """Hint always reports 3 — inner U requires a 3-gate ZXZ decomposition."""
+        with patch("builtins.print"):
+            data = generate_controlled_unitary_response()
+        assert data["num_rotation_gates"] == 3
+
+    # ── Reproducibility ───────────────────────────────────────────────────────
+
+    def test_same_seed_reproduces_identical_truth_table(self) -> None:
+        """
+        Calling with the same seed twice must return the same truth table.
+        Guarantees a student who refreshes the page sees the same target.
+        """
+        with patch("builtins.print"):
+            data1 = generate_controlled_unitary_response(seed=42)
+            data2 = generate_controlled_unitary_response(seed=42)
+        assert data1["truth_table"]["output"] == data2["truth_table"]["output"]
+        assert data1["session_id"] == data2["session_id"] == 42
+
+    def test_different_seeds_produce_different_truth_tables(self) -> None:
+        """Distinct seeds produce distinct targets (basic collision check)."""
+        with patch("builtins.print"):
+            data1 = generate_controlled_unitary_response(seed=1)
+            data2 = generate_controlled_unitary_response(seed=2)
+        assert data1["truth_table"]["output"] != data2["truth_table"]["output"], (
+            "Seeds 1 and 2 returned identical truth tables — "
+            "seed-to-angle derivation may be broken."
+        )
+
+    def test_two_unseeded_calls_produce_different_truth_tables(self) -> None:
+        """
+        Two fresh unseeded calls must return different controlled-U targets.
+        Probabilistic check — collision probability across 2^31 seeds is negligible.
+        """
+        with patch("builtins.print"):
+            data1 = generate_controlled_unitary_response()
+            data2 = generate_controlled_unitary_response()
+        assert data1["truth_table"]["output"] != data2["truth_table"]["output"], (
+            "Two unseeded calls returned identical truth tables — "
+            "random generation appears broken."
+        )
+
+    # ── Integration ───────────────────────────────────────────────────────────
+
+    def test_wrong_circuit_does_not_match_controlled_u_target(self) -> None:
+        """
+        A single X gate on Q0 produces a completely different truth table
+        and must not match the CONTROLLED_U target.
+        """
+        seed = 99999
+        trial = _two([Gate.X.value], [[0]])
+        response, status = _run_controlled_u(trial, seed=seed)
+        assert status == 200
+        assert response["all_match"] is False

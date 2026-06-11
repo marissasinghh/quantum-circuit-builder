@@ -44,6 +44,9 @@ export enum ParameterMode {
 /** sessionStorage key for Level 1.6 random-unitary seed persistence. */
 export const RANDOM_UNITARY_SEED_KEY = "qmcb-random-unitary-seed";
 
+/** sessionStorage key for Level 2.5 controlled-unitary seed persistence. */
+export const CONTROLLED_UNITARY_SEED_KEY = "qmcb-controlled-unitary-seed";
+
 /** localStorage key for gate-unlock progression. */
 export const LEVEL_PROGRESS_KEY = "cnot_progress";
 

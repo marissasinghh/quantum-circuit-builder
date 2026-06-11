@@ -326,22 +326,27 @@ export const CONTROLLED_H_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 2.5: CONTROLLED-U (placeholder)
+// LEVEL 2.5: CONTROLLED-U
 // ========================
 export const CONTROLLED_U_LEVEL: LevelDefinition = {
   target_unitary: Gate.CONTROLLED_U,
   number_of_qubits: LEVEL2_QUBITS,
   toolbox: [...SINGLE_QUBIT_GATES, Gate.CNOT, Gate.CONTROLLED_Z, Gate.SWAP, Gate.CONTROLLED_H] as const,
 
-  parameterMode: ParameterMode.TRIAL_ZXZ,
-  locked: true,
+  parameterMode: ParameterMode.SEED_ZXZ,
 
   uiMaxGates: MAX_GATES,
 
   description:
-    "Controlled-U applies an arbitrary single-qubit unitary to the target when the control is $|1\\rangle$. This optional level is coming soon.",
-  hint1: "Coming soon.",
-  hint2: "Coming soon.",
+    "A random Controlled-U gate has been generated. " +
+    "When the control qubit is $|1\\rangle$, an arbitrary single-qubit unitary U is applied to the target. " +
+    "Synthesize a circuit whose truth table matches it exactly.",
+  hint1:
+    "The rows where the control is $|0\\rangle$ always pass through unchanged. " +
+    "Focus on the rows where control is $|1\\rangle$ — those reveal what U does to $|0\\rangle$ and $|1\\rangle$.",
+  hint2:
+    "Once you know what U is from the truth table, you already know how to decompose it — " +
+    "you solved the same problem in Level 1.6. Then wrap that single-qubit decomposition in a controlled structure using the gates in your toolbox.",
 } as const;
 
 //---------------------------------------------------------------------------------------

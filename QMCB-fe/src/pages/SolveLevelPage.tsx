@@ -13,6 +13,7 @@ import { useCircuit } from "../hooks/useCircuit";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { useCircuitValidation } from "../hooks/useCircuitValidation";
 import { useRandomUnitary } from "../hooks/useRandomUnitary";
+import { useControlledUnitary } from "../hooks/useControlledUnitary";
 import { useDragAndDrop } from "../hooks/useDragAndDrop";
 
 import { TaskCard } from "../components/TaskCard";
@@ -95,8 +96,17 @@ function SolveLevelContent({
   const { unlockedGates, markLevelComplete, unlockGateForLevel } = useLevelProgress();
 
   const isSeedDrivenLevel = currentLevel.parameterMode === ParameterMode.SEED_ZXZ;
-  const { query: randomUnitaryQuery, generateNew: generateNewUnitary, seed: randomSeed } =
-    useRandomUnitary(isSeedDrivenLevel);
+  const isControlledU = currentLevel.target_unitary === Gate.CONTROLLED_U;
+
+  const { query: randomUnitaryQuery, generateNew: generateNewRandomU, seed: randomUSeed } =
+    useRandomUnitary(isSeedDrivenLevel && !isControlledU);
+
+  const { query: controlledUnitaryQuery, generateNew: generateNewControlledU, seed: controlledUSeed } =
+    useControlledUnitary(isSeedDrivenLevel && isControlledU);
+
+  const seedDrivenQuery    = isControlledU ? controlledUnitaryQuery : randomUnitaryQuery;
+  const generateNewUnitary = isControlledU ? generateNewControlledU : generateNewRandomU;
+  const randomSeed         = isControlledU ? controlledUSeed        : randomUSeed;
 
   const [initialState, setInitialState] = React.useState<0 | 1>(0);
 
@@ -126,7 +136,7 @@ function SolveLevelContent({
     if (currentLevel.parameterMode === ParameterMode.RANDOM_THETA) return null;
 
     if (isSeedDrivenLevel) {
-      const amps = randomUnitaryQuery.data?.truth_table?.amplitudes?.[initialState];
+      const amps = seedDrivenQuery.data?.truth_table?.amplitudes?.[initialState];
       if (!amps) return null;
       return amplitudesToBlochState(amps[0], amps[1]);
     }
@@ -135,7 +145,7 @@ function SolveLevelContent({
       return canonicalStepsToBlochState(currentLevel.canonical, initialState);
     }
     return null;
-  }, [currentLevel, initialState, isSeedDrivenLevel, randomUnitaryQuery.data]);
+  }, [currentLevel, initialState, isSeedDrivenLevel, seedDrivenQuery.data]);
 
   const isSLevel = currentLevel.target_unitary === Gate.S;
   const [showOrderTip, setShowOrderTip] = React.useState(false);
@@ -223,7 +233,7 @@ function SolveLevelContent({
           <section className="relative flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 overflow-hidden gap-3">
             <TaskCard
               level={currentLevel}
-              dynamicTruth={isSeedDrivenLevel ? randomUnitaryQuery.data?.truth_table : undefined}
+              dynamicTruth={isSeedDrivenLevel ? seedDrivenQuery.data?.truth_table : undefined}
               onNewUnitary={isSeedDrivenLevel ? handleNewUnitary : undefined}
             />
             <CircuitCanvas
