@@ -62,14 +62,19 @@ def _compute_all_match(
     trial_dict: dict[str, Any],
     target_dict: dict[str, Any],
     allow_global_phase: bool,
+    atol: float = 1e-6,
 ) -> bool:
     """
     Return True when every truth-table row matches.
 
     Primary check: Dirac string equality. When allow_global_phase is set and
     strings differ on a superposition row, fall back to per-row probability
-    comparison. Definite-state rows (e.g. S/T on |1⟩) still require matching
-    strings so phase-distinct gates are not treated as equivalent.
+    comparison using atol. Definite-state rows (e.g. S/T on |1⟩) still require
+    matching strings so phase-distinct gates are not treated as equivalent.
+
+    atol is sourced from ResolvedTargetParams.grading_atol (1e-6 for all levels,
+    1e-3 for RANDOM_U where global-phase variance from Cirq's Rz/Rx convention
+    makes exact amplitude matching incorrect).
     """
     trial_outputs = trial_dict["output"]
     target_outputs = target_dict["output"]
@@ -98,7 +103,7 @@ def _compute_all_match(
             target_probs[i]
         ):
             return False
-        if not _row_probabilities_match(trial_probs[i], target_probs[i]):
+        if not _row_probabilities_match(trial_probs[i], target_probs[i], atol):
             return False
 
     return True
@@ -300,7 +305,9 @@ def simulate_unitaries(
     trial_dict = trial_truth_table_dto.to_dict()
     target_dict = target_truth_table_dto.to_dict()
 
-    all_match = _compute_all_match(trial_dict, target_dict, resolved.allow_global_phase)
+    all_match = _compute_all_match(
+        trial_dict, target_dict, resolved.allow_global_phase, atol=resolved.grading_atol
+    )
 
     return {
         "message": "Successfully simulated circuits.",

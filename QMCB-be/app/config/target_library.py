@@ -90,7 +90,8 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
         TargetLibraryField.PARAMETERIZED.value: True,
         TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.SEED_ZXZ.value,
-        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: False,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
+        TargetLibraryField.GRADING_ATOL.value: 1e-3,
         TargetLibraryField.STEPS.value: [
             {TargetLibraryField.GATE.value: Gate.RZ.value, TargetLibraryField.ORDER.value: Q0},
             {TargetLibraryField.GATE.value: Gate.RX.value, TargetLibraryField.ORDER.value: Q0},

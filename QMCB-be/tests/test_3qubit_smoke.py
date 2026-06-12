@@ -4,7 +4,7 @@
 Verifies that the end-to-end simulation pipeline works correctly for n=3
 qubits before Toffoli/Fredkin levels are wired into the UI.
 
-Two independent exercises:
+Three independent exercises:
 
 1. X-all circuit  — applies X to each of the three qubits.
    For every basis state |abc⟩ the expected output is |a'b'c'⟩ where each
@@ -17,6 +17,10 @@ Two independent exercises:
    output strings match the stored expected_outputs.  This is the same
    pattern used by test_target_library.py and confirms that the gate mapper,
    qubit-order constants, and library entries are wired correctly together.
+
+3. Fredkin truth table — same pattern as (2), for the CSWAP reference circuit.
+   Confirms cirq.CSWAP wiring, C0_T1_T2 qubit-order constant, and FREDKIN
+   library entries are consistent.
 
 Run from QMCB-be/:
     python -m pytest tests/test_3qubit_smoke.py -v
@@ -121,6 +125,66 @@ class TestToffoliTruthTable:
 
         assert actual == expected_outputs[state_idx], (
             f"Toffoli | input {state}:\n"
+            f"  expected : {expected_outputs[state_idx]!r}\n"
+            f"  actual   : {actual!r}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Smoke test 3: Fredkin truth table matches TARGET_LIBRARY expected_outputs
+# ---------------------------------------------------------------------------
+
+class TestFredkinTruthTable:
+    """
+    Simulate the single-Fredkin reference circuit for all 8 basis-state
+    inputs and assert exact Dirac-notation matches against the stored
+    expected_outputs in TARGET_LIBRARY.
+
+    Truth table (control=q0, swap-targets=q1/q2):
+      |000⟩ → |000⟩  (control=0, pass-through)
+      |001⟩ → |001⟩  (control=0, pass-through)
+      |010⟩ → |010⟩  (control=0, pass-through)
+      |011⟩ → |011⟩  (control=0, pass-through)
+      |100⟩ → |100⟩  (control=1, swap 0,0 → unchanged)
+      |101⟩ → |110⟩  (control=1, swap q1=0,q2=1 → q1=1,q2=0)
+      |110⟩ → |101⟩  (control=1, swap q1=1,q2=0 → q1=0,q2=1)
+      |111⟩ → |111⟩  (control=1, swap 1,1 → unchanged)
+
+    Passes when: gate mapper branch (cirq.CSWAP), qubit-order constant
+    (C0_T1_T2), and target library entries are all consistent.
+    """
+
+    LEVEL_NAME = Gate.FREDKIN.value
+
+    def test_expected_outputs_are_present(self) -> None:
+        assert self.LEVEL_NAME in TARGET_LIBRARY, (
+            f"{self.LEVEL_NAME!r} not found in TARGET_LIBRARY"
+        )
+        level_def = TARGET_LIBRARY[self.LEVEL_NAME]
+        assert TargetLibraryField.EXPECTED_OUTPUTS.value in level_def, (
+            f"{self.LEVEL_NAME!r} is missing expected_outputs"
+        )
+        assert len(level_def[TargetLibraryField.EXPECTED_OUTPUTS.value]) == 8
+
+    @pytest.mark.parametrize("state_idx", range(8))
+    def test_row(self, state_idx: int) -> None:
+        level_def = TARGET_LIBRARY[self.LEVEL_NAME]
+        n_qubits = level_def[TargetLibraryField.NUM_QUBITS.value]
+        expected_outputs = level_def[TargetLibraryField.EXPECTED_OUTPUTS.value]
+
+        qubits = initialize_qubit_sequence(n_qubits)
+        basis_states = generate_basis_states(n_qubits)
+        state = basis_states[state_idx]
+
+        resolved = resolved_for_library_simulation(self.LEVEL_NAME)
+        target_circuit_base = TargetUnitaryBuilder.build(self.LEVEL_NAME, qubits, resolved)
+
+        prep = CircuitBuilder.prepare_basis_state(state, qubits)
+        full_circuit = prep + target_circuit_base
+        actual = CircuitSimulator.simulate_wavefunction(full_circuit, qubits, decimals=3)
+
+        assert actual == expected_outputs[state_idx], (
+            f"Fredkin | input {state}:\n"
             f"  expected : {expected_outputs[state_idx]!r}\n"
             f"  actual   : {actual!r}"
         )
