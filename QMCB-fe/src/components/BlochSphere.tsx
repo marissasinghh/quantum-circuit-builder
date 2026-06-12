@@ -21,6 +21,8 @@ interface BlochSphereProps {
   /** When provided, a red dot is drawn at the target state's Bloch position. */
   targetTheta?: number;
   targetPhi?: number;
+  /** Analytically-computed target position (takes priority over targetTheta/targetPhi). */
+  targetBloch?: { theta: number; phi: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -133,19 +135,22 @@ const FONT = fonts.mono;
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
-export function BlochSphere({ theta, phi, targetTheta, targetPhi }: BlochSphereProps) {
+export function BlochSphere({ theta, phi, targetTheta, targetPhi, targetBloch }: BlochSphereProps) {
   const bx = Math.sin(theta) * Math.cos(phi);
   const by = Math.sin(theta) * Math.sin(phi);
   const bz = Math.cos(theta);
   const tip = project(bx, by, bz);
   const arrowAngleDeg = (Math.atan2(tip.y - CY, tip.x - CX) * 180) / Math.PI;
 
-  const hasTarget = targetTheta !== undefined && targetPhi !== undefined;
+  const resolvedTargetTheta = targetBloch?.theta ?? targetTheta;
+  const resolvedTargetPhi   = targetBloch?.phi   ?? targetPhi;
+
+  const hasTarget = resolvedTargetTheta !== undefined && resolvedTargetPhi !== undefined;
   const targetTip = hasTarget
     ? project(
-        Math.sin(targetTheta!) * Math.cos(targetPhi!),
-        Math.sin(targetTheta!) * Math.sin(targetPhi!),
-        Math.cos(targetTheta!),
+        Math.sin(resolvedTargetTheta!) * Math.cos(resolvedTargetPhi!),
+        Math.sin(resolvedTargetTheta!) * Math.sin(resolvedTargetPhi!),
+        Math.cos(resolvedTargetTheta!),
       )
     : null;
 

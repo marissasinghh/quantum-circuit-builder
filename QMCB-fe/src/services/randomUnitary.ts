@@ -13,6 +13,8 @@ export interface RandomUnitaryResponseDTO {
   truth_table: TruthTableDTO;
   /** Hint: number of rotation gates in the ZXZ decomposition (always 3). */
   num_rotation_gates: number;
+  /** Analytically-computed Bloch sphere coordinates for the target state (|0⟩ input). */
+  target_bloch: { theta: number; phi: number };
 }
 
 export async function fetchRandomUnitary(seed?: number): Promise<RandomUnitaryResponseDTO> {
