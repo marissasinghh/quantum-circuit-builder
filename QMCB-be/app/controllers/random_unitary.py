@@ -67,8 +67,15 @@ def generate_random_unitary_response(seed: int | None = None) -> dict:
             full_circuit, qubits, state, truth_table_dto, decimals=3
         )
 
+    alpha, beta, gamma = angles_from_seed(seed)
+    target_bloch = {
+        "theta": beta,
+        "phi": -(alpha + gamma),
+    }
+
     return {
         "session_id": seed,
         "truth_table": truth_table_dto.to_dict(),
         "num_rotation_gates": 3,
+        "target_bloch": target_bloch,
     }
