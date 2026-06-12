@@ -45,7 +45,7 @@ function computeWireYs(numberOfQubits: number): number[] {
   if (numberOfQubits === 1) {
     return [CANVAS_H / 2];
   }
-  return [CANVAS_H * 0.38, CANVAS_H * 0.62];
+  return [CANVAS_H / 3, (CANVAS_H * 2) / 3];
 }
 
 export function CircuitCanvas({

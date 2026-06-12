@@ -93,7 +93,7 @@ function SolveLevelContent({
   const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, clearAll } =
     useCircuit();
 
-  const { unlockedGates, markLevelComplete, unlockGateForLevel } = useLevelProgress();
+  const { markLevelComplete, unlockGateForLevel } = useLevelProgress();
 
   const isSeedDrivenLevel = currentLevel.parameterMode === ParameterMode.SEED_ZXZ;
   const isControlledU = currentLevel.target_unitary === Gate.CONTROLLED_U;
@@ -153,6 +153,14 @@ function SolveLevelContent({
     }
     return null;
   }, [currentLevel, initialState, isSeedDrivenLevel, isControlledU, randomUnitaryQuery.data, seedDrivenQuery.data]);
+
+  const circuitOutputRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (mutation.status === "success" || mutation.status === "error") {
+      circuitOutputRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [mutation.status]);
 
   const isSLevel = currentLevel.target_unitary === Gate.S;
   const [showOrderTip, setShowOrderTip] = React.useState(false);
@@ -270,7 +278,7 @@ function SolveLevelContent({
             }}
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
-              <Toolbox availableGates={unlockedGates} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
+              <Toolbox availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
             </div>
             {currentLevel.number_of_qubits === 1 && (
               <>
@@ -311,7 +319,7 @@ function SolveLevelContent({
               </>
             )}
             <div className="border-t border-tier1 my-3 shrink-0" />
-            <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
+            <div ref={circuitOutputRef} className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
               <OutputTable
                 rows={rows}
                 isCorrect={allCorrect}
