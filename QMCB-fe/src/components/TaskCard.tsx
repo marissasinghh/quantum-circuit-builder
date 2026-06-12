@@ -88,6 +88,12 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
                 Try a different unitary
               </button>
             )}
+            {level.target_unitary === "RANDOM_U" && (
+              <p className="mt-2 font-sans text-[11px] text-text-muted italic leading-relaxed">
+                Tip: Extract angles using |u₀₀| for β, arg(u₀₀) for α+γ, and arg(u₁₀) for α−γ.
+                Use at least 4 decimal places when entering angles.
+              </p>
+            )}
           </>
         ) : (
           <p className="font-sans text-[12px] text-tier2 italic">

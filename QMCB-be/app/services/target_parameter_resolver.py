@@ -21,6 +21,7 @@ class ResolvedTargetParams:
     simulate_live: bool
     allow_global_phase: bool
     is_sampling: bool = False
+    grading_atol: float = 1e-6
 
 
 def get_parameter_mode(target_name: str) -> TargetParameterMode:
@@ -45,6 +46,10 @@ def is_target_parameterized(target_name: str) -> bool:
 
 def _allow_global_phase(level: dict) -> bool:
     return bool(level.get(TargetLibraryField.ALLOW_GLOBAL_PHASE.value, True))
+
+
+def _grading_atol(level: dict) -> float:
+    return float(level.get(TargetLibraryField.GRADING_ATOL.value, 1e-6))
 
 
 def _step_count(target_name: str) -> int:
@@ -73,6 +78,7 @@ def resolve_target_params(
     level = TARGET_LIBRARY[target_name]
     mode = get_parameter_mode(target_name)
     allow_gp = _allow_global_phase(level)
+    atol = _grading_atol(level)
 
     if mode == TargetParameterMode.RANDOM_THETA:
         return ResolvedTargetParams(
@@ -80,6 +86,7 @@ def resolve_target_params(
             simulate_live=True,
             allow_global_phase=allow_gp,
             is_sampling=True,
+            grading_atol=atol,
         )
 
     has_stored_outputs = TargetLibraryField.EXPECTED_OUTPUTS.value in level
@@ -91,6 +98,7 @@ def resolve_target_params(
             step_thetas=[None] * n_steps,
             simulate_live=simulate_live,
             allow_global_phase=allow_gp,
+            grading_atol=atol,
         )
 
     if mode == TargetParameterMode.TRIAL_THETA:
@@ -143,6 +151,7 @@ def resolve_target_params(
             step_thetas=[effective_theta],
             simulate_live=True,
             allow_global_phase=effective_allow_gp,
+            grading_atol=atol,
         )
 
     if mode == TargetParameterMode.SEED_ZXZ:
@@ -151,6 +160,7 @@ def resolve_target_params(
             step_thetas=[alpha, beta, gamma],
             simulate_live=True,
             allow_global_phase=allow_gp,
+            grading_atol=atol,
         )
 
     if mode == TargetParameterMode.TRIAL_ZXZ:
@@ -170,4 +180,5 @@ def resolved_for_library_simulation(target_name: str) -> ResolvedTargetParams:
         step_thetas=[None] * n_steps,
         simulate_live=True,
         allow_global_phase=_allow_global_phase(level),
+        grading_atol=_grading_atol(level),
     )

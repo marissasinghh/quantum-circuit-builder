@@ -84,7 +84,8 @@ class TestResolveTargetParams:
             validate_target=False,
         )
         assert resolved.simulate_live is True
-        assert resolved.allow_global_phase is False
+        assert resolved.allow_global_phase is True
+        assert resolved.grading_atol == 1e-3
         assert resolved.step_thetas == [alpha, beta, gamma]
 
     def test_controlled_u_seed_zxz_matches_angles_from_seed(self) -> None:

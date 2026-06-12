@@ -63,6 +63,7 @@ class TargetLibraryField(Enum):
     PARAMETERIZED = "parameterized"
     PARAMETER_MODE = "parameter_mode"
     ALLOW_GLOBAL_PHASE = "allow_global_phase"
+    GRADING_ATOL = "grading_atol"
     EXPECTED_OUTPUTS = "expected_outputs"
     COMPOSITE_GATE = "composite_gate"
 

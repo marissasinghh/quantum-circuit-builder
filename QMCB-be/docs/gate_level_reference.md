@@ -446,13 +446,102 @@ the student's submission, reference built as `CU(U(α,β,γ))` rather than a fix
 
 ---
 
+---
+
+## Tier 3 · Three-qubit gates
+
+---
+
+### Level 3.1 · Toffoli (CCX)
+
+**Description:** The Toffoli gate applies X to the target qubit (Q2) only when both control qubits
+(Q0 and Q1) are |1⟩. It is the 3-qubit universal reversible gate.
+
+**Toolbox:** (Tier 3 gate set — TBD in curriculum; not yet shipped in UI)
+
+**Qubit order:** `C0_C1_T2 = [0, 1, 2]` — control0=Q0, control1=Q1, target=Q2
+
+**CirqGateMapper:** `cirq.CCX(q0, q1, q2)`
+
+**Reference circuit:** single `TOFFOLI` step with `C0_C1_T2`
+
+**Canonical decomposition (Nielsen & Chuang §4.3, Fig 4.9):**
+```
+H[Q2] · CNOT[C1_T2] · T†[Q2] · CNOT[C0_T2] · T[Q2] · CNOT[C1_T2] · T†[Q2] ·
+CNOT[C0_T2] · T[Q1] · T[Q2] · H[Q2] · CNOT[C0_T1] · T[Q0] · T†[Q1] · CNOT[C0_T1]
+```
+(15 gates; students build this decomposition in level 3.1)
+
+**Truth table** (verified against live Cirq output, `decimals=3`):
+
+| Input  | Expected output | Notes |
+|--------|-----------------|-------|
+| \|000⟩ | \|000⟩          | both controls 0 |
+| \|001⟩ | \|001⟩          | both controls 0 |
+| \|010⟩ | \|010⟩          | c0=0, c1=1 — not both 1 |
+| \|011⟩ | \|011⟩          | c0=0, c1=1 — not both 1 |
+| \|100⟩ | \|100⟩          | c0=1, c1=0 — not both 1 |
+| \|101⟩ | \|101⟩          | c0=1, c1=0 — not both 1 |
+| \|110⟩ | \|111⟩          | c0=1, c1=1 → flip target (0→1) |
+| \|111⟩ | \|110⟩          | c0=1, c1=1 → flip target (1→0) |
+
+**`allow_global_phase`: true**
+
+**Learning goal:** The Toffoli gate is universal for classical reversible computation and a key
+primitive for fault-tolerant quantum computing. Its decomposition into {CNOT, H, T, T†} is the
+canonical textbook exercise (N&C §4.3). Backend tests confirmed by `test_tier3_targets.py` and
+auto-picked up by `test_target_library.py`.
+
+---
+
+### Level 3.2 · Fredkin (CSWAP)
+
+**Description:** The Fredkin gate swaps qubit1 (Q1) and qubit2 (Q2) only when the control qubit
+(Q0) is |1⟩. It is the 3-qubit controlled-SWAP.
+
+**Toolbox:** (Tier 3 gate set — TBD in curriculum; not yet shipped in UI)
+
+**Qubit order:** `C0_T1_T2 = [0, 1, 2]` — control=Q0, swap-target0=Q1, swap-target1=Q2
+
+**CirqGateMapper:** `cirq.CSWAP(q0, q1, q2)`
+
+**Reference circuit:** single `FREDKIN` step with `C0_T1_T2`
+
+**Canonical decomposition:**
+```
+CNOT[C1_T2] · Toffoli[C0_C2_T1] · CNOT[C1_T2]
+```
+(Toffoli sandwiched by two CNOTs; students may also use the 7-gate CNOT+T decomposition)
+
+**Truth table** (verified against live Cirq output, `decimals=3`):
+
+| Input  | Expected output | Notes |
+|--------|-----------------|-------|
+| \|000⟩ | \|000⟩          | control=0, pass-through |
+| \|001⟩ | \|001⟩          | control=0, pass-through |
+| \|010⟩ | \|010⟩          | control=0, pass-through |
+| \|011⟩ | \|011⟩          | control=0, pass-through |
+| \|100⟩ | \|100⟩          | control=1, swap(0,0) → unchanged |
+| \|101⟩ | \|110⟩          | control=1, swap q1=0,q2=1 → q1=1,q2=0 |
+| \|110⟩ | \|101⟩          | control=1, swap q1=1,q2=0 → q1=0,q2=1 |
+| \|111⟩ | \|111⟩          | control=1, swap(1,1) → unchanged |
+
+**`allow_global_phase`: true**
+
+**Learning goal:** The Fredkin gate conserves the number of 1s in the input — a useful property
+for reversible computation and quantum error correction. Its decomposition reduces to a Toffoli
+sandwiched between two CNOTs. Backend tests confirmed by `test_tier3_targets.py` and auto-picked
+up by `test_target_library.py`.
+
+---
+
 ## Parameter modes (unified architecture)
 
 Each `TARGET_LIBRARY` entry declares how target parameters are resolved:
 
 | `parameter_mode` | Levels | Runtime source |
 |------------------|--------|----------------|
-| `fixed` | X, S, T, H, CNOT_FLIPPED, CZ, SWAP, CH | Baked into `steps` / `expected_outputs` |
+| `fixed` | X, S, T, H, CNOT_FLIPPED, CZ, SWAP, CH, TOFFOLI, FREDKIN | Baked into `steps` / `expected_outputs` |
 | `trial_theta` | RX, RY | Student's submitted θ (via `extract_theta_from_trial`) |
 | `seed_zxz` | RANDOM_U | `SimulateRequestDTO.target_params.seed` → `(α,β,γ)` |
 | `trial_zxz` | CONTROLLED_U (stub) | Future: three angles from student CU gate |
@@ -477,7 +566,9 @@ Grading flow: `SimulateRequestDTO` → `resolve_target_params()` → `TargetUnit
 | 2.3   | SWAP          | 2      | None               | —                                   |
 | 2.4   | Controlled-H  | 2      | None               | —                                   |
 | 2.5   | Controlled-U  | 2      | TBD                | FE placeholder locked; backend stub |
+| 3.1   | Toffoli (CCX) | 3      | None               | Backend only — not yet shipped in UI |
+| 3.2   | Fredkin (CSWAP)| 3     | None               | Backend only — not yet shipped in UI |
 
 ---
 
-*Generated from live-verified backend data. Last updated: unified level architecture refactor.*
+*Generated from live-verified backend data. Last updated: Tier 3 Toffoli/Fredkin backend added, truth tables verified via Cirq.*
