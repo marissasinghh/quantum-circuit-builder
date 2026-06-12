@@ -208,7 +208,7 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
     "truth table matches it exactly. Use any combination of your unlocked gates.",
   hint1:
     "Any single-qubit gate can be expressed as rotations about the X, Y, and Z axes for some angles θ_X, θ_Y, and θ_Z.",
-  hint2: "The angles θ_X, θ_Y, and θ_Z can be solved for given the matrix elements.",
+  hint2: "Tip: Extract angles using |u₀₀| for β, arg(u₀₀) for α+γ, and arg(u₁₀) for α−γ. Use at least 4 decimal places when entering angles.",
 } as const;
 
 // ========================

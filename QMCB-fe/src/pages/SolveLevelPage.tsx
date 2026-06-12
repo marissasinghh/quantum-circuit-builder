@@ -38,7 +38,7 @@ import {
 
 import { LEVEL_ORDER, getNextLevel } from "../config/levels";
 import { ParameterMode } from "../utils/constants";
-import { gateSequenceToBlochState, canonicalStepsToBlochState, type BlochState } from "../utils/blochMath";
+import { gateSequenceToBlochState, amplitudesToBlochState, canonicalStepsToBlochState, type BlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 
@@ -134,13 +134,25 @@ function SolveLevelContent({
   const targetBlochState = useMemo((): BlochState | null => {
     if (currentLevel.number_of_qubits !== 1) return null;
     if (currentLevel.parameterMode === ParameterMode.RANDOM_THETA) return null;
-    if (isSeedDrivenLevel) return null;
+
+    if (isSeedDrivenLevel) {
+      const apiBloch = !isControlledU ? randomUnitaryQuery.data?.target_bloch : undefined;
+      if (apiBloch) {
+        if (initialState === 0) return { theta: apiBloch.theta, phi: apiBloch.phi };
+        // |1⟩ is the antipodal point of |0⟩ on the Bloch sphere
+        return { theta: Math.PI - apiBloch.theta, phi: apiBloch.phi + Math.PI };
+      }
+      // Fallback while the query is loading
+      const amps = seedDrivenQuery.data?.truth_table?.amplitudes?.[initialState];
+      if (!amps) return null;
+      return amplitudesToBlochState(amps[0], amps[1]);
+    }
 
     if (currentLevel.canonical) {
       return canonicalStepsToBlochState(currentLevel.canonical, initialState);
     }
     return null;
-  }, [currentLevel, initialState, isSeedDrivenLevel]);
+  }, [currentLevel, initialState, isSeedDrivenLevel, isControlledU, randomUnitaryQuery.data, seedDrivenQuery.data]);
 
   const isSLevel = currentLevel.target_unitary === Gate.S;
   const [showOrderTip, setShowOrderTip] = React.useState(false);
@@ -276,11 +288,6 @@ function SolveLevelContent({
                       phi={blochState.phi}
                       targetTheta={targetBlochState?.theta}
                       targetPhi={targetBlochState?.phi}
-                      targetBloch={
-                        isSeedDrivenLevel && !isControlledU
-                          ? randomUnitaryQuery.data?.target_bloch
-                          : undefined
-                      }
                     />
                     {showOrderTip && isSLevel && (
                       <div className="relative w-full mt-[14px] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
