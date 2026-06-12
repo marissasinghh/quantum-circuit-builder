@@ -114,5 +114,11 @@ class CirqGateMapper:
         elif gate == Gate.SWAP.value:
             return cirq.SWAP(selected_qubits[0], selected_qubits[1])
 
+        elif gate == Gate.TOFFOLI.value:
+            return cirq.CCX(selected_qubits[0], selected_qubits[1], selected_qubits[2])
+
+        elif gate == Gate.FREDKIN.value:
+            return cirq.CSWAP(selected_qubits[0], selected_qubits[1], selected_qubits[2])
+
         else:
             raise ValueError(f"Unsupported gate: {gate}")
