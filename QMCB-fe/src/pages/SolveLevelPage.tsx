@@ -42,9 +42,6 @@ import { gateSequenceToBlochState, amplitudesToBlochState, canonicalStepsToBloch
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 
-const RIGHT_PANEL_WIDTH_PX = 523;
-const APP_HEADER_HEIGHT_PX = 40;
-
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
   return gates.length > 0 && gates.every((g) => g.type === Gate.RZ);
 }
@@ -240,12 +237,9 @@ function SolveLevelContent({
           onDragEnd(e);
         }}
       >
-        <div
-          className="flex-1 min-h-0 w-full min-w-0 grid h-full"
-          style={{ gridTemplateColumns: `minmax(0, 1fr) ${RIGHT_PANEL_WIDTH_PX}px` }}
-        >
+        <div className="flex-1 w-full min-w-0 flex flex-col sm:flex-row sm:min-h-0 sm:h-full overflow-y-auto sm:overflow-y-hidden">
           {/* Center: Task + Circuit Canvas */}
-          <section className="relative flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 overflow-hidden gap-3">
+          <section className="relative w-full sm:flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 overflow-hidden gap-3 min-h-[320px] sm:min-h-0">
             <TaskCard
               level={currentLevel}
               dynamicTruth={isSeedDrivenLevel ? seedDrivenQuery.data?.truth_table : undefined}
@@ -271,11 +265,7 @@ function SolveLevelContent({
 
           {/* Right: Toolbox + Bloch + Output */}
           <aside
-            className="shrink-0 bg-bg-sidebar border-l border-tier1 p-3 overflow-y-auto flex flex-col gap-0 min-w-0 min-h-0 h-full"
-            style={{
-              width: RIGHT_PANEL_WIDTH_PX,
-              maxHeight: `calc(100vh - ${APP_HEADER_HEIGHT_PX}px)`,
-            }}
+            className="shrink-0 w-full sm:w-auto sm:min-w-[180px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto flex flex-col gap-0 min-h-0 sm:h-full"
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
               <Toolbox availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
