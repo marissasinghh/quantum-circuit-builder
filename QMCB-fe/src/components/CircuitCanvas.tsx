@@ -76,8 +76,9 @@ export function CircuitCanvas({
           qubit can exist in a superposition of both until it is measured.
         </Tooltip>
         <div className="absolute inset-0 overflow-x-auto overflow-y-hidden rounded-panel">
+        <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
         <div
-          className="relative w-full h-full"
+          className="relative"
           style={{ minWidth: CANVAS_W, height: CANVAS_H }}
         >
           {wireYs.map((y, i) => (
@@ -208,6 +209,7 @@ export function CircuitCanvas({
             return null;
           })}
           </svg>
+        </div>
         </div>
         </div>
       </div>
