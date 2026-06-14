@@ -265,7 +265,7 @@ function SolveLevelContent({
 
           {/* Right: Toolbox + Bloch + Output */}
           <aside
-            className="shrink-0 w-full sm:w-auto sm:min-w-[180px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto flex flex-col gap-0 min-h-0 sm:h-full"
+            className="w-full sm:w-auto sm:shrink sm:basis-[523px] sm:min-w-[200px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto flex flex-col gap-0 min-h-0 sm:h-full"
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
               <Toolbox availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />

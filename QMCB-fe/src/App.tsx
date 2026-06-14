@@ -81,7 +81,7 @@ function LevelSidebar() {
 
   return (
     <aside
-      className="shrink-0 min-w-[140px] w-full sm:w-auto bg-bg-sidebar border-b sm:border-b-0 sm:border-r border-tier1 overflow-y-auto h-auto sm:h-full px-3"
+      className="hidden sm:block sm:shrink sm:basis-[180px] sm:min-w-[120px] bg-bg-sidebar border-r border-tier1 overflow-y-auto h-full px-3"
     >
       {renderTier("TIER 1 — SINGLE QUBIT", tier1)}
       {renderTier("TIER 2 — TWO QUBIT", tier2)}
@@ -96,7 +96,7 @@ function AppShell() {
   return (
     <div className="h-screen flex flex-col bg-bg-app text-text-body">
       <AppHeader />
-      <div className="flex flex-1 min-h-0 flex-col sm:flex-row overflow-y-auto sm:overflow-y-hidden">
+      <div className="flex flex-1 min-h-0 min-w-0 flex-col sm:flex-row">
         {showSidebar && <LevelSidebar />}
         <div className="flex flex-1 min-w-0 min-h-0 w-full flex-col">
           <Routes>
