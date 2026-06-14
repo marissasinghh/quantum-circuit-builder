@@ -247,7 +247,7 @@ export function Toolbox({ availableGates, numberOfQubits }: ToolboxProps) {
       <h2 className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-2">
         TOOLBOX
       </h2>
-      <div className="grid grid-cols-2 gap-2 max-h-[160px] overflow-y-auto shrink-0 min-w-0">
+      <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:overflow-x-hidden sm:pb-0">
         {availableGates.map((gate) => {
           const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
           if (!config) return null;
@@ -258,7 +258,7 @@ export function Toolbox({ availableGates, numberOfQubits }: ToolboxProps) {
             <DraggableTool
               key={gate}
               id={config.toolId}
-              className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 min-w-0 w-full"
+              className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px] sm:min-w-0 sm:w-full"
             >
               <span
                 draggable={false}
