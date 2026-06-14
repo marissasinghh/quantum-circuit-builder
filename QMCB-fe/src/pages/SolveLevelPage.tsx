@@ -41,6 +41,8 @@ import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState, amplitudesToBlochState, canonicalStepsToBlochState, type BlochState } from "../utils/blochMath";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
+import { useMobileView } from "../hooks/useMobileView";
+import { MobileSolveLayout } from "../components/MobileSolveLayout";
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
   return gates.length > 0 && gates.every((g) => g.type === Gate.RZ);
@@ -224,6 +226,60 @@ function SolveLevelContent({
       navigate("/level/" + next.target_unitary);
     }
   };
+
+  const isMobile = useMobileView(1300);
+
+  const isMutationPending = mutation.isPending;
+  const mutationError: Error | null = mutation.isError ? (mutation.error as Error) : null;
+  const gradingSummary: GradingSummary | undefined =
+    mutation.data?.grading_mode === "random_theta" &&
+    mutation.data.samples_checked != null &&
+    mutation.data.samples_passed != null
+      ? {
+          samplesChecked: mutation.data.samples_checked,
+          samplesPassed: mutation.data.samples_passed,
+        }
+      : undefined;
+
+  if (isMobile) {
+    return (
+      <MobileSolveLayout
+        currentLevel={currentLevel}
+        isSeedDrivenLevel={isSeedDrivenLevel}
+        dynamicTruth={isSeedDrivenLevel ? seedDrivenQuery.data?.truth_table : undefined}
+        gates={gates}
+        removeGate={removeGate}
+        setGateOrder={setGateOrder}
+        setGateTheta={setGateTheta}
+        rows={rows}
+        allCorrect={allCorrect}
+        handleCheck={handleCheck}
+        validationError={validationError}
+        isChecking={isChecking}
+        isMutationPending={isMutationPending}
+        mutationError={mutationError}
+        gradingSummary={gradingSummary}
+        handleClear={handleClear}
+        handleNewUnitary={isSeedDrivenLevel ? handleNewUnitary : undefined}
+        handleRepeat={handleRepeat}
+        handleNextLevel={handleNextLevel}
+        showCompletionModal={showCompletionModal}
+        setShowCompletionModal={setShowCompletionModal}
+        activeId={activeId}
+        setActiveId={setActiveId}
+        onDragEnd={onDragEnd}
+        sensors={sensors}
+        blochState={blochState}
+        targetBlochState={targetBlochState}
+        initialState={initialState}
+        setInitialState={setInitialState}
+        showOrderTip={showOrderTip}
+        setShowOrderTip={setShowOrderTip}
+        isSLevel={isSLevel}
+        circuitOutputRef={circuitOutputRef}
+      />
+    );
+  }
 
   return (
     <TooltipProvider>
