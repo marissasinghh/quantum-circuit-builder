@@ -158,7 +158,7 @@ export function MobileSolveLayout({
   isSLevel,
   circuitOutputRef,
 }: MobileSolveLayoutProps) {
-  const [activeTab, setActiveTab] = React.useState<Tab>("play");
+  const [activeTab, setActiveTab] = React.useState<Tab>("info");
 
   return (
     <TooltipProvider>
