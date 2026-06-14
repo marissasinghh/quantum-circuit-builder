@@ -118,11 +118,11 @@ function SolveLevelContent({
   const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
 
   // Mouse/stylus: start drag after 8 px of movement (prevents accidental drags on click).
-  // Touch: start drag after 100 ms — short enough to feel instant, long enough not to
-  // swallow scroll gestures on the rest of the page.
+  // Touch: 150 ms hold before drag activates; up to 8 px movement allowed during the hold
+  // so the browser can still recognise a scroll intent and cancel the drag.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 0, tolerance: 10 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
   );
 
   const blochState = useMemo(
@@ -227,7 +227,7 @@ function SolveLevelContent({
     }
   };
 
-  const isMobile = useMobileView(1300);
+  const isMobile = useMobileView(768);
 
   const isMutationPending = mutation.isPending;
   const mutationError: Error | null = mutation.isError ? (mutation.error as Error) : null;
