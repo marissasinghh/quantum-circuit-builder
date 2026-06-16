@@ -6,6 +6,9 @@ Uses the same TARGET_LIBRARY entry and TargetParameterResolver path as grading.
 
 from __future__ import annotations
 
+import logging
+import math
+
 import numpy as np
 
 from app.dto.simulate_request import SimulateRequestDTO, TargetParamsDTO
@@ -18,7 +21,6 @@ from app.dto.truth_table import TruthTableDTO
 from app.utils.constants import Gate
 from app.utils.euler_angles import angles_from_seed  # re-export for tests/docs
 from app.utils.helpers import initialize_qubit_sequence, generate_basis_states
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +70,11 @@ def generate_random_unitary_response(seed: int | None = None) -> dict:
         )
 
     alpha, beta, gamma = angles_from_seed(seed)
+    raw_phi = -(alpha + gamma)
+    normalized_phi = (raw_phi + math.pi) % (2 * math.pi) - math.pi
     target_bloch = {
         "theta": beta,
-        "phi": -(alpha + gamma),
+        "phi": normalized_phi,
     }
 
     return {

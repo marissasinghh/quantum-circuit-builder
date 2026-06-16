@@ -135,15 +135,24 @@ function SolveLevelContent({
     if (currentLevel.number_of_qubits !== 1) return null;
     if (currentLevel.parameterMode === ParameterMode.RANDOM_THETA) return null;
 
-    if (isSeedDrivenLevel) {
-      const apiBloch = !isControlledU ? randomUnitaryQuery.data?.target_bloch : undefined;
-      if (apiBloch) {
-        if (initialState === 0) return { theta: apiBloch.theta, phi: apiBloch.phi };
+    if (isSeedDrivenLevel && !isControlledU) {
+      const angles = randomUnitaryQuery.data?.angles;
+      if (angles) {
+        const rawPhi = -(angles.alpha + angles.gamma);
+        const phi = ((rawPhi + Math.PI) % (2 * Math.PI)) - Math.PI;
+        const theta = angles.beta;
+
+        if (initialState === 0) {
+          return { theta, phi };
+        }
         // |1⟩ is the antipodal point of |0⟩ on the Bloch sphere
-        return { theta: Math.PI - apiBloch.theta, phi: apiBloch.phi + Math.PI };
+        return {
+          theta: Math.PI - theta,
+          phi: phi + Math.PI,
+        };
       }
       // Fallback while the query is loading
-      const amps = seedDrivenQuery.data?.truth_table?.amplitudes?.[initialState];
+      const amps = randomUnitaryQuery.data?.truth_table?.amplitudes?.[initialState];
       if (!amps) return null;
       return amplitudesToBlochState(amps[0], amps[1]);
     }
@@ -152,7 +161,7 @@ function SolveLevelContent({
       return canonicalStepsToBlochState(currentLevel.canonical, initialState);
     }
     return null;
-  }, [currentLevel, initialState, isSeedDrivenLevel, isControlledU, randomUnitaryQuery.data, seedDrivenQuery.data]);
+  }, [currentLevel, initialState, isSeedDrivenLevel, isControlledU, randomUnitaryQuery.data]);
 
   const circuitOutputRef = React.useRef<HTMLDivElement>(null);
 
