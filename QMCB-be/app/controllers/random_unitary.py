@@ -25,12 +25,24 @@ from app.utils.helpers import initialize_qubit_sequence, generate_basis_states
 logger = logging.getLogger(__name__)
 
 
-def state_vector_to_bloch(state: np.ndarray) -> dict:
-    """Convert a single-qubit state vector to Bloch sphere angles."""
-    a, b = state[0], state[1]
-    theta = float(2 * np.arccos(np.clip(abs(a), 0, 1)))
+def _simulate_target_bloch(alpha: float, beta: float, gamma: float) -> dict:
+    """
+    Compute Bloch sphere angles for the output of Rz(alpha)->Rx(beta)->Rz(gamma)
+    applied to |0⟩, by direct Cirq simulation.
+    """
+    qubit = cirq.LineQubit(0)
+    circuit = cirq.Circuit([
+        cirq.rz(alpha)(qubit),
+        cirq.rx(beta)(qubit),
+        cirq.rz(gamma)(qubit),
+    ])
+    result = cirq.Simulator().simulate(circuit, initial_state=0)
+    a, b = result.final_state_vector[0], result.final_state_vector[1]
+
+    theta = float(2 * np.arccos(np.clip(abs(a), 0.0, 1.0)))
     phi = float(np.angle(b) - np.angle(a))
-    phi = (phi + np.pi) % (2 * np.pi) - np.pi
+    phi = float((phi + np.pi) % (2 * np.pi) - np.pi)
+
     return {"theta": theta, "phi": phi}
 
 
@@ -79,18 +91,7 @@ def generate_random_unitary_response(seed: int | None = None) -> dict:
         )
 
     alpha, beta, gamma = angles_from_seed(seed)
-
-    # Simulate target circuit on |0⟩ — same Cirq path as grading, no formula assumptions.
-    qubit = cirq.LineQubit.range(1)[0]
-    circuit = cirq.Circuit([
-        cirq.rz(alpha)(qubit),
-        cirq.rx(beta)(qubit),
-        cirq.rz(gamma)(qubit),
-    ])
-    simulator = cirq.Simulator()
-    result = simulator.simulate(circuit, initial_state=0)
-    state = result.final_state_vector
-    target_bloch = state_vector_to_bloch(state)
+    target_bloch = _simulate_target_bloch(alpha, beta, gamma)
 
     return {
         "session_id": seed,
