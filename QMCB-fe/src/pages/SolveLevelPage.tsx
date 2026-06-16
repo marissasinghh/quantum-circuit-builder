@@ -138,7 +138,7 @@ function SolveLevelContent({
     if (isSeedDrivenLevel && !isControlledU) {
       const angles = randomUnitaryQuery.data?.angles;
       if (angles) {
-        const rawPhi = -(angles.alpha + angles.gamma);
+        const rawPhi = angles.alpha + angles.gamma;
         const phi = ((rawPhi + Math.PI) % (2 * Math.PI)) - Math.PI;
         const theta = angles.beta;
 

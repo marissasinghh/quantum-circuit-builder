@@ -70,7 +70,7 @@ def generate_random_unitary_response(seed: int | None = None) -> dict:
         )
 
     alpha, beta, gamma = angles_from_seed(seed)
-    raw_phi = -(alpha + gamma)
+    raw_phi = alpha + gamma
     normalized_phi = (raw_phi + math.pi) % (2 * math.pi) - math.pi
     target_bloch = {
         "theta": beta,
