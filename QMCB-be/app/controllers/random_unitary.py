@@ -78,4 +78,9 @@ def generate_random_unitary_response(seed: int | None = None) -> dict:
         "truth_table": truth_table_dto.to_dict(),
         "num_rotation_gates": 3,
         "target_bloch": target_bloch,
+        "angles": {
+            "alpha": alpha,
+            "beta": beta,
+            "gamma": gamma,
+        },
     }

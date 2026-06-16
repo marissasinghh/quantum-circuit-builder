@@ -112,7 +112,8 @@ function SolveLevelContent({
   const { mutation, rows, allCorrect, handleCheck, validationError, isChecking } = useCircuitValidation(
     currentLevel,
     gates,
-    randomSeed
+    randomSeed,
+    !isControlledU ? randomUnitaryQuery.data?.angles : undefined
   );
 
   const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);

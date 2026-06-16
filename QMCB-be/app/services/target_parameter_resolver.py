@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
@@ -11,6 +12,8 @@ from app.dto.unitary import UnitaryDTO
 from app.utils.constants import Gate, TargetLibraryField, TargetParameterMode
 from app.utils.euler_angles import angles_from_seed
 from app.utils.helpers import extract_theta_from_trial
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -155,7 +158,27 @@ def resolve_target_params(
         )
 
     if mode == TargetParameterMode.SEED_ZXZ:
-        alpha, beta, gamma = angles_from_seed(target_params.seed or 0)
+        if (
+            target_params.alpha is not None
+            and target_params.beta is not None
+            and target_params.gamma is not None
+        ):
+            alpha = target_params.alpha
+            beta = target_params.beta
+            gamma = target_params.gamma
+            logger.info(
+                "SEED_ZXZ: using angles provided in target_params "
+                "(round-tripped from GET): alpha=%.6f beta=%.6f gamma=%.6f",
+                alpha,
+                beta,
+                gamma,
+            )
+        else:
+            alpha, beta, gamma = angles_from_seed(target_params.seed or 0)
+            logger.info(
+                "SEED_ZXZ: regenerating angles from seed=%s",
+                target_params.seed,
+            )
         return ResolvedTargetParams(
             step_thetas=[alpha, beta, gamma],
             simulate_live=True,

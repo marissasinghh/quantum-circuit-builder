@@ -6,7 +6,7 @@
  */
 
 import type { PlacedGate } from "../types/global";
-import type { UnitaryRequestDTO } from "../interfaces/unitary";
+import type { TargetParamsDTO, UnitaryRequestDTO } from "../interfaces/unitary";
 import type { SimulationResponseDTO } from "../interfaces/responseDTO";
 import type { TruthRow } from "../interfaces/truthTable";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
@@ -17,7 +17,8 @@ import { ParameterMode } from "../utils/constants";
 export function buildRequestFromLevel(
   level: LevelDefinition,
   gates: PlacedGate[],
-  seed?: number
+  seed?: number,
+  seedZxzAngles?: { alpha: number; beta: number; gamma: number }
 ): UnitaryRequestDTO {
   // For RANDOM_THETA levels (Rx, Ry) supply the canonical target θ so the
   // backend grades against the abs-normalised angle the student chose, not
@@ -36,13 +37,33 @@ export function buildRequestFromLevel(
     }
   }
 
+  let targetParams: TargetParamsDTO | undefined;
+  if (targetTheta !== undefined) {
+    targetParams = { theta: targetTheta };
+  } else if (
+    level.parameterMode === ParameterMode.SEED_ZXZ &&
+    seed !== undefined &&
+    seedZxzAngles
+  ) {
+    targetParams = {
+      seed,
+      alpha: seedZxzAngles.alpha,
+      beta: seedZxzAngles.beta,
+      gamma: seedZxzAngles.gamma,
+    };
+  }
+
   return {
     target_unitary: level.target_unitary,
     number_of_qubits: level.number_of_qubits,
     gates: serializeUnitaryGateEntries(gates),
     qubit_order: serializeOrders(gates),
     ...(seed !== undefined && { seed }),
-    ...(targetTheta !== undefined && { target_params: { theta: targetTheta } }),
+    ...(targetParams && { target_params: targetParams }),
+    // Flat compat: backend parser reads alpha/beta/gamma from the request root.
+    ...(targetParams?.alpha !== undefined && { alpha: targetParams.alpha }),
+    ...(targetParams?.beta !== undefined && { beta: targetParams.beta }),
+    ...(targetParams?.gamma !== undefined && { gamma: targetParams.gamma }),
   };
 }
 
