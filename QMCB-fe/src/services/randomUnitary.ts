@@ -15,6 +15,8 @@ export interface RandomUnitaryResponseDTO {
   num_rotation_gates: number;
   /** Analytically-computed Bloch sphere coordinates for the target state (|0⟩ input). */
   target_bloch: { theta: number; phi: number };
+  /** ZXZ angles used to build this unitary — round-trip on POST for grading consistency. */
+  angles: { alpha: number; beta: number; gamma: number };
 }
 
 export async function fetchRandomUnitary(seed?: number): Promise<RandomUnitaryResponseDTO> {

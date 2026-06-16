@@ -17,7 +17,8 @@ const REQUIRES_THETA = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 export function useCircuitValidation(
   currentLevel: LevelDefinition,
   gates: PlacedGate[],
-  randomSeed?: number
+  randomSeed?: number,
+  seedZxzAngles?: { alpha: number; beta: number; gamma: number }
 ) {
   const mutation = useMutation({ mutationFn: simulateUnitary });
   const [validationError, setValidationError] = useState<Error | null>(null);
@@ -46,7 +47,7 @@ export function useCircuitValidation(
     }
 
     setValidationError(null);
-    const body = buildRequestFromLevel(currentLevel, gates, randomSeed);
+    const body = buildRequestFromLevel(currentLevel, gates, randomSeed, seedZxzAngles);
     mutation.mutate(body);
   };
 
