@@ -10,7 +10,7 @@ from app.config.target_library import TARGET_LIBRARY
 from app.dto.simulate_request import TargetParamsDTO
 from app.dto.unitary import UnitaryDTO
 from app.utils.constants import Gate, TargetLibraryField, TargetParameterMode
-from app.utils.euler_angles import angles_from_seed
+from app.utils.euler_angles import angles_from_seed, angles_from_seed_zyz
 from app.utils.helpers import extract_theta_from_trial
 
 logger = logging.getLogger(__name__)
@@ -181,6 +181,35 @@ def resolve_target_params(
             )
         return ResolvedTargetParams(
             step_thetas=[alpha, beta, gamma],
+            simulate_live=True,
+            allow_global_phase=allow_gp,
+            grading_atol=atol,
+        )
+
+    if mode == TargetParameterMode.SEED_ZYZ:
+        if (
+            target_params.gamma is not None
+            and target_params.beta is not None
+            and target_params.delta is not None
+        ):
+            gamma = target_params.gamma
+            beta = target_params.beta
+            delta = target_params.delta
+            logger.info(
+                "SEED_ZYZ: using angles provided in target_params "
+                "(round-tripped from GET): gamma=%.6f beta=%.6f delta=%.6f",
+                gamma,
+                beta,
+                delta,
+            )
+        else:
+            gamma, beta, delta = angles_from_seed_zyz(target_params.seed or 0)
+            logger.info(
+                "SEED_ZYZ: regenerating angles from seed=%s",
+                target_params.seed,
+            )
+        return ResolvedTargetParams(
+            step_thetas=[delta, gamma, beta],
             simulate_live=True,
             allow_global_phase=allow_gp,
             grading_atol=atol,

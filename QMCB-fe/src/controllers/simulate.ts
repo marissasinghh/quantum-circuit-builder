@@ -18,7 +18,8 @@ export function buildRequestFromLevel(
   level: LevelDefinition,
   gates: PlacedGate[],
   seed?: number,
-  seedZxzAngles?: { alpha: number; beta: number; gamma: number }
+  seedZxzAngles?: { alpha: number; beta: number; gamma: number },
+  seedZyzAngles?: { gamma: number; beta: number; delta: number }
 ): UnitaryRequestDTO {
   // For RANDOM_THETA levels (Rx, Ry) supply the canonical target θ so the
   // backend grades against the abs-normalised angle the student chose, not
@@ -51,6 +52,17 @@ export function buildRequestFromLevel(
       beta: seedZxzAngles.beta,
       gamma: seedZxzAngles.gamma,
     };
+  } else if (
+    level.parameterMode === ParameterMode.SEED_ZYZ &&
+    seed !== undefined &&
+    seedZyzAngles
+  ) {
+    targetParams = {
+      seed,
+      gamma: seedZyzAngles.gamma,
+      beta: seedZyzAngles.beta,
+      delta: seedZyzAngles.delta,
+    };
   }
 
   return {
@@ -60,10 +72,11 @@ export function buildRequestFromLevel(
     qubit_order: serializeOrders(gates),
     ...(seed !== undefined && { seed }),
     ...(targetParams && { target_params: targetParams }),
-    // Flat compat: backend parser reads alpha/beta/gamma from the request root.
+    // Flat compat: backend parser reads angle fields from the request root.
     ...(targetParams?.alpha !== undefined && { alpha: targetParams.alpha }),
     ...(targetParams?.beta !== undefined && { beta: targetParams.beta }),
     ...(targetParams?.gamma !== undefined && { gamma: targetParams.gamma }),
+    ...(targetParams?.delta !== undefined && { delta: targetParams.delta }),
   };
 }
 

@@ -125,9 +125,10 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
           </div>
 
           {hintText && (
-            <p className="mt-2 font-sans text-[12px] text-text-body bg-bg-elevated border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed">
-              {hintText}
-            </p>
+            <MathText
+              text={hintText}
+              className="mt-2 font-sans text-[12px] text-text-body bg-bg-elevated border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed block"
+            />
           )}
         </div>
       )}

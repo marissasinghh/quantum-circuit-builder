@@ -34,7 +34,7 @@ import pytest
 from app.controllers.random_unitary import generate_random_unitary_response
 from app.dto.unitary import UnitaryDTO
 from app.utils.constants import Gate
-from app.utils.euler_angles import angles_from_seed
+from app.utils.euler_angles import angles_from_seed_zyz
 from tests.simulate_helpers import run_simulate
 
 
@@ -353,7 +353,7 @@ class TestRandomUnitaryLevel:
     2. Reproducibility: same seed → identical truth table on repeated calls.
     3. Randomness sanity: two unseeded calls return different truth tables
        (probabilistic — the chance of collision across 2^31 seeds is negligible).
-    4. Controller-path integration: ZXZ circuit with seed-derived angles
+    4. Controller-path integration: ZYZ circuit with seed-derived angles
        passes all_match; an unrelated gate fails.
 
     We never assert a specific truth-table string because the output is
@@ -393,7 +393,7 @@ class TestRandomUnitaryLevel:
         assert data["session_id"] >= 0
 
     def test_num_rotation_gates_hint_is_three(self) -> None:
-        """Hint value always reports 3 (ZXZ decomposition has three rotation gates)."""
+        """Hint value always reports 3 (ZYZ decomposition has three rotation gates)."""
         with patch("builtins.print"):
             data = generate_random_unitary_response()
         assert data["num_rotation_gates"] == 3
@@ -440,22 +440,22 @@ class TestRandomUnitaryLevel:
 
     # ── Controller-path integration ───────────────────────────────────────────
 
-    def test_zxz_circuit_with_seed_angles_matches_random_u_target(self) -> None:
+    def test_zyz_circuit_with_seed_angles_matches_random_u_target(self) -> None:
         """
-        ZXZ circuit built from seed-derived angles → all_match True.
+        ZYZ circuit built from seed-derived angles → all_match True.
 
-        This is the canonical solution path: angles_from_seed gives the exact
-        alpha/beta/gamma used to build the target, so the identical Rz·Rx·Rz
+        This is the canonical solution path: angles_from_seed_zyz gives the exact
+        gamma/beta/delta used to build the target, so the identical Rz·Ry·Rz
         circuit should produce a perfectly matching truth table.
         """
         seed = 12345
-        alpha, beta, gamma = angles_from_seed(seed)
+        gamma, beta, delta = angles_from_seed_zyz(seed)
         trial = UnitaryDTO(
             number_of_qubits=1,
             gates=[
-                {"gate": Gate.RZ.value, "theta": alpha},
-                {"gate": Gate.RX.value, "theta": beta},
-                {"gate": Gate.RZ.value, "theta": gamma},
+                {"gate": Gate.RZ.value, "theta": delta},
+                {"gate": Gate.RY.value, "theta": gamma},
+                {"gate": Gate.RZ.value, "theta": beta},
             ],
             qubit_order=[[0], [0], [0]],
         )
