@@ -1,7 +1,7 @@
 """
 Controller for generating random single-qubit unitary levels (Level 1.6).
 
-Uses ZYZ decomposition: Rz(delta) -> Ry(gamma) -> Rz(beta).
+Uses ZYZ decomposition via the same resolver + TargetUnitaryBuilder path as grading.
 """
 
 from __future__ import annotations
@@ -11,9 +11,14 @@ import logging
 import cirq
 import numpy as np
 
+from app.dto.simulate_request import SimulateRequestDTO, TargetParamsDTO
 from app.dto.truth_table import TruthTableDTO
+from app.dto.unitary import UnitaryDTO
 from app.services.circuit_builder import CircuitBuilder
 from app.services.simulator import CircuitSimulator
+from app.services.target_builder import TargetUnitaryBuilder
+from app.services.target_parameter_resolver import resolve_target_params
+from app.utils.constants import Gate
 from app.utils.euler_angles import angles_from_seed_zyz  # re-export for tests/docs
 from app.utils.helpers import initialize_qubit_sequence, generate_basis_states
 
@@ -67,15 +72,23 @@ def generate_random_unitary_response(seed: int | None = None) -> dict:
 
     gamma, beta, delta = angles_from_seed_zyz(seed)
 
-    qubit = cirq.LineQubit(0)
-    circuit = cirq.Circuit([
-        cirq.rz(delta)(qubit),
-        cirq.ry(gamma)(qubit),
-        cirq.rz(beta)(qubit),
-    ])
+    target_name = Gate.RANDOM_U.value
+    qubits = initialize_qubit_sequence(1)
+    empty_trial = UnitaryDTO(number_of_qubits=1, gates=[], qubit_order=[])
+    request = SimulateRequestDTO(
+        target_unitary=target_name,
+        trial=empty_trial,
+        target_params=TargetParamsDTO(seed=seed),
+    )
+    resolved = resolve_target_params(
+        target_name,
+        empty_trial,
+        request.target_params,
+        validate_target=True,
+    )
+    circuit = TargetUnitaryBuilder.build(target_name, qubits, resolved)
 
     simulator = cirq.Simulator()
-    qubits = initialize_qubit_sequence(1)
     truth_table = _build_truth_table(circuit, qubits, simulator)
 
     target_bloch = {
