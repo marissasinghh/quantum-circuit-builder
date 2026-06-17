@@ -195,11 +195,11 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
 
   canonical: [
     { gate: Gate.RZ, order: Q0 },
-    { gate: Gate.RX, order: Q0 },
+    { gate: Gate.RY, order: Q0 },
     { gate: Gate.RZ, order: Q0 },
   ],
 
-  parameterMode: ParameterMode.SEED_ZXZ,
+  parameterMode: ParameterMode.SEED_ZYZ,
 
   uiMaxGates: MAX_GATES,
 
@@ -207,8 +207,9 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
     "A random single-qubit unitary has been generated for you. Synthesize a circuit whose " +
     "truth table matches it exactly. Use any combination of your unlocked gates.",
   hint1:
-    "Any single-qubit gate can be expressed as rotations about the X, Y, and Z axes for some angles θ_X, θ_Y, and θ_Z.",
-  hint2: "Tip: Circuit applies Rz(α) first, then Rx(β), then Rz(γ). Extract β = 2·arccos(|u₀₀|), α+γ = -2·arg(u₀₀), α-γ = 2·arg(u₁₀) - π/2. Use at least 4 decimal places when entering angles.",
+    "Any single-qubit gate can be expressed as rotations about the X, Y, and Z axes for some angles $\\theta_X$, $\\theta_Y$, and $\\theta_Z$.",
+  hint2:
+    "The angles $\\theta_X$, $\\theta_Y$, and $\\theta_Z$ can be solved for given the matrix elements.",
 } as const;
 
 // ========================

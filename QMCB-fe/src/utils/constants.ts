@@ -38,6 +38,7 @@ export enum ParameterMode {
   TRIAL_THETA = "trial_theta",
   RANDOM_THETA = "random_theta",
   SEED_ZXZ = "seed_zxz",
+  SEED_ZYZ = "seed_zyz",
   TRIAL_ZXZ = "trial_zxz",
 }
 

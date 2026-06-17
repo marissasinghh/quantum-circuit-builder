@@ -12,7 +12,7 @@ from app.services.target_parameter_resolver import (
     resolve_target_params,
 )
 from app.utils.constants import Gate, TargetParameterMode
-from app.utils.euler_angles import angles_from_seed
+from app.utils.euler_angles import angles_from_seed, angles_from_seed_zyz
 
 
 def _trial(*gates) -> UnitaryDTO:
@@ -26,8 +26,8 @@ class TestGetParameterMode:
     def test_rx_is_random_theta(self) -> None:
         assert get_parameter_mode(Gate.RX.value) == TargetParameterMode.RANDOM_THETA
 
-    def test_random_u_is_seed_zxz(self) -> None:
-        assert get_parameter_mode(Gate.RANDOM_U.value) == TargetParameterMode.SEED_ZXZ
+    def test_random_u_is_seed_zyz(self) -> None:
+        assert get_parameter_mode(Gate.RANDOM_U.value) == TargetParameterMode.SEED_ZYZ
 
     def test_controlled_u_is_seed_zxz(self) -> None:
         assert get_parameter_mode(Gate.CONTROLLED_U.value) == TargetParameterMode.SEED_ZXZ
@@ -74,9 +74,9 @@ class TestResolveTargetParams:
         assert resolved.is_sampling is True
         assert resolved.step_thetas == []
 
-    def test_seed_zxz_matches_angles_from_seed(self) -> None:
+    def test_seed_zyz_matches_angles_from_seed_zyz(self) -> None:
         seed = 42
-        alpha, beta, gamma = angles_from_seed(seed)
+        gamma, beta, delta = angles_from_seed_zyz(seed)
         resolved = resolve_target_params(
             Gate.RANDOM_U.value,
             UnitaryDTO(1, [], []),
@@ -86,7 +86,7 @@ class TestResolveTargetParams:
         assert resolved.simulate_live is True
         assert resolved.allow_global_phase is True
         assert resolved.grading_atol == 1e-3
-        assert resolved.step_thetas == [alpha, beta, gamma]
+        assert resolved.step_thetas == [delta, gamma, beta]
 
     def test_controlled_u_seed_zxz_matches_angles_from_seed(self) -> None:
         """CONTROLLED_U now uses SEED_ZXZ — resolver returns step_thetas=[α,β,γ] from seed."""

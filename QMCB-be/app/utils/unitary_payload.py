@@ -8,7 +8,7 @@ from app.dto.simulate_request import SimulateRequestDTO, TargetParamsDTO
 from app.dto.unitary import UnitaryDTO
 
 _OPTIONAL_GATE_ANGLE_KEYS = ("theta", "alpha", "beta", "gamma")
-_OPTIONAL_TARGET_PARAM_KEYS = ("seed", "alpha", "beta", "gamma")
+_OPTIONAL_TARGET_PARAM_KEYS = ("seed", "alpha", "beta", "gamma", "delta")
 
 
 def _is_real_number(x: Any) -> bool:
@@ -98,6 +98,7 @@ def parse_simulate_request_json(data: dict) -> SimulateRequestDTO:
         alpha=data.get("alpha"),
         beta=data.get("beta"),
         gamma=data.get("gamma"),
+        delta=data.get("delta"),
     )
     trial = UnitaryDTO(
         data["number_of_qubits"],

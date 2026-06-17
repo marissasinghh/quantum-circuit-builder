@@ -21,3 +21,16 @@ def angles_from_seed(seed: int) -> tuple[float, float, float]:
     beta = float(rng.uniform(0, np.pi))       # polar angle: clamp to [0, π)
     gamma = float(rng.uniform(0, 2 * np.pi))
     return alpha, beta, gamma
+
+
+def angles_from_seed_zyz(seed: int) -> tuple[float, float, float]:
+    """
+    Returns (gamma, beta, delta) for Rz(delta) -> Ry(gamma) -> Rz(beta).
+
+    gamma in [0, π], beta and delta in [0, 2π).
+    """
+    rng = np.random.default_rng(seed)
+    gamma = float(rng.uniform(0, np.pi))
+    beta = float(rng.uniform(0, 2 * np.pi))
+    delta = float(rng.uniform(0, 2 * np.pi))
+    return gamma, beta, delta

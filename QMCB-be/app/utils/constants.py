@@ -51,6 +51,7 @@ class TargetParameterMode(str, Enum):
     FIXED = "fixed"
     TRIAL_THETA = "trial_theta"
     SEED_ZXZ = "seed_zxz"
+    SEED_ZYZ = "seed_zyz"
     TRIAL_ZXZ = "trial_zxz"
     RANDOM_THETA = "random_theta"
 

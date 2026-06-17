@@ -18,7 +18,8 @@ export function useCircuitValidation(
   currentLevel: LevelDefinition,
   gates: PlacedGate[],
   randomSeed?: number,
-  seedZxzAngles?: { alpha: number; beta: number; gamma: number }
+  seedZxzAngles?: { alpha: number; beta: number; gamma: number },
+  seedZyzAngles?: { gamma: number; beta: number; delta: number }
 ) {
   const mutation = useMutation({ mutationFn: simulateUnitary });
   const [validationError, setValidationError] = useState<Error | null>(null);
@@ -47,7 +48,13 @@ export function useCircuitValidation(
     }
 
     setValidationError(null);
-    const body = buildRequestFromLevel(currentLevel, gates, randomSeed, seedZxzAngles);
+    const body = buildRequestFromLevel(
+      currentLevel,
+      gates,
+      randomSeed,
+      seedZxzAngles,
+      seedZyzAngles
+    );
     mutation.mutate(body);
   };
 

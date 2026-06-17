@@ -94,7 +94,9 @@ function SolveLevelContent({
 
   const { markLevelComplete, unlockGateForLevel } = useLevelProgress();
 
-  const isSeedDrivenLevel = currentLevel.parameterMode === ParameterMode.SEED_ZXZ;
+  const isSeedDrivenLevel =
+    currentLevel.parameterMode === ParameterMode.SEED_ZXZ ||
+    currentLevel.parameterMode === ParameterMode.SEED_ZYZ;
   const isControlledU = currentLevel.target_unitary === Gate.CONTROLLED_U;
 
   const { query: randomUnitaryQuery, generateNew: generateNewRandomU, seed: randomUSeed } =
@@ -113,6 +115,7 @@ function SolveLevelContent({
     currentLevel,
     gates,
     randomSeed,
+    undefined,
     !isControlledU ? randomUnitaryQuery.data?.angles : undefined
   );
 
@@ -136,21 +139,10 @@ function SolveLevelContent({
     if (currentLevel.parameterMode === ParameterMode.RANDOM_THETA) return null;
 
     if (isSeedDrivenLevel && !isControlledU) {
-      const angles = randomUnitaryQuery.data?.angles;
-      if (angles) {
-        const rawPhi = -(angles.alpha + angles.gamma);
-        const phi = ((rawPhi + Math.PI) % (2 * Math.PI)) - Math.PI;
-        const theta = angles.beta;
+      const blochByState = randomUnitaryQuery.data?.target_bloch;
+      const bloch = blochByState?.[String(initialState)];
+      if (bloch) return { theta: bloch.theta, phi: bloch.phi };
 
-        if (initialState === 0) {
-          return { theta, phi };
-        }
-        // |1⟩ is the antipodal point of |0⟩ on the Bloch sphere
-        return {
-          theta: Math.PI - theta,
-          phi: phi + Math.PI,
-        };
-      }
       // Fallback while the query is loading
       const amps = randomUnitaryQuery.data?.truth_table?.amplitudes?.[initialState];
       if (!amps) return null;
