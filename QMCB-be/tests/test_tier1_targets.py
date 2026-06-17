@@ -421,6 +421,19 @@ class TestRandomUnitaryLevel:
             "seed-to-angle derivation may be broken."
         )
 
+    def test_get_truth_table_matches_post_target_truth_table(self) -> None:
+        """
+        GET /random-unitary and POST /simulate must show the same target outputs
+        for the same seed (TaskCard vs OutputTable Expected column).
+        """
+        seed = 424242
+        with patch("builtins.print"):
+            get_data = generate_random_unitary_response(seed=seed)
+            trial = UnitaryDTO(number_of_qubits=1, gates=[], qubit_order=[])
+            response, status = _run_random_u(trial, seed=seed)
+        assert status == 200
+        assert get_data["truth_table"]["output"] == response["target_truth_table"]["output"]
+
     def test_two_unseeded_calls_produce_different_truth_tables(self) -> None:
         """
         Probabilistic sanity check: two fresh (unseeded) calls must not return

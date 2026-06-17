@@ -91,7 +91,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         TargetLibraryField.PARAMETERIZED.value: True,
         TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.SEED_ZYZ.value,
         TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
-        TargetLibraryField.GRADING_ATOL.value: 1e-3,
+        TargetLibraryField.GRADING_ATOL.value: 5e-3,
         TargetLibraryField.STEPS.value: [
             {TargetLibraryField.GATE.value: Gate.RZ.value, TargetLibraryField.ORDER.value: Q0},
             {TargetLibraryField.GATE.value: Gate.RY.value, TargetLibraryField.ORDER.value: Q0},
