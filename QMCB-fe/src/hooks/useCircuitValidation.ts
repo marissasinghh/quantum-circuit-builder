@@ -10,6 +10,7 @@ import { buildRequestFromLevel, toTruthRows } from "../controllers/simulate";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { PlacedGate } from "../types/global";
 import { Gate } from "../types/global";
+import { ParameterMode } from "../utils/constants";
 
 /** Gates that require a theta angle before the backend can apply them. */
 const REQUIRES_THETA = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
@@ -31,6 +32,24 @@ export function useCircuitValidation(
 
   const handleCheck = () => {
     if (gates.length === 0) return;
+
+    const rotationGates = gates.filter(
+      (g) => "wire" in g && REQUIRES_THETA.has(g.type as Gate)
+    );
+
+    if (currentLevel.parameterMode === ParameterMode.RANDOM_THETA) {
+      const hasParameterSlot = gates.some(
+        (g) => "wire" in g && g.isParameterSlot === true
+      );
+      if (rotationGates.length >= 1 && !hasParameterSlot) {
+        setValidationError(
+          new Error(
+            "Select which gate carries the free angle θ using Parameter θ on one Rx, Ry, or Rz gate."
+          )
+        );
+        return;
+      }
+    }
 
     // Block parameterized gates that are missing a rotation angle.
     // (Theta input UI is not yet implemented; sending without theta causes a 500.)

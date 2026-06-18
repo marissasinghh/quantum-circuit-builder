@@ -35,7 +35,30 @@ def set_qubit_to_1(qubit: Qubit) -> Operation:
     return CirqGateMapper.apply(Gate.X.value, None, qubit)
 
 
-def extract_theta_from_trial(    gates: list[UnitaryGateEntry], gate_name: str) -> Optional[float]:
+def extract_theta_from_trial(
+    gates: list[UnitaryGateEntry],
+    gate_name: str,
+    parameter_gate_index: int | None = None,
+) -> Optional[float]:
+    """
+    Return the theta from the student's parameter gate for this target.
+
+    When ``parameter_gate_index`` is set, read theta from that gate index.
+    Otherwise use search heuristics (see docstring body below).
+    """
+    if parameter_gate_index is not None:
+        if 0 <= parameter_gate_index < len(gates):
+            entry = gates[parameter_gate_index]
+            if isinstance(entry, dict):
+                return entry.get("theta")
+        return None
+
+    return _extract_theta_from_trial_heuristic(gates, gate_name)
+
+
+def _extract_theta_from_trial_heuristic(
+    gates: list[UnitaryGateEntry], gate_name: str
+) -> Optional[float]:
     """
     Return the theta from the first dict gate in the student's list
     that matches gate_name (e.g. "RX").
@@ -60,6 +83,18 @@ def extract_theta_from_trial(    gates: list[UnitaryGateEntry], gate_name: str) 
         for entry in gates:
             if isinstance(entry, dict) and entry.get("gate") == Gate.RX.value:
                 return entry.get("theta")
+
+        rz_entries = [
+            entry
+            for entry in gates
+            if isinstance(entry, dict) and entry.get("gate") == Gate.RZ.value
+        ]
+        if len(rz_entries) == 1:
+            return rz_entries[0].get("theta")
+        if len(rz_entries) == 3:
+            return rz_entries[1].get("theta")
+        if rz_entries:
+            return rz_entries[0].get("theta")
 
     return None
 

@@ -15,6 +15,8 @@ interface CircuitCanvasProps {
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
   onSetGateTheta: (id: string, theta: number) => void;
+  onSetParameterSlot?: (id: string) => void;
+  showParameterSlotControls?: boolean;
   onCheck: () => void;
   onClear: () => void;
   isChecking: boolean;
@@ -54,6 +56,8 @@ export function CircuitCanvas({
   onRemoveGate,
   onSetGateOrder,
   onSetGateTheta,
+  onSetParameterSlot,
+  showParameterSlotControls = false,
   onCheck,
   onClear,
   isChecking,
@@ -67,6 +71,15 @@ export function CircuitCanvas({
 
   const CNOT_W = 80;
   const CNOT_H = wireSpan > 0 ? wireSpan + 24 : SQ_H + 12;
+
+  const hasRotationGate = gates.some(
+    (g) => "wire" in g && PARAMETERIZED_GATES.has(g.type)
+  );
+  const hasParameterSlot = gates.some(
+    (g) => "wire" in g && g.isParameterSlot === true
+  );
+  const showParameterSlotHint =
+    showParameterSlotControls && hasRotationGate && !hasParameterSlot;
 
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
@@ -150,9 +163,36 @@ export function CircuitCanvas({
                 g.theta !== undefined
                   ? `${((g.theta * 180) / Math.PI).toFixed(0)}°`
                   : null;
+              const isSlot = g.isParameterSlot === true;
 
               return (
                 <g key={g.id} transform={`translate(${x}, ${y - SQ_H / 2})`}>
+                  {isSlot && (
+                    <g transform={`translate(${SQ_W / 2}, ${SQ_H + 6})`}>
+                      <rect
+                        x={-18}
+                        y={-7}
+                        width={36}
+                        height={12}
+                        rx={4}
+                        fill={colors.cyanMuted}
+                        fillOpacity={0.25}
+                        stroke={colors.cyanMuted}
+                        strokeWidth={1}
+                      />
+                      <text
+                        x={0}
+                        y={1}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fontFamily={fonts.mono}
+                        fontSize={8}
+                        fill={colors.cyanMuted}
+                      >
+                        θ slot
+                      </text>
+                    </g>
+                  )}
                   {isParameterized && thetaLabel && (
                     <g transform={`translate(${SQ_W / 2}, -11)`}>
                       <rect
@@ -222,6 +262,13 @@ export function CircuitCanvas({
           </div>
         )}
 
+        {showParameterSlotHint && (
+          <div className="font-sans text-[12px] text-tier2 border border-tier1 rounded-gate px-2 py-1.5 bg-bg-panel">
+            Choose <span className="font-mono text-tier3">Parameter θ</span> on the gate whose
+            angle should vary before checking your solution.
+          </div>
+        )}
+
         {gates.map((g, idx) => {
           const isTwoQubit = TWO_QUBIT_GATES.has(g.type);
           const isParameterized = !isTwoQubit && PARAMETERIZED_GATES.has(g.type);
@@ -262,6 +309,18 @@ export function CircuitCanvas({
 
               {isParameterized && "wire" in g && (
                 <div className="flex items-center gap-1 flex-wrap">
+                  {showParameterSlotControls && onSetParameterSlot && (
+                    <label className="flex items-center gap-1 font-sans text-[9px] text-tier2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="parameter-theta-slot"
+                        checked={g.isParameterSlot === true}
+                        onChange={() => onSetParameterSlot(g.id)}
+                        className="accent-tier3"
+                      />
+                      Parameter θ
+                    </label>
+                  )}
                   <label className="font-mono text-[9px] text-tier2">θ:</label>
                   <input
                     type="range"

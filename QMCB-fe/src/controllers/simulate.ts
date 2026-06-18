@@ -28,13 +28,18 @@ export function buildRequestFromLevel(
   // student uses a decomposition (no parameterised gate present), θ is not
   // sent and the backend falls back to its own extraction logic.
   let targetTheta: number | undefined;
+  let parameterGateIndex: number | undefined;
   if (level.parameterMode === ParameterMode.RANDOM_THETA) {
-    const gateWithTheta = gates.find(
-      (g): g is PlacedGate & { theta: number } =>
-        "theta" in g && typeof (g as { theta?: unknown }).theta === "number"
+    const slotIdx = gates.findIndex(
+      (g): g is PlacedGate & { theta: number; isParameterSlot: true } =>
+        "wire" in g && g.isParameterSlot === true
     );
-    if (gateWithTheta) {
-      targetTheta = Math.abs((gateWithTheta as { theta: number }).theta);
+    if (slotIdx >= 0) {
+      parameterGateIndex = slotIdx;
+      const slotGate = gates[slotIdx];
+      if ("theta" in slotGate && typeof slotGate.theta === "number") {
+        targetTheta = Math.abs(slotGate.theta);
+      }
     }
   }
 
@@ -77,6 +82,9 @@ export function buildRequestFromLevel(
     ...(targetParams?.beta !== undefined && { beta: targetParams.beta }),
     ...(targetParams?.gamma !== undefined && { gamma: targetParams.gamma }),
     ...(targetParams?.delta !== undefined && { delta: targetParams.delta }),
+    ...(parameterGateIndex !== undefined && {
+      parameter_gate_index: parameterGateIndex,
+    }),
   };
 }
 

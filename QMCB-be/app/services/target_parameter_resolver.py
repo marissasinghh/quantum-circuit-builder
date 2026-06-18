@@ -142,7 +142,9 @@ def resolve_target_params(
             #      Rx(−θ) vs target Rx(−θ).
             #   2. Set allow_global_phase=False to disable the probability fallback and
             #      require an exact string match against the normalised canonical target.
-            theta = extract_theta_from_trial(trial.gates, target_name)
+            theta = extract_theta_from_trial(
+                trial.gates, target_name, trial.parameter_gate_index
+            )
             if trial_has_canonical_gate and theta is not None:
                 effective_theta = abs(theta)
                 effective_allow_gp = False

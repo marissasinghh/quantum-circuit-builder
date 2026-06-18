@@ -6,6 +6,9 @@ from typing import Any
 
 from app.dto.simulate_request import SimulateRequestDTO, TargetParamsDTO
 from app.dto.unitary import UnitaryDTO
+from app.utils.constants import Gate
+
+_ROTATION_GATE_NAMES = frozenset({Gate.RX.value, Gate.RY.value, Gate.RZ.value})
 
 _OPTIONAL_GATE_ANGLE_KEYS = ("theta", "alpha", "beta", "gamma")
 _OPTIONAL_TARGET_PARAM_KEYS = ("seed", "alpha", "beta", "gamma", "delta")
@@ -68,6 +71,25 @@ def validate_simulate_unitary_json(data: Any) -> None:
 
     _validate_optional_numbers(data, "request", _OPTIONAL_TARGET_PARAM_KEYS)
 
+    if "parameter_gate_index" in data:
+        idx = data["parameter_gate_index"]
+        if not isinstance(idx, int) or isinstance(idx, bool):
+            raise ValueError("parameter_gate_index must be an integer when present.")
+        if idx < 0 or idx >= len(gates):
+            raise ValueError(
+                f"parameter_gate_index {idx} is out of range for gates (length {len(gates)})."
+            )
+        entry = gates[idx]
+        if not isinstance(entry, dict):
+            raise ValueError(
+                f"gates[{idx}] must be a parameterized gate object when parameter_gate_index is set."
+            )
+        gname = entry.get("gate")
+        if gname not in _ROTATION_GATE_NAMES:
+            raise ValueError(
+                f"gates[{idx}].gate must be RX, RY, or RZ when parameter_gate_index is set."
+            )
+
     for i, entry in enumerate(gates):
         if isinstance(entry, str):
             if not entry:
@@ -104,6 +126,7 @@ def parse_simulate_request_json(data: dict) -> SimulateRequestDTO:
         data["number_of_qubits"],
         data["gates"],
         data["qubit_order"],
+        parameter_gate_index=data.get("parameter_gate_index"),
     )
     return SimulateRequestDTO(
         target_unitary=data["target_unitary"],

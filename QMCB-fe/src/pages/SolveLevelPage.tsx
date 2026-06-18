@@ -89,8 +89,11 @@ function SolveLevelContent({
 }) {
   const navigate = useNavigate();
 
-  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, clearAll } =
+  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, setParameterSlot, clearAll } =
     useCircuit();
+
+  const isRandomThetaLevel =
+    currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
 
   const { markLevelComplete, unlockGateForLevel } = useLevelProgress();
 
@@ -253,6 +256,8 @@ function SolveLevelContent({
         removeGate={removeGate}
         setGateOrder={setGateOrder}
         setGateTheta={setGateTheta}
+        setParameterSlot={setParameterSlot}
+        showParameterSlotControls={isRandomThetaLevel}
         rows={rows}
         allCorrect={allCorrect}
         handleCheck={handleCheck}
@@ -309,6 +314,8 @@ function SolveLevelContent({
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
               onSetGateTheta={setGateTheta}
+              onSetParameterSlot={setParameterSlot}
+              showParameterSlotControls={isRandomThetaLevel}
               onCheck={handleCheck}
               onClear={handleClear}
               isChecking={mutation.isPending}
