@@ -49,4 +49,6 @@ export interface UnitaryRequestDTO {
   seed?: number;
   /** Optional nested target params (future wire format). */
   target_params?: TargetParamsDTO;
+  /** Index into gates[] for random-theta substitution (Rx/Ry levels). */
+  parameter_gate_index?: number;
 }

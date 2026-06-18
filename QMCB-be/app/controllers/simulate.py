@@ -113,20 +113,32 @@ def _substitute_theta_in_gates(
     gates: list[UnitaryGateEntry],
     target_name: str,
     theta: float,
+    parameter_gate_index: int | None = None,
 ) -> list[UnitaryGateEntry]:
     """
     Return a deep copy of ``gates`` with exactly one gate's theta replaced by
     ``theta`` — the gate that carries the free parameter for this level.
 
-    Search order mirrors ``extract_theta_from_trial``:
+    When ``parameter_gate_index`` is set, substitute only at that index (client
+    marks the student's parameter slot). Otherwise search order mirrors
+    ``extract_theta_from_trial``:
       1. First dict-gate whose ``"gate"`` key matches ``target_name`` (canonical gate).
       2. Fallback for RX: first Rz gate.
-      3. Fallback for RY: first Rx gate.
+      3. Fallback for RY: first Rx gate; then Rz gate(s) — single Rz dict, or
+         middle gate of a three-Rz ``Rz·H·Rz·H·Rz`` decomposition, else first Rz.
 
     If no suitable gate is found the copy is returned unmodified (the sampling
     comparison will then fail naturally, which is the correct result).
     """
     new_gates: list[UnitaryGateEntry] = copy.deepcopy(gates)
+
+    if parameter_gate_index is not None:
+        if 0 <= parameter_gate_index < len(new_gates):
+            entry = new_gates[parameter_gate_index]
+            if isinstance(entry, dict):
+                new_gates[parameter_gate_index] = {**entry, "theta": theta}
+                return new_gates
+        return new_gates
 
     for i, entry in enumerate(new_gates):
         if isinstance(entry, dict) and entry.get("gate") == target_name:
@@ -144,6 +156,24 @@ def _substitute_theta_in_gates(
             if isinstance(entry, dict) and entry.get("gate") == Gate.RX.value:
                 new_gates[i] = {**entry, "theta": theta}
                 return new_gates
+
+        rz_indices = [
+            i
+            for i, entry in enumerate(new_gates)
+            if isinstance(entry, dict) and entry.get("gate") == Gate.RZ.value
+        ]
+        if len(rz_indices) == 1:
+            i = rz_indices[0]
+            new_gates[i] = {**new_gates[i], "theta": theta}
+            return new_gates
+        if len(rz_indices) == 3:
+            i = rz_indices[1]
+            new_gates[i] = {**new_gates[i], "theta": theta}
+            return new_gates
+        if rz_indices:
+            i = rz_indices[0]
+            new_gates[i] = {**new_gates[i], "theta": theta}
+            return new_gates
 
     return new_gates
 
@@ -176,7 +206,12 @@ def _grade_random_theta(
     for _ in range(n_samples):
         theta_i = np.random.uniform(0, 2 * math.pi)
 
-        modified_gates = _substitute_theta_in_gates(trial_dto.gates, target_name, theta_i)
+        modified_gates = _substitute_theta_in_gates(
+            trial_dto.gates,
+            target_name,
+            theta_i,
+            parameter_gate_index=trial_dto.parameter_gate_index,
+        )
 
         trial_base = CircuitBuilder.build_circuit_base(
             modified_gates, trial_dto.qubit_order, qubits

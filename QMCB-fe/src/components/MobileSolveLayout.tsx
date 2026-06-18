@@ -73,6 +73,8 @@ interface MobileSolveLayoutProps {
   removeGate: (id: string) => void;
   setGateOrder: (id: string, order: ControlTargetOrder) => void;
   setGateTheta: (id: string, theta: number) => void;
+  setParameterSlot?: (id: string) => void;
+  showParameterSlotControls?: boolean;
 
   // Validation
   rows: TruthRow[] | null;
@@ -132,6 +134,8 @@ export function MobileSolveLayout({
   removeGate,
   setGateOrder,
   setGateTheta,
+  setParameterSlot,
+  showParameterSlotControls = false,
   rows,
   allCorrect,
   handleCheck,
@@ -237,6 +241,8 @@ export function MobileSolveLayout({
                   onRemoveGate={removeGate}
                   onSetGateOrder={setGateOrder}
                   onSetGateTheta={setGateTheta}
+                  onSetParameterSlot={setParameterSlot}
+                  showParameterSlotControls={showParameterSlotControls}
                   onCheck={handleCheck}
                   onClear={handleClear}
                   isChecking={isMutationPending}

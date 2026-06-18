@@ -199,6 +199,16 @@ unitary matches Ry(θ) for any angle θ.
 **Learning goal:** Ry outputs are purely real. The canonical `Rz(-π/2) · Rx(θ) · Rz(π/2)` carries
 a global phase handled live by the backend.
 
+**Alternative H/S/Rz decomposition (same gates, order matters):** With `S ≡ Rz(π/2)` and
+`S·S·S ≡ Rz(-π/2)`, a valid Ry synthesis using only H, S, and Rz is:
+
+`S · S · S · H · Rz(θ) · H · S`  (left-to-right canvas order)
+
+The visually similar but **wrong** order `H · S · Rz(θ) · H · S · S · S` is **not** Ry(θ) and
+is not fixable by global phase. Random-theta grading substitutes sampled θ into the student's
+parameter gate; the frontend may send `parameter_gate_index` to mark which gate carries θ when
+multiple Rx/Rz gates are present.
+
 ---
 
 ### Level 1.6 · Random Unitary

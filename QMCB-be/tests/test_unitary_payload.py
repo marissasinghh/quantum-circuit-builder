@@ -65,6 +65,59 @@ def test_theta_must_be_number() -> None:
         )
 
 
+def test_valid_parameter_gate_index() -> None:
+    validate_simulate_unitary_json(
+        {
+            "number_of_qubits": 1,
+            "gates": ["S", "S", "S", "H", {"gate": "RZ", "theta": 0.5}, "H", "S"],
+            "qubit_order": [[0]] * 7,
+            "target_unitary": "RY",
+            "parameter_gate_index": 4,
+        }
+    )
+
+
+def test_parameter_gate_index_out_of_range() -> None:
+    with pytest.raises(ValueError, match="out of range"):
+        validate_simulate_unitary_json(
+            {
+                "number_of_qubits": 1,
+                "gates": [{"gate": "RX", "theta": 0.5}],
+                "qubit_order": [[0]],
+                "target_unitary": "RX",
+                "parameter_gate_index": 3,
+            }
+        )
+
+
+def test_parameter_gate_index_must_be_rotation_dict() -> None:
+    with pytest.raises(ValueError, match="parameterized gate object"):
+        validate_simulate_unitary_json(
+            {
+                "number_of_qubits": 1,
+                "gates": ["H", {"gate": "RZ", "theta": 0.5}],
+                "qubit_order": [[0], [0]],
+                "target_unitary": "RY",
+                "parameter_gate_index": 0,
+            }
+        )
+
+
+def test_parse_simulate_request_json_maps_parameter_gate_index() -> None:
+    from app.utils.unitary_payload import parse_simulate_request_json
+
+    request = parse_simulate_request_json(
+        {
+            "number_of_qubits": 1,
+            "gates": [{"gate": "RZ", "theta": 0.5}],
+            "qubit_order": [[0]],
+            "target_unitary": "RY",
+            "parameter_gate_index": 0,
+        }
+    )
+    assert request.trial.parameter_gate_index == 0
+
+
 def test_parse_simulate_request_json_maps_flat_payload() -> None:
     from app.utils.unitary_payload import parse_simulate_request_json
 

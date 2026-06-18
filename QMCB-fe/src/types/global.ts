@@ -63,8 +63,10 @@ export type PlacedSingleQubitGate = {
   type: SingleQubitGate;
   wire: SingleWire;
   column: number;
-  /** Rotation angle in radians (RX, RY); sent as `{"gate","theta"}` when set. */
+  /** Rotation angle in radians (RX, RY, RZ); sent as `{"gate","theta"}` when set. */
   theta?: number;
+  /** When true, random-theta grading substitutes sampled θ into this gate. */
+  isParameterSlot?: boolean;
 };
 
 /** Two-qubit CNOT chip placed on the canvas. */
