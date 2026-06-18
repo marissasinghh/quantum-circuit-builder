@@ -294,33 +294,38 @@ export function CircuitCanvas({
               key={g.id}
               className="flex flex-wrap items-center gap-2 border-[1.5px] border-tier3 rounded-gate px-2 py-1.5 bg-bg-elevated"
             >
-              <div className="font-mono font-medium text-[10px] text-tier3 w-24">{g.type}</div>
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="font-mono font-medium text-[10px] text-tier3 w-24">{g.type}</div>
 
-              {isTwoQubit && "order" in g && (
-                <>
-                  <label className="font-sans text-[10px] text-tier2">Order:</label>
-                  <select
-                    className={controlInputClass}
-                    value={`${g.order[0]}-${g.order[1]}`}
-                    onChange={(e) => {
-                      const [a, b] = e.target.value
-                        .split("-")
-                        .map(Number) as unknown as ControlTargetOrder;
-                      onSetGateOrder(g.id, [a, b] as ControlTargetOrder);
-                    }}
-                  >
-                    {orders.map((o) => (
-                      <option key={`${o[0]}-${o[1]}`} value={`${o[0]}-${o[1]}`}>
-                        [{o[0]},{o[1]}]
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
+                <div className="flex flex-col font-mono text-xs text-tier2 leading-tight shrink-0">
+                  {!isTwoQubit && "wire" in g && numberOfQubits > 1 && (
+                    <span>wire {g.wire}</span>
+                  )}
+                  <span>order {idx}</span>
+                </div>
 
-              {!isTwoQubit && "wire" in g && (
-                <div className="font-mono text-xs text-tier2 shrink-0">wire: {g.wire}</div>
-              )}
+                {isTwoQubit && "order" in g && (
+                  <>
+                    <label className="font-sans text-[10px] text-tier2 shrink-0">Order:</label>
+                    <select
+                      className={controlInputClass}
+                      value={`${g.order[0]}-${g.order[1]}`}
+                      onChange={(e) => {
+                        const [a, b] = e.target.value
+                          .split("-")
+                          .map(Number) as unknown as ControlTargetOrder;
+                        onSetGateOrder(g.id, [a, b] as ControlTargetOrder);
+                      }}
+                    >
+                      {orders.map((o) => (
+                        <option key={`${o[0]}-${o[1]}`} value={`${o[0]}-${o[1]}`}>
+                          [{o[0]},{o[1]}]
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                )}
+              </div>
 
               {showParameterSlotControls && isParameterized && "wire" in g && onSetParameterSlot && (
                 <button
@@ -383,10 +388,9 @@ export function CircuitCanvas({
                 </div>
               )}
 
-              <span className="font-mono text-xs text-tier2">col {idx}</span>
               <button
                 onClick={() => onRemoveGate(g.id)}
-                className="ml-auto font-sans text-xs text-error-action hover:text-error-action/80"
+                className="ml-auto shrink-0 font-sans text-xs text-error-action hover:text-error-action/80"
               >
                 Remove
               </button>
