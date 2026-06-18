@@ -294,7 +294,7 @@ export function CircuitCanvas({
               key={g.id}
               className="flex flex-wrap items-center gap-2 border-[1.5px] border-tier3 rounded-gate px-2 py-1.5 bg-bg-elevated"
             >
-              <div className="flex items-center gap-2 shrink-0 border-r border-tier1 pr-3 mr-1">
+              <div className="flex items-center gap-2 shrink-0 w-24">
                 <div className="font-mono font-medium text-[10px] text-tier3 shrink-0">{g.type}</div>
 
                 {!isTwoQubit && "wire" in g && numberOfQubits > 1 ? (
@@ -305,7 +305,11 @@ export function CircuitCanvas({
                 ) : (
                   <span className="font-mono text-[10px] text-tier2 shrink-0">order {idx}</span>
                 )}
+              </div>
 
+              <div className="self-stretch w-px shrink-0 bg-tier1" aria-hidden="true" />
+
+              <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
                 {isTwoQubit && "order" in g && (
                   <>
                     <label className="font-sans text-[10px] text-tier2 shrink-0">Order:</label>
@@ -327,75 +331,75 @@ export function CircuitCanvas({
                     </select>
                   </>
                 )}
-              </div>
 
-              {showParameterSlotControls && isParameterized && "wire" in g && onSetParameterSlot && (
-                <button
-                  type="button"
-                  onClick={() => onSetParameterSlot(g.id)}
-                  aria-pressed={g.isParameterSlot === true}
-                  className={[
-                    "shrink-0 px-2 py-0.5 rounded-full font-sans text-[10px] font-medium border transition-colors",
-                    g.isParameterSlot
-                      ? "border-tier3 bg-tier3/15 text-tier3"
-                      : "border-tier1 bg-bg-panel text-text-muted hover:border-tier2 hover:text-tier2",
-                  ].join(" ")}
-                >
-                  Vary θ
-                </button>
-              )}
-
-              {isParameterized && "wire" in g && (
-                <div className="flex items-center gap-1 flex-wrap min-w-0">
-                  <label className="font-mono text-[9px] text-tier2">θ:</label>
-                  <input
-                    type="range"
-                    min={-2 * Math.PI}
-                    max={2 * Math.PI}
-                    step={0.01}
-                    className="w-24 accent-tier3"
-                    value={g.theta ?? 0}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value);
-                      if (!isNaN(val)) onSetGateTheta(g.id, val);
-                    }}
-                  />
-                  <input
-                    type="number"
-                    step="0.000001"
-                    placeholder="rad"
-                    className={`${controlInputClass} w-16`}
-                    value={g.theta !== undefined ? g.theta : ""}
-                    onChange={(e) => {
-                      const val = parseFloat(e.target.value);
-                      if (!isNaN(val)) onSetGateTheta(g.id, val);
-                    }}
-                  />
+                {showParameterSlotControls && isParameterized && "wire" in g && onSetParameterSlot && (
                   <button
-                    onClick={() => onSetGateTheta(g.id, -(g.theta ?? 0))}
-                    title="Negate angle"
-                    className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-tier2 hover:bg-bg-hover"
+                    type="button"
+                    onClick={() => onSetParameterSlot(g.id)}
+                    aria-pressed={g.isParameterSlot === true}
+                    className={[
+                      "shrink-0 px-2 py-0.5 rounded-full font-sans text-[10px] font-medium border transition-colors",
+                      g.isParameterSlot
+                        ? "border-tier3 bg-tier3/15 text-tier3"
+                        : "border-tier1 bg-bg-panel text-text-muted hover:border-tier2 hover:text-tier2",
+                    ].join(" ")}
                   >
-                    ±
+                    Vary θ
                   </button>
-                  {THETA_PRESETS.map(({ label, value }) => (
+                )}
+
+                {isParameterized && "wire" in g && (
+                  <div className="flex items-center gap-1 flex-wrap min-w-0">
+                    <label className="font-mono text-[9px] text-tier2">θ:</label>
+                    <input
+                      type="range"
+                      min={-2 * Math.PI}
+                      max={2 * Math.PI}
+                      step={0.01}
+                      className="w-24 accent-tier3"
+                      value={g.theta ?? 0}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val)) onSetGateTheta(g.id, val);
+                      }}
+                    />
+                    <input
+                      type="number"
+                      step="0.000001"
+                      placeholder="rad"
+                      className={`${controlInputClass} w-16`}
+                      value={g.theta !== undefined ? g.theta : ""}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val)) onSetGateTheta(g.id, val);
+                      }}
+                    />
                     <button
-                      key={label}
-                      onClick={() => onSetGateTheta(g.id, value)}
+                      onClick={() => onSetGateTheta(g.id, -(g.theta ?? 0))}
+                      title="Negate angle"
                       className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-tier2 hover:bg-bg-hover"
                     >
-                      {label}
+                      ±
                     </button>
-                  ))}
-                </div>
-              )}
+                    {THETA_PRESETS.map(({ label, value }) => (
+                      <button
+                        key={label}
+                        onClick={() => onSetGateTheta(g.id, value)}
+                        className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-tier2 hover:bg-bg-hover"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
-              <button
-                onClick={() => onRemoveGate(g.id)}
-                className="ml-auto shrink-0 font-sans text-xs text-error-action hover:text-error-action/80"
-              >
-                Remove
-              </button>
+                <button
+                  onClick={() => onRemoveGate(g.id)}
+                  className="ml-auto shrink-0 font-sans text-xs text-error-action hover:text-error-action/80"
+                >
+                  Remove
+                </button>
+              </div>
             </div>
           );
         })}
