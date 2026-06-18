@@ -50,6 +50,20 @@ function computeWireYs(numberOfQubits: number): number[] {
   return [CANVAS_H / 3, (CANVAS_H * 2) / 3];
 }
 
+function singleQubitGlyphWidth(type: Gate): number {
+  switch (type) {
+    case Gate.S:
+    case Gate.T:
+    case Gate.RZ:
+      return SQ_W + 8;
+    case Gate.RX:
+    case Gate.RY:
+      return SQ_W + 4;
+    default:
+      return SQ_W;
+  }
+}
+
 export function CircuitCanvas({
   gates,
   numberOfQubits,
@@ -157,6 +171,7 @@ export function CircuitCanvas({
 
             if ("wire" in g) {
               const y = wireYs[g.wire];
+              const glyphW = singleQubitGlyphWidth(g.type);
               const x = xCenter - SQ_W / 2;
               const isParameterized = PARAMETERIZED_GATES.has(g.type);
               const thetaLabel =
@@ -168,11 +183,11 @@ export function CircuitCanvas({
               return (
                 <g key={g.id} transform={`translate(${x}, ${y - SQ_H / 2})`}>
                   {isSlot && (
-                    <g transform={`translate(${SQ_W / 2}, ${SQ_H + 6})`}>
+                    <g transform={`translate(${glyphW / 2}, ${SQ_H + 6})`}>
                       <rect
-                        x={-18}
+                        x={-20}
                         y={-7}
-                        width={36}
+                        width={40}
                         height={12}
                         rx={4}
                         fill={colors.cyanMuted}
@@ -182,7 +197,7 @@ export function CircuitCanvas({
                       />
                       <text
                         x={0}
-                        y={1}
+                        y={0}
                         textAnchor="middle"
                         dominantBaseline="middle"
                         fontFamily={fonts.mono}
@@ -255,7 +270,7 @@ export function CircuitCanvas({
       </div>
 
       <div className="shrink-0 flex flex-col gap-3 pb-5">
-      <div className="space-y-1.5 max-h-[120px] overflow-y-auto">
+      <div className="space-y-1.5">
         {gates.length === 0 && (
           <div className="font-sans text-[12px] text-tier2">
             Drag a gate from the toolbox to the wires, then click &quot;Check Solution&quot;.
@@ -264,7 +279,7 @@ export function CircuitCanvas({
 
         {showParameterSlotHint && (
           <div className="font-sans text-[12px] text-tier2 border border-tier1 rounded-gate px-2 py-1.5 bg-bg-panel">
-            Choose <span className="font-mono text-tier3">Parameter θ</span> on the gate whose
+            Choose <span className="font-semibold text-tier3">Parameter θ</span> on the gate whose
             angle should vary before checking your solution.
           </div>
         )}
@@ -304,23 +319,27 @@ export function CircuitCanvas({
               )}
 
               {!isTwoQubit && "wire" in g && (
-                <div className="font-mono text-xs text-tier2">wire: {g.wire}</div>
+                <div className="font-mono text-xs text-tier2 shrink-0">wire: {g.wire}</div>
+              )}
+
+              {showParameterSlotControls && isParameterized && "wire" in g && onSetParameterSlot && (
+                <button
+                  type="button"
+                  onClick={() => onSetParameterSlot(g.id)}
+                  aria-pressed={g.isParameterSlot === true}
+                  className={[
+                    "shrink-0 px-2 py-0.5 rounded-full font-sans text-[10px] font-medium border transition-colors",
+                    g.isParameterSlot
+                      ? "border-tier3 bg-tier3/15 text-tier3"
+                      : "border-tier1 bg-bg-panel text-text-muted hover:border-tier2 hover:text-tier2",
+                  ].join(" ")}
+                >
+                  Vary θ
+                </button>
               )}
 
               {isParameterized && "wire" in g && (
-                <div className="flex items-center gap-1 flex-wrap">
-                  {showParameterSlotControls && onSetParameterSlot && (
-                    <label className="flex items-center gap-1 font-sans text-[9px] text-tier2 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="parameter-theta-slot"
-                        checked={g.isParameterSlot === true}
-                        onChange={() => onSetParameterSlot(g.id)}
-                        className="accent-tier3"
-                      />
-                      Parameter θ
-                    </label>
-                  )}
+                <div className="flex items-center gap-1 flex-wrap min-w-0">
                   <label className="font-mono text-[9px] text-tier2">θ:</label>
                   <input
                     type="range"
