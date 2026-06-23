@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen bg-bg-app text-text-body flex items-center justify-center p-6">
           <div className="max-w-md w-full rounded-panel border border-tier1 bg-bg-panel p-6 text-center">
-            <h1 className="font-display text-xl text-tier3 mb-2">Something went wrong</h1>
+            <h1 className="page-title text-xl mb-2">Something went wrong</h1>
             <p className="font-sans text-sm text-text-body mb-4 leading-relaxed">
               The app hit an unexpected error. Try reloading the page — your progress is saved
               locally.

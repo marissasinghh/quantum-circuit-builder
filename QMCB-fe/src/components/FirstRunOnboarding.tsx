@@ -308,9 +308,7 @@ function OnboardingContent({
         Build circuits. Watch the state vector on the bloch sphere move. Match the goal. Learn.
       </BodyParagraph>
 
-      <p className="font-mono text-[22px] font-bold text-tier3 tracking-[0.06em] mt-5">
-        {"// Good luck!"}
-      </p>
+      <p className="page-eyebrow mt-5">{"// Good luck!"}</p>
 
       {showCta && (
         <div className="mt-10">

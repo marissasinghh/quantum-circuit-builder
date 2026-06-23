@@ -35,7 +35,8 @@ body {
 }
 
 @layer components {
-  /* 28px semibold — soft blue, not white */
+  /* ── Sans: content headings & titles ── */
+
   .page-title {
     font-family: "Exo 2", sans-serif;
     font-size: 1.75rem;
@@ -44,7 +45,34 @@ body {
     @apply text-text-title;
   }
 
-  /* // LEVELS, // ABOUT — calm mono caps */
+  /* About-style section headers: "Bits vs. qubits", etc. */
+  .section-title {
+    font-family: "Figtree", sans-serif;
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    @apply text-text-secondary;
+  }
+
+  /* Solve-page gate name under // LEVEL eyebrow (sans, mixed case) */
+  .gate-name-heading {
+    font-family: "Figtree", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.2;
+    @apply text-text-secondary;
+  }
+
+  .figure-caption {
+    font-family: "Figtree", sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.45;
+    @apply text-text-faint;
+  }
+
+  /* ── Mono caps: chrome / nav / table labels ── */
+
   .page-eyebrow {
     font-family: "JetBrains Mono", monospace;
     font-size: 0.6875rem;
@@ -54,7 +82,7 @@ body {
     @apply text-text-faint;
   }
 
-  /* TIER 1 — SINGLE QUBIT — small calm caps */
+  /* Sidebar tier headers + Levels page tier dividers */
   .section-heading {
     font-family: "JetBrains Mono", monospace;
     font-size: 0.6875rem;
@@ -64,16 +92,7 @@ body {
     @apply text-text-secondary;
   }
 
-  /* Bits vs. Qubits — readable section title, no shouty caps */
-  .section-title {
-    font-family: "JetBrains Mono", monospace;
-    font-size: 1.125rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    @apply text-text-secondary;
-  }
-
-  /* TOOLBOX, BLOCH SPHERE, CIRCUIT OUTPUT — mid tone panel headers */
+  /* TOOLBOX, BLOCH SPHERE, CIRCUIT OUTPUT, EXPECTED OUTPUT */
   .panel-heading {
     font-family: "JetBrains Mono", monospace;
     font-size: 1.125rem;
@@ -83,30 +102,32 @@ body {
     @apply text-text-secondary;
   }
 
-  /* LEVEL 1.0 card / task labels */
+  /* // LEVEL 1.0 eyebrows (same size as page-eyebrow) */
   .level-label {
     font-family: "JetBrains Mono", monospace;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 400;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     @apply text-text-faint;
   }
 
-  /* Gate / level display name on cards & task header */
-  .level-display-name {
+  /* Level names in sidebar + levels grid (X, RX, ARBITRARY U) */
+  .nav-level-name {
     font-family: "JetBrains Mono", monospace;
-    font-size: 1.125rem;
+    font-size: 0.875rem;
     font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     @apply text-text-secondary;
   }
 
-  /* Figure captions — 13px, dimmest readable tier */
-  .figure-caption {
-    font-family: "Figtree", sans-serif;
-    font-size: 0.8125rem;
+  /* Sidebar level rows */
+  .nav-level-row {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
     font-weight: 400;
-    line-height: 1.45;
-    @apply text-text-faint;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 }

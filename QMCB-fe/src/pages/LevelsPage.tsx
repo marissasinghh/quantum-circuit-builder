@@ -57,7 +57,7 @@ function LevelCard({
         {status === "locked" && <span className="text-text-faint">—</span>}
       </div>
 
-      <p className="level-display-name">{getLevelDisplayName(level)}</p>
+      <p className="nav-level-name">{getLevelDisplayName(level)}</p>
     </div>
   );
 }
@@ -73,7 +73,7 @@ function TierSection({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="section-heading">
+      <h2 className="section-title">
         {title}
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">

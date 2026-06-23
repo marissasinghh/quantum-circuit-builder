@@ -27,7 +27,7 @@ export function LevelCompleteModal({
     >
       <div className="relative bg-bg-panel border border-tier1 rounded-panel p-6 max-w-md w-full mx-4">
         <div className="text-center">
-          <h2 className="font-mono text-base text-tier3 mb-2">Level Complete!</h2>
+          <h2 className="page-title text-lg mb-2">Level Complete!</h2>
 
           <p className="font-sans text-[11px] text-text-body mb-6">
             Target circuit successfully verified{" "}

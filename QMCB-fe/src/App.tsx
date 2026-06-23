@@ -66,7 +66,7 @@ function LevelSidebar() {
               key={level.target_unitary}
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
               className={[
-                "py-1 font-mono text-[11px] cursor-pointer select-none whitespace-nowrap",
+                "nav-level-row py-1 cursor-pointer select-none whitespace-nowrap",
                 isActive
                   ? "text-text-emphasis bg-bg-elevated border-l-2 border-tier3 pl-[10px]"
                   : "text-text-faint pl-3",

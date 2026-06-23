@@ -190,7 +190,7 @@ export const RY_LEVEL: LevelDefinition = {
 // ========================
 export const RANDOM_U_LEVEL: LevelDefinition = {
   target_unitary: Gate.RANDOM_U,
-  name: "Arbitrary U",
+  name: "ARBITRARY U",
   number_of_qubits: LEVEL1_QUBITS,
   toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY] as const,
 

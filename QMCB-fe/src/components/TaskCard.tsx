@@ -50,10 +50,10 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
 
   return (
     <div className="bg-bg-panel border border-tier1 rounded-panel px-2.5 py-2 shrink-0">
-      <p className="level-label mb-1">
+      <p className="level-label mb-0.5">
         {`// LEVEL ${levelLabel}`}
       </p>
-      <p className="level-display-name mb-1">{getLevelDisplayName(level)}</p>
+      <p className="gate-name-heading mb-1">{getLevelDisplayName(level)}</p>
       <MathText
         text={level.description ?? ""}
         className="task-description font-sans text-[13px] text-text-body leading-relaxed"
