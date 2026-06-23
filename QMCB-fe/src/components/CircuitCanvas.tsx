@@ -43,11 +43,15 @@ const WIRE_COLOR = colors.wire;
 const controlInputClass =
   "bg-bg-elevated border border-tier1 rounded-gate px-1 py-0.5 text-[10px] font-mono text-tier2 focus:border-tier3 outline-none";
 
-function computeWireYs(numberOfQubits: number): number[] {
-  if (numberOfQubits === 1) {
-    return [CANVAS_H / 2];
-  }
-  return [CANVAS_H / 3, (CANVAS_H * 2) / 3];
+function canvasHeightFor(numberOfQubits: number): number {
+  return numberOfQubits >= 3 ? 240 : CANVAS_H;
+}
+
+function computeWireYs(numberOfQubits: number, canvasH: number): number[] {
+  return Array.from(
+    { length: numberOfQubits },
+    (_, i) => (canvasH * (i + 1)) / (numberOfQubits + 1),
+  );
 }
 
 function singleQubitGlyphWidth(type: Gate): number {
@@ -78,8 +82,9 @@ export function CircuitCanvas({
 }: CircuitCanvasProps) {
   const COL_W = 90;
   const CANVAS_W = Math.max(600, PAD_X * 2 + Math.max(1, gates.length) * COL_W);
+  const canvasH = canvasHeightFor(numberOfQubits);
 
-  const wireYs = computeWireYs(numberOfQubits);
+  const wireYs = computeWireYs(numberOfQubits, canvasH);
   const wireTop = wireYs[0];
   const wireSpan = wireYs.length > 1 ? wireYs[wireYs.length - 1] - wireYs[0] : 0;
 
@@ -106,7 +111,7 @@ export function CircuitCanvas({
         <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
         <div
           className="relative"
-          style={{ minWidth: CANVAS_W, height: CANVAS_H }}
+          style={{ minWidth: CANVAS_W, height: canvasH }}
         >
           {wireYs.map((y, i) => (
             <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 20} height={40} />
@@ -135,7 +140,7 @@ export function CircuitCanvas({
 
           <svg
             width={CANVAS_W}
-            height={CANVAS_H}
+            height={canvasH}
             className="relative block z-10"
             style={{ minWidth: "100%" }}
           >

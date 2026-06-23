@@ -9,6 +9,7 @@ export const MAX_GATES = 10;
 
 export const LEVEL1_QUBITS = 1 as const;
 export const LEVEL2_QUBITS = 2 as const;
+export const LEVEL3_QUBITS = 3 as const;
 
 // =====================
 // QUBIT ORDER PATTERNS

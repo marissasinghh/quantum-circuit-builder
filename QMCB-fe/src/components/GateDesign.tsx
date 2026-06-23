@@ -9,13 +9,45 @@ const Wire = ({ x1, x2, y }: { x1: number; x2: number; y: number }) => (
   <line x1={x1} y1={y} x2={x2} y2={y} stroke={WIRE_COLOR} strokeWidth={1} />
 );
 
-/** A tiny plus sign for the CNOT target circle */
+/** A tiny plus sign for the CNOT / Toffoli target circle */
 const Plus = ({ cx, cy, r = 8 }: { cx: number; cy: number; r?: number }) => (
   <>
     <line x1={cx - r} y1={cy} x2={cx + r} y2={cy} stroke={colors.cyan} strokeWidth={1.5} />
     <line x1={cx} y1={cy - r} x2={cx} y2={cy + r} stroke={colors.cyan} strokeWidth={1.5} />
   </>
 );
+
+/** Diagonal × mark at a wire crossing (SWAP / Fredkin target) */
+const XMark = ({ cx, cy, size = 7 }: { cx: number; cy: number; size?: number }) => (
+  <>
+    <line
+      x1={cx - size}
+      y1={cy - size}
+      x2={cx + size}
+      y2={cy + size}
+      stroke={colors.cyan}
+      strokeWidth={1.5}
+      strokeLinecap="round"
+    />
+    <line
+      x1={cx + size}
+      y1={cy - size}
+      x2={cx - size}
+      y2={cy + size}
+      stroke={colors.cyan}
+      strokeWidth={1.5}
+      strokeLinecap="round"
+    />
+  </>
+);
+
+/** Evenly spaced wire y-positions for multi-qubit glyphs */
+function threeWireYs(height: number, pad = 10): [number, number, number] {
+  const y0 = pad + 8;
+  const y2 = height - pad - 8;
+  const y1 = (y0 + y2) / 2;
+  return [y0, y1, y2];
+}
 
 /** CNOT glyph: two wires + vertical link + control dot + target ⊕ */
 export function CNOTGlyph({
@@ -102,6 +134,83 @@ export function ControlledZGlyph({
       </text>
 
       <circle cx={cx} cy={controlY} r={5} fill={colors.cyan} />
+    </svg>
+  );
+}
+
+/** Toffoli (CCX) glyph: controls on wires 0 & 1, ⊕ target on wire 2 */
+export function ToffoliGlyph({
+  width = 80,
+  height = 90,
+}: {
+  width?: number;
+  height?: number;
+}) {
+  const pad = 10;
+  const [y0, y1, y2] = threeWireYs(height, pad);
+  const cx = width / 2;
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="Toffoli">
+      <Wire x1={pad} x2={width - pad} y={y0} />
+      <Wire x1={pad} x2={width - pad} y={y1} />
+      <Wire x1={pad} x2={width - pad} y={y2} />
+
+      <line x1={cx} y1={y0} x2={cx} y2={y2} stroke={colors.cyan} strokeWidth={2} />
+
+      <circle cx={cx} cy={y0} r={5} fill={colors.cyan} />
+      <circle cx={cx} cy={y1} r={5} fill={colors.cyan} />
+      <circle cx={cx} cy={y2} r={9} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
+      <Plus cx={cx} cy={y2} r={5} />
+    </svg>
+  );
+}
+
+/** Fredkin (CSWAP) glyph: control on wire 0, SWAP (×) between wires 1 & 2 */
+export function FredkinGlyph({
+  width = 80,
+  height = 90,
+}: {
+  width?: number;
+  height?: number;
+}) {
+  const pad = 10;
+  const [y0, y1, y2] = threeWireYs(height, pad);
+  const cx = width / 2;
+  const bridgeHalf = (y2 - y1) * 0.38;
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="Fredkin">
+      <Wire x1={pad} x2={width - pad} y={y0} />
+      <Wire x1={pad} x2={width - pad} y={y1} />
+      <Wire x1={pad} x2={width - pad} y={y2} />
+
+      <line x1={cx} y1={y0} x2={cx} y2={y2} stroke={colors.cyan} strokeWidth={2} />
+
+      <circle cx={cx} cy={y0} r={5} fill={colors.cyan} />
+
+      <XMark cx={cx} cy={y1} />
+      <XMark cx={cx} cy={y2} />
+
+      {/* SWAP bridge: crossed diagonals between the two target wires */}
+      <line
+        x1={cx - bridgeHalf}
+        y1={y1}
+        x2={cx + bridgeHalf}
+        y2={y2}
+        stroke={colors.cyan}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <line
+        x1={cx + bridgeHalf}
+        y1={y1}
+        x2={cx - bridgeHalf}
+        y2={y2}
+        stroke={colors.cyan}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
