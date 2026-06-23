@@ -1,3 +1,5 @@
+import { fontSizes } from "./src/context/typography.ts";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
@@ -42,8 +44,9 @@ export default {
         mono: ["JetBrains Mono", "monospace"],
       },
       fontSize: {
-        caption: ["0.8125rem", { lineHeight: "1.45" }],
-        section: ["1.125rem", { lineHeight: "1.35" }],
+        caption: [fontSizes.caption, { lineHeight: "1.45" }],
+        body: [fontSizes.body, { lineHeight: "1.625" }],
+        "section-header": [fontSizes.sectionHeader, { lineHeight: "1.35" }],
         title: ["1.75rem", { lineHeight: "1.2" }],
       },
       borderRadius: {

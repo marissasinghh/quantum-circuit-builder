@@ -375,6 +375,19 @@ export function getLevelDisplayName(level: LevelDefinition): string {
   return level.name ?? level.target_unitary;
 }
 
+/**
+ * Solve-page task panel heading (e.g. "Gate X").
+ * Tier-1 single-qubit levels get a "Gate " prefix; two-qubit level names are
+ * left as-is because "Gate CNOT_FLIPPED" etc. read awkwardly.
+ */
+export function getGateHeadingLabel(level: LevelDefinition): string {
+  const name = getLevelDisplayName(level);
+  if (level.number_of_qubits === 1) {
+    return `Gate ${name}`;
+  }
+  return name;
+}
+
 /** Get the next level in the progression, or null if on the last level */
 export function getNextLevel(currentLevel: LevelDefinition): LevelDefinition | null {
   const currentIndex = LEVEL_ORDER.findIndex((level) => level === currentLevel);

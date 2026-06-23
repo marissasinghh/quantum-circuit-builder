@@ -5,7 +5,7 @@ export default function SettingsPage() {
         <p className="page-eyebrow mb-1">{"// SETTINGS"}</p>
         <h1 className="page-title mb-2">Settings</h1>
         <div className="bg-navy border border-grid rounded-panel px-4 py-3">
-          <p className="font-sans text-[14px] text-body">
+          <p className="text-body text-text-body">
             Settings — coming soon.
           </p>
         </div>

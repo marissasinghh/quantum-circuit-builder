@@ -50,7 +50,7 @@ function SectionHeader({ children }: { children: ReactNode }) {
 
 function BodyParagraph({ children }: { children: ReactNode }) {
   return (
-    <p className="font-sans text-[14px] text-text-body leading-relaxed">{children}</p>
+    <p className="text-body text-text-body leading-relaxed">{children}</p>
   );
 }
 
@@ -232,7 +232,7 @@ function OnboardingContent({
           <h1 className="page-title mb-2">
             Welcome
           </h1>
-          <p className="font-sans text-[14px] text-text-secondary italic mb-10">
+          <p className="text-body text-text-secondary italic mb-10">
             A quick intro before you start building circuits.
           </p>
         </>

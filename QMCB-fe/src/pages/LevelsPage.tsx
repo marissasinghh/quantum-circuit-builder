@@ -73,7 +73,7 @@ function TierSection({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="section-title">
+      <h2 className="tier-section-title">
         {title}
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -111,7 +111,7 @@ export default function LevelsPage() {
         <h1 className="page-title mb-2">
           Choose a Level
         </h1>
-        <p className="font-sans text-[14px] text-text-secondary italic">
+        <p className="text-body text-text-secondary italic">
           Pick a level from the grid to start building.
         </p>
       </div>

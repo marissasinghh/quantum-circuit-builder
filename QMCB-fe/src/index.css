@@ -11,6 +11,7 @@ body,
 body {
   background-color: #0f1a2e;
   font-family: "Figtree", sans-serif;
+  font-size: var(--font-size-body, 0.875rem);
   color: #c8dde8;
 }
 
@@ -45,7 +46,7 @@ body {
     @apply text-text-title;
   }
 
-  /* About-style section headers: "Bits vs. qubits", etc. */
+  /* About-style section headers: "Bits vs. qubits", etc. (outside 3-token scale) */
   .section-title {
     font-family: "Figtree", sans-serif;
     font-size: 1.125rem;
@@ -54,10 +55,19 @@ body {
     @apply text-text-secondary;
   }
 
-  /* Solve-page gate name under // LEVEL eyebrow (sans, mixed case) */
+  /* Levels page tier dividers — sans, sectionHeader token size */
+  .tier-section-title {
+    font-family: "Figtree", sans-serif;
+    font-size: var(--font-size-section-header);
+    font-weight: 500;
+    letter-spacing: normal;
+    @apply text-text-secondary;
+  }
+
+  /* Solve-page gate name under // LEVEL eyebrow (sans, body token) */
   .gate-name-heading {
     font-family: "Figtree", sans-serif;
-    font-size: 1.25rem;
+    font-size: var(--font-size-body);
     font-weight: 600;
     line-height: 1.2;
     @apply text-text-secondary;
@@ -65,7 +75,7 @@ body {
 
   .figure-caption {
     font-family: "Figtree", sans-serif;
-    font-size: 0.8125rem;
+    font-size: var(--font-size-caption);
     font-weight: 400;
     line-height: 1.45;
     @apply text-text-faint;
@@ -75,17 +85,17 @@ body {
 
   .page-eyebrow {
     font-family: "JetBrains Mono", monospace;
-    font-size: 0.6875rem;
+    font-size: var(--font-size-section-header);
     font-weight: 400;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     @apply text-text-faint;
   }
 
-  /* Sidebar tier headers + Levels page tier dividers */
+  /* Sidebar tier headers */
   .section-heading {
     font-family: "JetBrains Mono", monospace;
-    font-size: 0.6875rem;
+    font-size: var(--font-size-section-header);
     font-weight: 400;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -95,17 +105,17 @@ body {
   /* TOOLBOX, BLOCH SPHERE, CIRCUIT OUTPUT, EXPECTED OUTPUT */
   .panel-heading {
     font-family: "JetBrains Mono", monospace;
-    font-size: 1.125rem;
+    font-size: var(--font-size-section-header);
     font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     @apply text-text-secondary;
   }
 
-  /* // LEVEL 1.0 eyebrows (same size as page-eyebrow) */
+  /* // LEVEL 1.0 eyebrows, EXPECTED OUTPUT, level card labels */
   .level-label {
     font-family: "JetBrains Mono", monospace;
-    font-size: 0.6875rem;
+    font-size: var(--font-size-section-header);
     font-weight: 400;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -115,7 +125,7 @@ body {
   /* Level names in sidebar + levels grid (X, RX, ARBITRARY U) */
   .nav-level-name {
     font-family: "JetBrains Mono", monospace;
-    font-size: 0.875rem;
+    font-size: var(--font-size-body);
     font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -125,7 +135,7 @@ body {
   /* Sidebar level rows */
   .nav-level-row {
     font-family: "JetBrains Mono", monospace;
-    font-size: 0.6875rem;
+    font-size: var(--font-size-section-header);
     font-weight: 400;
     letter-spacing: 0.04em;
     text-transform: uppercase;

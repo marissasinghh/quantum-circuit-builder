@@ -5,6 +5,9 @@ import App from "./App";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { applyTypographyCssVars } from "@/context";
+
+applyTypographyCssVars();
 
 const queryClient = new QueryClient();
 
