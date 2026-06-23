@@ -42,24 +42,24 @@ function LevelCard({
   let cardClass =
     "rounded-panel border p-4 flex flex-col gap-2 transition select-none ";
   if (isLocked) {
-    cardClass += "bg-navy border-grid text-slate cursor-not-allowed opacity-60";
+    cardClass += "bg-navy border-grid text-text-muted cursor-not-allowed opacity-60";
   } else if (status === "completed") {
-    cardClass += "bg-navy border-grid text-cyan-muted cursor-pointer hover:border-cyan-muted";
+    cardClass += "bg-navy border-grid text-text-body cursor-pointer hover:border-tier2";
   } else {
-    cardClass += "bg-navy border-grid text-cyan cursor-pointer hover:border-cyan";
+    cardClass += "bg-navy border-grid text-text-body cursor-pointer hover:border-tier2";
   }
 
   return (
     <div onClick={isLocked ? undefined : onClick} className={cardClass}>
-      <div className="flex items-center justify-between font-mono text-[9px] text-slate">
+      <div className="flex items-center justify-between font-mono text-[9px] text-text-muted">
         <span>LEVEL {levelNum}</span>
-        {status === "completed" && <span className="text-cyan">✓</span>}
-        {status === "locked" && <span className="text-slate-muted">—</span>}
+        {status === "completed" && <span className="text-tier3">✓</span>}
+        {status === "locked" && <span className="text-text-muted">—</span>}
       </div>
 
       <p className="font-mono text-sm font-bold tracking-wide">{level.target_unitary}</p>
 
-      <span className="font-sans text-[10px] text-slate">
+      <span className="font-sans text-[10px] text-text-muted">
         {level.number_of_qubits === 1 ? "1-qubit" : "2-qubit"}
       </span>
     </div>
@@ -77,7 +77,7 @@ function TierSection({
 }) {
   return (
     <section className="space-y-4">
-      <h2 className="font-mono text-[9px] tracking-[0.12em] text-slate-muted uppercase">
+      <h2 className="font-mono text-[9px] tracking-[0.12em] text-text-muted uppercase">
         {title}
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -111,14 +111,14 @@ export default function LevelsPage() {
   return (
     <main className="flex-1 overflow-y-auto canvas-grid p-6 space-y-8">
       <div>
-        <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">{"// levels"}</p>
+        <p className="font-mono text-[11px] tracking-[0.12em] text-text-muted uppercase mb-3">{"// levels"}</p>
         <h1
-          className="page-heading text-[28px] text-tier3 leading-[1.2] mb-2"
+          className="page-heading text-[28px] text-text-body leading-[1.2] mb-2"
           style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 600 }}
         >
           Choose a Level
         </h1>
-        <p className="font-sans text-[14px] text-tier2 italic">
+        <p className="font-sans text-[14px] text-text-muted italic">
           Pick a level from the grid to start building.
         </p>
       </div>

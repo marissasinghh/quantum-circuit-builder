@@ -357,7 +357,7 @@ function SolveLevelContent({
                         <button
                           type="button"
                           onClick={() => setShowOrderTip(false)}
-                          className="absolute top-0.5 right-1 text-tier2 hover:text-tier3 leading-none"
+                          className="absolute top-0.5 right-1 text-text-muted hover:text-text-body leading-none"
                           aria-label="Dismiss tip"
                         >
                           ×

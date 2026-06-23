@@ -121,7 +121,7 @@ function tabBtnClass(active: boolean): string {
   return [
     "flex-1 py-2.5 font-mono text-[11px] tracking-[0.08em] uppercase border-b-2 transition-colors",
     active
-      ? "border-tier3 text-tier3"
+      ? "border-tier3 text-text-body"
       : "border-transparent text-text-muted hover:text-text-body",
   ].join(" ");
 }
@@ -215,7 +215,7 @@ export function MobileSolveLayout({
                       >
                         <span
                           draggable={false}
-                          className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
+                          className="font-mono font-medium text-[13px] text-text-body leading-tight pointer-events-none select-none"
                         >
                           {cfg.label}
                         </span>
@@ -271,7 +271,7 @@ export function MobileSolveLayout({
                           <button
                             type="button"
                             onClick={() => setShowOrderTip(false)}
-                            className="absolute top-0.5 right-1 text-tier2 hover:text-tier3 leading-none"
+                            className="absolute top-0.5 right-1 text-text-muted hover:text-text-body leading-none"
                             aria-label="Dismiss tip"
                           >
                             ×

@@ -7,8 +7,8 @@ export default {
         space: { DEFAULT: "#080c18", light: "#0a0e1a" },
         navy: { DEFAULT: "#0d1226", light: "#111a36" },
         grid: "#1e3a5f",
-        cyan: { DEFAULT: "#4fc3f7", muted: "#80deea" },
-        slate: { DEFAULT: "#546e7a", muted: "#37474f" },
+        cyan: { DEFAULT: "#4fc3f7", muted: "#9ec4d8" },
+        slate: { DEFAULT: "#6a8494", muted: "#4a6474" },
         "wire-off": "#1e3a5f",
 
         "bg-app": "#0f1a2e",
@@ -18,8 +18,8 @@ export default {
         "bg-hover": "#1f3455",
 
         tier1: "rgba(89, 155, 195, 0.16)",
-        tier2: "#5a90b0",
-        tier3: "#7dc4e0",
+        tier2: "#8ab4c8",
+        tier3: "#9dd4ea",
 
         "text-body": "#c8dde8",
         "text-muted": "#3a6070",

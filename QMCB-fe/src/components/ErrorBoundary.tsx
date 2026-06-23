@@ -25,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="min-h-screen bg-bg-app text-text-body flex items-center justify-center p-6">
           <div className="max-w-md w-full rounded-panel border border-tier1 bg-bg-panel p-6 text-center">
-            <h1 className="font-display text-xl text-tier3 mb-2">Something went wrong</h1>
+            <h1 className="font-display text-xl text-text-body mb-2">Something went wrong</h1>
             <p className="font-sans text-sm text-text-body mb-4 leading-relaxed">
               The app hit an unexpected error. Try reloading the page — your progress is saved
               locally.
@@ -38,7 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <button
               type="button"
               onClick={() => window.location.reload()}
-              className="font-mono text-[11px] tracking-wide uppercase px-4 py-2 border border-tier1 rounded-gate text-tier3 hover:bg-bg-hover transition"
+              className="font-mono text-[11px] tracking-wide uppercase px-4 py-2 border border-tier1 rounded-gate text-text-body hover:bg-bg-hover transition"
             >
               Reload page
             </button>
