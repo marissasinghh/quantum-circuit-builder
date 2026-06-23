@@ -32,7 +32,7 @@ export function applyTypographyCssVars(root: HTMLElement = document.documentElem
   root.style.setProperty(cssVarNames.sectionHeader, fontSizes.sectionHeader);
 }
 
-/** Mono panel chrome: TOOLBOX, BLOCH SPHERE, CIRCUIT OUTPUT. */
+/** Mono panel chrome: GATESET, BLOCH SPHERE, CIRCUIT OUTPUT. */
 export const panelHeaderTypography = {
   fontWeight: 500,
   letterSpacing: "0.04em",

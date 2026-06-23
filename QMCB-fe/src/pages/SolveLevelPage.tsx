@@ -17,7 +17,7 @@ import { useControlledUnitary } from "../hooks/useControlledUnitary";
 import { useDragAndDrop } from "../hooks/useDragAndDrop";
 
 import { TaskCard } from "../components/TaskCard";
-import { Toolbox, BlochPreviewToggle, BlochSphereHeader, BLOCH_SPHERE_TOOLTIP } from "../components/Toolbox";
+import { Gateset, BlochPreviewToggle, BlochSphereHeader, BLOCH_SPHERE_TOOLTIP } from "../components/Gateset";
 import { Tooltip, TooltipProvider } from "../components/Tooltip";
 import { CircuitCanvas } from "../components/CircuitCanvas";
 import { OutputTable, type GradingSummary } from "../components/OutputTable";
@@ -328,12 +328,12 @@ function SolveLevelContent({
             />
           </section>
 
-          {/* Right: Toolbox + Bloch + Output */}
+          {/* Right: Gateset + Bloch + Output */}
           <aside
             className="w-full sm:w-auto sm:shrink sm:basis-[523px] sm:min-w-[200px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto flex flex-col gap-0 min-h-0 sm:h-full"
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
-              <Toolbox availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
+              <Gateset availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
             </div>
             {currentLevel.number_of_qubits === 1 && (
               <>

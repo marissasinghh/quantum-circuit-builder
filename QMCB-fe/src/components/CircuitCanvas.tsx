@@ -278,7 +278,7 @@ export function CircuitCanvas({
       <div className="space-y-1.5">
         {gates.length === 0 && (
           <div className="font-sans text-[12px] text-tier2">
-            Drag a gate from the toolbox to the wires, then click &quot;Check Solution&quot;.
+            Drag a gate from the gateset to the wires, then click &quot;Check Solution&quot;.
           </div>
         )}
 

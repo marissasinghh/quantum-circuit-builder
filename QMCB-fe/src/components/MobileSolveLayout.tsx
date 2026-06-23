@@ -21,7 +21,7 @@ import {
   BlochSphereHeader,
   BlochPreviewToggle,
   BLOCH_SPHERE_TOOLTIP,
-} from "./Toolbox";
+} from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
 import {
@@ -43,7 +43,7 @@ import type { BlochState } from "../utils/blochMath";
 import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
 
 // Minimal label + toolId lookup for rendering the mobile gate row.
-// Labels and toolIds mirror GATE_CONFIG in Toolbox.tsx (no internal logic changes).
+// Labels and toolIds mirror GATE_CONFIG in Gateset.tsx (no internal logic changes).
 const MOBILE_GATE_CONFIG: Partial<Record<Gate, { label: string; toolId: string }>> = {
   [Gate.X]: { label: "X", toolId: "tool-x" },
   [Gate.SQRT_X]: { label: "√X", toolId: "tool-sqrt-x" },
@@ -201,7 +201,7 @@ export function MobileSolveLayout({
               {/* Horizontal gate row */}
               <div className="shrink-0 px-3 pt-3 pb-2 bg-bg-sidebar border-b border-tier1">
                 <p className="panel-heading mb-2">
-                  TOOLBOX
+                  GATESET
                 </p>
                 <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1">
                   {currentLevel.toolbox.map((gate) => {
