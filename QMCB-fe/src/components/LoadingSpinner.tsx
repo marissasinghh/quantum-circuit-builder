@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
 export function LoadingSpinner({ className = "", size = 18 }: LoadingSpinnerProps) {
   return (
     <svg
-      className={`animate-spin text-tier3 ${className}`}
+      className={`animate-spin text-text-body ${className}`}
       width={size}
       height={size}
       viewBox="0 0 24 24"

@@ -32,12 +32,12 @@ function markOnboardingComplete(): void {
 // ---------------------------------------------------------------------------
 
 function Bold({ children }: { children: ReactNode }) {
-  return <strong className="font-semibold text-tier3">{children}</strong>;
+  return <strong className="font-semibold text-text-body">{children}</strong>;
 }
 
 /** Inline quantum notation — JetBrains Mono + tier3 */
 function Q({ children }: { children: ReactNode }) {
-  return <span className="font-mono text-tier3">{children}</span>;
+  return <span className="font-mono text-text-body">{children}</span>;
 }
 
 function SectionHeader({ children }: { children: ReactNode }) {
@@ -226,16 +226,16 @@ function OnboardingContent({
     <>
       {showPageHeader && (
         <>
-          <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
+          <p className="font-mono text-[11px] tracking-[0.12em] text-text-muted uppercase mb-3">
             {"// welcome"}
           </p>
           <h1
-            className="page-heading text-[28px] text-tier3 leading-[1.2] mb-2"
+            className="page-heading text-[28px] text-text-body leading-[1.2] mb-2"
             style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 600 }}
           >
             Welcome
           </h1>
-          <p className="font-sans text-[14px] text-slate italic mb-10">
+          <p className="font-sans text-[14px] text-text-muted italic mb-10">
             A quick intro before you start building circuits.
           </p>
         </>
@@ -311,7 +311,7 @@ function OnboardingContent({
         Build circuits. Watch the state vector on the bloch sphere move. Match the goal. Learn.
       </BodyParagraph>
 
-      <p className="font-mono text-[22px] font-bold text-tier3 tracking-[0.06em] mt-5">
+      <p className="font-mono text-[22px] font-bold text-text-body tracking-[0.06em] mt-5">
         {"// Good luck!"}
       </p>
 
@@ -320,7 +320,7 @@ function OnboardingContent({
           <button
             type="button"
             onClick={handleStart}
-            className="bg-tier3/5 border border-tier3/35 rounded-gate text-tier3 font-mono text-[12px] px-7 py-3 cursor-pointer tracking-[0.1em] uppercase hover:bg-tier3/10 hover:border-tier3/60 transition-colors"
+            className="bg-tier3/5 border border-tier3/35 rounded-gate text-text-body font-mono text-[12px] px-7 py-3 cursor-pointer tracking-[0.1em] uppercase hover:bg-tier3/10 hover:border-tier3/60 transition-colors"
           >
             Got it, start playing
           </button>
@@ -342,7 +342,7 @@ export function FirstRunOnboarding({ variant = "fullscreen", onComplete }: First
   return (
     <div className="h-screen flex flex-col bg-bg-app text-text-body">
       <header className="bg-[#090f1d] border-b border-tier1 h-10 shrink-0 px-4 flex items-center">
-        <span className="font-mono text-[14px] text-tier3 tracking-[0.05em]">
+        <span className="font-mono text-[14px] text-text-body tracking-[0.05em]">
           ⟨ψ| CNOT GAME |ψ⟩
         </span>
       </header>

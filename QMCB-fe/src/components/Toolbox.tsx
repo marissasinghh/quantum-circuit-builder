@@ -203,8 +203,8 @@ function shouldShowGateTooltip(gate: Gate, completed: string[]): boolean {
 const blochToggleBtn = (active: boolean) =>
   `font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
     active
-      ? "bg-tier3/14 text-tier3 border-tier3/40"
-      : "text-text-muted border-tier1 hover:border-tier2"
+      ? "bg-bg-hover text-text-body border-tier3/40"
+      : "text-text-muted border-tier1 hover:border-tier2 hover:text-text-body"
   }`;
 
 /** Bloch sphere section header */
@@ -228,7 +228,7 @@ export function BlochPreviewToggle({
 }) {
   return (
     <div className="flex items-center gap-2 w-full mt-1.5">
-      <span className="font-sans text-[11px] text-tier2 shrink-0">Preview from:</span>
+      <span className="font-sans text-[11px] text-text-body shrink-0">Preview from:</span>
       <button type="button" onClick={onSelect0} className={blochToggleBtn(initialState === 0)}>
         {BASIS_0}
       </button>
@@ -262,7 +262,7 @@ export function Toolbox({ availableGates, numberOfQubits }: ToolboxProps) {
             >
               <span
                 draggable={false}
-                className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
+                className="font-mono font-medium text-[13px] text-text-body leading-tight pr-4 pointer-events-none select-none"
               >
                 {config.label}
               </span>

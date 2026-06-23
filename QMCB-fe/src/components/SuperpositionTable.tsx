@@ -5,7 +5,7 @@ interface SuperpositionTableProps {
 }
 
 function Ket({ children }: { children: ReactNode }) {
-  return <span className="font-mono text-tier3">{children}</span>;
+  return <span className="font-mono text-text-body">{children}</span>;
 }
 
 function Frac() {
@@ -33,8 +33,8 @@ function Frac() {
 function AxisBadge({ axis }: { axis: "X" | "Y" }) {
   const cls =
     axis === "X"
-      ? "text-tier3 bg-tier3/10 border border-tier3/30 rounded px-1 font-mono text-[10px]"
-      : "text-cyan-muted bg-cyan-muted/10 border border-cyan-muted/30 rounded px-1 font-mono text-[10px]";
+      ? "text-text-body bg-bg-hover border border-tier2 rounded px-1 font-mono text-[10px]"
+      : "text-text-body bg-bg-hover border border-tier2 rounded px-1 font-mono text-[10px]";
   return <span className={cls}>{axis}</span>;
 }
 
