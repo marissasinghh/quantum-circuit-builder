@@ -53,14 +53,14 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
       <p className="level-label mb-1">
         {`// LEVEL ${levelLabel}`}
       </p>
-      <p className="font-mono text-base font-semibold text-tier3 mb-1">{getLevelDisplayName(level)}</p>
+      <p className="level-display-name mb-1">{getLevelDisplayName(level)}</p>
       <MathText
         text={level.description ?? ""}
         className="task-description font-sans text-[13px] text-text-body leading-relaxed"
       />
 
       <div className="mt-2">
-        <div className="font-mono text-[8.5px] text-text-muted uppercase tracking-wide mb-1">
+        <div className="level-label mb-1">
           EXPECTED OUTPUT
         </div>
         {truth ? (

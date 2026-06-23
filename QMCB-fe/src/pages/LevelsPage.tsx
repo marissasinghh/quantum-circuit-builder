@@ -53,11 +53,11 @@ function LevelCard({
     <div onClick={isLocked ? undefined : onClick} className={cardClass}>
       <div className="flex items-center justify-between level-label">
         <span>LEVEL {levelNum}</span>
-        {status === "completed" && <span className="text-cyan">✓</span>}
-        {status === "locked" && <span className="text-slate-muted">—</span>}
+        {status === "completed" && <span className="text-emphasis">✓</span>}
+        {status === "locked" && <span className="text-faint">—</span>}
       </div>
 
-      <p className="font-mono text-sm font-bold tracking-wide">{getLevelDisplayName(level)}</p>
+      <p className="level-display-name">{getLevelDisplayName(level)}</p>
     </div>
   );
 }
@@ -107,11 +107,11 @@ export default function LevelsPage() {
   return (
     <main className="flex-1 overflow-y-auto canvas-grid p-6 space-y-8">
       <div>
-        <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">{"// levels"}</p>
+        <p className="page-eyebrow mb-3">{"// levels"}</p>
         <h1 className="page-title mb-2">
           Choose a Level
         </h1>
-        <p className="font-sans text-[14px] text-tier2 italic">
+        <p className="font-sans text-[14px] text-secondary italic">
           Pick a level from the grid to start building.
         </p>
       </div>

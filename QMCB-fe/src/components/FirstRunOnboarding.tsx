@@ -42,7 +42,7 @@ function Q({ children }: { children: ReactNode }) {
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
-    <h2 className="section-heading mt-9 mb-2.5">
+    <h2 className="section-title mt-9 mb-2.5">
       {children}
     </h2>
   );
@@ -226,13 +226,13 @@ function OnboardingContent({
     <>
       {showPageHeader && (
         <>
-          <p className="font-mono text-[11px] tracking-[0.12em] text-cyan uppercase mb-3">
+          <p className="page-eyebrow mb-3">
             {"// welcome"}
           </p>
           <h1 className="page-title mb-2">
             Welcome
           </h1>
-          <p className="font-sans text-[14px] text-slate italic mb-10">
+          <p className="font-sans text-[14px] text-secondary italic mb-10">
             A quick intro before you start building circuits.
           </p>
         </>

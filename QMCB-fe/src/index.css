@@ -34,31 +34,79 @@ body {
   color: #c8dde8;
 }
 
-.page-heading {
-  font-family: "Exo 2", sans-serif;
-  font-weight: 600;
-}
-
 @layer components {
+  /* 28px semibold — soft blue, not white */
   .page-title {
     font-family: "Exo 2", sans-serif;
+    font-size: 1.75rem;
     font-weight: 600;
-    @apply text-3xl text-tier3 leading-tight;
+    line-height: 1.2;
+    @apply text-title;
   }
 
+  /* // LEVELS, // ABOUT — calm mono caps */
+  .page-eyebrow {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    @apply text-faint;
+  }
+
+  /* TIER 1 — SINGLE QUBIT — small calm caps */
   .section-heading {
-    @apply font-mono text-lg tracking-wide text-text-muted uppercase;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    @apply text-secondary;
   }
 
+  /* Bits vs. Qubits — readable section title, no shouty caps */
+  .section-title {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    @apply text-secondary;
+  }
+
+  /* TOOLBOX, BLOCH SPHERE, CIRCUIT OUTPUT — mid tone panel headers */
   .panel-heading {
-    @apply font-mono text-lg tracking-[0.12em] text-text-muted uppercase;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    @apply text-secondary;
   }
 
-  .figure-caption {
-    @apply font-sans text-sm text-text-muted leading-relaxed;
-  }
-
+  /* LEVEL 1.0 card / task labels */
   .level-label {
-    @apply font-mono text-base tracking-[0.12em] text-slate uppercase;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    @apply text-faint;
+  }
+
+  /* Gate / level display name on cards & task header */
+  .level-display-name {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.125rem;
+    font-weight: 500;
+    @apply text-secondary;
+  }
+
+  /* Figure captions — 13px, dimmest readable tier */
+  .figure-caption {
+    font-family: "Figtree", sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.45;
+    @apply text-faint;
   }
 }

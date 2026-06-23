@@ -54,7 +54,7 @@ function LevelSidebar() {
   function renderTier(title: string, items: typeof tier1) {
     return (
       <div>
-        <div className="pt-2 pb-1 section-heading text-sm tracking-[0.09em] whitespace-nowrap">
+        <div className="pt-2 pb-1 section-heading whitespace-nowrap">
           {title}
         </div>
         {items.map(({ level, index, status }) => {
@@ -67,8 +67,10 @@ function LevelSidebar() {
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
               className={[
                 "py-1 font-mono text-[11px] cursor-pointer select-none whitespace-nowrap",
-                isActive ? "text-tier3 bg-bg-elevated border-l-2 border-tier3 pl-[10px]" : "text-text-muted pl-3",
-                isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover" : "",
+                isActive
+                  ? "text-emphasis bg-bg-elevated border-l-2 border-tier3 pl-[10px]"
+                  : "text-faint pl-3",
+                isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover hover:text-secondary" : "",
               ].join(" ")}
             >
               {levelNumber(index)} {getLevelDisplayName(level)}
