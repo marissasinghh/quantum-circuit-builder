@@ -32,17 +32,17 @@ function markOnboardingComplete(): void {
 // ---------------------------------------------------------------------------
 
 function Bold({ children }: { children: ReactNode }) {
-  return <strong className="font-semibold text-text-body">{children}</strong>;
+  return <strong className="font-semibold text-tier3">{children}</strong>;
 }
 
 /** Inline quantum notation — JetBrains Mono + tier3 */
 function Q({ children }: { children: ReactNode }) {
-  return <span className="font-mono text-text-body">{children}</span>;
+  return <span className="font-mono text-tier3">{children}</span>;
 }
 
 function SectionHeader({ children }: { children: ReactNode }) {
   return (
-    <h2 className="font-mono text-[8px] tracking-[0.09em] text-text-muted uppercase mt-9 mb-2.5">
+    <h2 className="section-title mt-9 mb-2.5">
       {children}
     </h2>
   );
@@ -50,7 +50,7 @@ function SectionHeader({ children }: { children: ReactNode }) {
 
 function BodyParagraph({ children }: { children: ReactNode }) {
   return (
-    <p className="font-sans text-[14px] text-text-body leading-relaxed">{children}</p>
+    <p className="text-body text-text-body leading-relaxed">{children}</p>
   );
 }
 
@@ -201,7 +201,7 @@ function BlochIllustration() {
           |−i⟩
         </text>
       </svg>
-      <p className="font-sans text-[10px] text-text-muted mt-2">
+      <p className="figure-caption mt-2">
         The Bloch sphere — state vector at <Q>|0⟩</Q>
       </p>
     </div>
@@ -226,16 +226,13 @@ function OnboardingContent({
     <>
       {showPageHeader && (
         <>
-          <p className="font-mono text-[11px] tracking-[0.12em] text-text-muted uppercase mb-3">
+          <p className="page-eyebrow mb-3">
             {"// welcome"}
           </p>
-          <h1
-            className="page-heading text-[28px] text-text-body leading-[1.2] mb-2"
-            style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 600 }}
-          >
+          <h1 className="page-title mb-2">
             Welcome
           </h1>
-          <p className="font-sans text-[14px] text-text-muted italic mb-10">
+          <p className="text-body text-text-secondary italic mb-10">
             A quick intro before you start building circuits.
           </p>
         </>
@@ -311,9 +308,7 @@ function OnboardingContent({
         Build circuits. Watch the state vector on the bloch sphere move. Match the goal. Learn.
       </BodyParagraph>
 
-      <p className="font-mono text-[22px] font-bold text-text-body tracking-[0.06em] mt-5">
-        {"// Good luck!"}
-      </p>
+      <p className="page-eyebrow mt-5">{"// Good luck!"}</p>
 
       {showCta && (
         <div className="mt-10">
@@ -342,7 +337,7 @@ export function FirstRunOnboarding({ variant = "fullscreen", onComplete }: First
   return (
     <div className="h-screen flex flex-col bg-bg-app text-text-body">
       <header className="bg-[#090f1d] border-b border-tier1 h-10 shrink-0 px-4 flex items-center">
-        <span className="font-mono text-[14px] text-text-body tracking-[0.05em]">
+        <span className="font-mono text-[14px] text-tier3 tracking-[0.05em]">
           ⟨ψ| CNOT GAME |ψ⟩
         </span>
       </header>

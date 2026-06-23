@@ -1,3 +1,5 @@
+import { fontSizes } from "./src/context/typography.ts";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
@@ -21,8 +23,13 @@ export default {
         tier2: "#8ab4c8",
         tier3: "#9dd4ea",
 
+        /** 3-step text brightness: faint → body → emphasis */
+        "text-faint": "#587088",
+        "text-secondary": "#9eb4c4",
         "text-body": "#c8dde8",
-        "text-muted": "#3a6070",
+        "text-title": "#a8d8e8",
+        "text-emphasis": "#9dd4ea",
+        "text-muted": "#587088",
 
         "bloch-label": "#8ab4c8",
 
@@ -35,6 +42,12 @@ export default {
         display: ["Exo 2", "sans-serif"],
         sans: ["Figtree", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
+      },
+      fontSize: {
+        caption: [fontSizes.caption, { lineHeight: "1.45" }],
+        body: [fontSizes.body, { lineHeight: "1.625" }],
+        "section-header": [fontSizes.sectionHeader, { lineHeight: "1.35" }],
+        title: ["1.75rem", { lineHeight: "1.2" }],
       },
       borderRadius: {
         gate: "4px",

@@ -203,14 +203,14 @@ function shouldShowGateTooltip(gate: Gate, completed: string[]): boolean {
 const blochToggleBtn = (active: boolean) =>
   `font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
     active
-      ? "bg-bg-hover text-text-body border-tier3/40"
-      : "text-text-muted border-tier1 hover:border-tier2 hover:text-text-body"
+      ? "bg-bg-hover text-tier3 border-tier3/40"
+      : "text-text-muted border-tier1 hover:border-tier2"
   }`;
 
 /** Bloch sphere section header */
 export function BlochSphereHeader() {
   return (
-    <p className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-2 w-full text-left">
+    <p className="panel-heading mb-2 w-full text-left">
       BLOCH SPHERE
     </p>
   );
@@ -228,7 +228,7 @@ export function BlochPreviewToggle({
 }) {
   return (
     <div className="flex items-center gap-2 w-full mt-1.5">
-      <span className="font-sans text-[11px] text-text-body shrink-0">Preview from:</span>
+      <span className="font-sans text-[11px] text-tier2 shrink-0">Preview from:</span>
       <button type="button" onClick={onSelect0} className={blochToggleBtn(initialState === 0)}>
         {BASIS_0}
       </button>
@@ -244,7 +244,7 @@ export function Toolbox({ availableGates, numberOfQubits }: ToolboxProps) {
 
   return (
     <div className="relative shrink-0 min-w-0">
-      <h2 className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-2">
+      <h2 className="panel-heading mb-2">
         TOOLBOX
       </h2>
       <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:overflow-x-hidden sm:pb-0">
@@ -262,7 +262,7 @@ export function Toolbox({ availableGates, numberOfQubits }: ToolboxProps) {
             >
               <span
                 draggable={false}
-                className="font-mono font-medium text-[13px] text-text-body leading-tight pr-4 pointer-events-none select-none"
+                className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
               >
                 {config.label}
               </span>

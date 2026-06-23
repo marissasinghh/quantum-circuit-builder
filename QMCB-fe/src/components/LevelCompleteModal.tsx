@@ -9,7 +9,7 @@ const primaryBtnClass =
   "w-full py-1.5 bg-tier3/5 border border-tier3/35 rounded-gate font-mono text-[11px] text-text-body tracking-[0.05em] hover:bg-tier3/10 hover:border-tier3/60 transition-colors";
 
 const secondaryBtnClass =
-  "w-full py-1.5 bg-transparent border border-tier1 rounded-gate font-mono text-[11px] text-text-muted tracking-[0.05em] hover:border-tier2 hover:text-text-body transition-colors";
+  "w-full py-1.5 bg-transparent border border-tier1 rounded-gate font-mono text-[11px] text-text-muted tracking-[0.05em] hover:border-tier2 hover:text-tier2 transition-colors";
 
 export function LevelCompleteModal({
   isOpen,
@@ -27,7 +27,7 @@ export function LevelCompleteModal({
     >
       <div className="relative bg-bg-panel border border-tier1 rounded-panel p-6 max-w-md w-full mx-4">
         <div className="text-center">
-          <h2 className="font-mono text-base text-text-body mb-2">Level Complete!</h2>
+          <h2 className="page-title text-lg mb-2">Level Complete!</h2>
 
           <p className="font-sans text-[11px] text-text-body mb-6">
             Target circuit successfully verified{" "}

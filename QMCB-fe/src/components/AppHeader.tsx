@@ -10,26 +10,26 @@ export function AppHeader() {
       <nav className="px-4 py-2.5 flex items-center h-full">
         <Link
           to="/levels"
-          className="font-mono text-[14px] text-text-body tracking-[0.05em] hover:text-tier3"
+          className="font-mono text-[14px] text-tier3 tracking-[0.05em] hover:text-tier3/80"
         >
           ⟨ψ| CNOT GAME |ψ⟩
         </Link>
         <div className="ml-auto flex items-center gap-4">
           <Link
             to="/levels"
-            className="font-sans text-[13px] text-text-body hover:text-tier3 transition-colors"
+            className="font-sans text-[13px] text-tier2 hover:text-tier3 transition-colors"
           >
             Levels
           </Link>
           <Link
             to="/about"
-            className="font-sans text-[13px] text-text-body hover:text-tier3 transition-colors"
+            className="font-sans text-[13px] text-tier2 hover:text-tier3 transition-colors"
           >
             About
           </Link>
           <Link
             to="/settings"
-            className="font-sans text-[13px] text-text-body hover:text-tier3 transition-colors"
+            className="font-sans text-[13px] text-tier2 hover:text-tier3 transition-colors"
           >
             Settings
           </Link>

@@ -357,7 +357,7 @@ function SolveLevelContent({
                         <button
                           type="button"
                           onClick={() => setShowOrderTip(false)}
-                          className="absolute top-0.5 right-1 text-text-muted hover:text-text-body leading-none"
+                          className="absolute top-0.5 right-1 text-tier2 hover:text-tier3 leading-none"
                           aria-label="Dismiss tip"
                         >
                           ×
@@ -394,7 +394,7 @@ function SolveLevelContent({
                 levelInsight={
                   currentLevel.insight && allCorrect ? (
                     <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">
-                      <p className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-1.5">
+                      <p className="panel-heading mb-1.5">
                         LEVEL INSIGHT
                       </p>
                       <p className="font-sans text-sm text-text-body leading-relaxed">

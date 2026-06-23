@@ -41,7 +41,7 @@ const ANGLE_PILL_BORDER = "#2a4a6f";
 const WIRE_COLOR = colors.wire;
 
 const controlInputClass =
-  "bg-bg-elevated border border-tier1 rounded-gate px-1 py-0.5 text-[10px] font-mono text-text-body focus:border-tier3 outline-none";
+  "bg-bg-elevated border border-tier1 rounded-gate px-1 py-0.5 text-[10px] font-mono text-tier2 focus:border-tier3 outline-none";
 
 function computeWireYs(numberOfQubits: number): number[] {
   if (numberOfQubits === 1) {
@@ -272,14 +272,14 @@ export function CircuitCanvas({
       <div className="shrink-0 flex flex-col gap-3 pb-5">
       <div className="space-y-1.5">
         {gates.length === 0 && (
-          <div className="font-sans text-[12px] text-text-body">
+          <div className="font-sans text-[12px] text-tier2">
             Drag a gate from the toolbox to the wires, then click &quot;Check Solution&quot;.
           </div>
         )}
 
         {showParameterSlotHint && (
-          <div className="font-sans text-[12px] text-text-body border border-tier1 rounded-gate px-2 py-1.5 bg-bg-elevated">
-            Choose <span className="font-semibold text-text-body">Vary θ</span> on the gate whose
+          <div className="font-sans text-[12px] text-tier2 border border-tier1 rounded-gate px-2 py-1.5 bg-bg-elevated">
+            Choose <span className="font-semibold text-tier3">Vary θ</span> on the gate whose
             angle should vary before checking your solution.
           </div>
         )}
@@ -295,15 +295,15 @@ export function CircuitCanvas({
               className="flex flex-wrap items-center gap-2 border-[1.5px] border-tier3 rounded-gate px-2 py-1.5 bg-bg-elevated"
             >
               <div className="flex items-center gap-2 shrink-0 w-24">
-                <div className="font-mono font-medium text-[10px] text-text-body shrink-0">{g.type}</div>
+                <div className="font-mono font-medium text-[10px] text-tier3 shrink-0">{g.type}</div>
 
                 {!isTwoQubit && "wire" in g && numberOfQubits > 1 ? (
-                  <div className="flex flex-col font-mono text-[10px] text-text-muted leading-tight shrink-0">
+                  <div className="flex flex-col font-mono text-[10px] text-tier2 leading-tight shrink-0">
                     <span>wire {g.wire}</span>
                     <span>order {idx}</span>
                   </div>
                 ) : (
-                  <span className="font-mono text-[10px] text-text-muted shrink-0">order {idx}</span>
+                  <span className="font-mono text-[10px] text-tier2 shrink-0">order {idx}</span>
                 )}
               </div>
 
@@ -312,7 +312,7 @@ export function CircuitCanvas({
               <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
                 {isTwoQubit && "order" in g && (
                   <>
-                    <label className="font-sans text-[10px] text-text-muted shrink-0">Order:</label>
+                    <label className="font-sans text-[10px] text-tier2 shrink-0">Order:</label>
                     <select
                       className={controlInputClass}
                       value={`${g.order[0]}-${g.order[1]}`}
@@ -340,8 +340,8 @@ export function CircuitCanvas({
                     className={[
                       "shrink-0 px-2 py-0.5 rounded-full font-sans text-[10px] font-medium border transition-colors",
                     g.isParameterSlot
-                      ? "border-tier3 bg-bg-hover text-text-body font-semibold"
-                      : "border-tier1 bg-bg-panel text-text-muted hover:border-tier2 hover:text-text-body",
+                      ? "border-tier3 bg-bg-hover text-tier3"
+                      : "border-tier1 bg-bg-panel text-text-muted hover:border-tier2 hover:text-tier2",
                     ].join(" ")}
                   >
                     Vary θ
@@ -350,7 +350,7 @@ export function CircuitCanvas({
 
                 {isParameterized && "wire" in g && (
                   <div className="flex items-center gap-1 flex-wrap min-w-0">
-                    <label className="font-mono text-[9px] text-text-muted">θ:</label>
+                    <label className="font-mono text-[9px] text-tier2">θ:</label>
                     <input
                       type="range"
                       min={-2 * Math.PI}
@@ -377,7 +377,7 @@ export function CircuitCanvas({
                     <button
                       onClick={() => onSetGateTheta(g.id, -(g.theta ?? 0))}
                       title="Negate angle"
-                      className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-text-body hover:bg-bg-hover"
+                      className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-tier2 hover:bg-bg-hover"
                     >
                       ±
                     </button>
@@ -385,7 +385,7 @@ export function CircuitCanvas({
                       <button
                         key={label}
                         onClick={() => onSetGateTheta(g.id, value)}
-                        className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-text-body hover:bg-bg-hover"
+                        className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-tier2 hover:bg-bg-hover"
                       >
                         {label}
                       </button>
@@ -415,7 +415,7 @@ export function CircuitCanvas({
         </button>
         <button
           onClick={onClear}
-          className="w-full py-1 bg-transparent border border-tier1 rounded-gate font-mono text-[12px] uppercase text-text-muted hover:border-tier2 hover:text-text-body transition-colors"
+          className="w-full py-1 bg-transparent border border-tier1 rounded-gate font-mono text-[12px] uppercase text-text-muted hover:border-tier2 hover:text-tier2 transition-colors"
         >
           CLEAR CIRCUIT
         </button>

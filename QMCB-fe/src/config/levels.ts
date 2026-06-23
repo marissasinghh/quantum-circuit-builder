@@ -190,6 +190,7 @@ export const RY_LEVEL: LevelDefinition = {
 // ========================
 export const RANDOM_U_LEVEL: LevelDefinition = {
   target_unitary: Gate.RANDOM_U,
+  name: "ARBITRARY U",
   number_of_qubits: LEVEL1_QUBITS,
   toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY] as const,
 
@@ -368,6 +369,24 @@ export const LEVEL_ORDER: readonly LevelDefinition[] = [
   CONTROLLED_H_LEVEL,
   CONTROLLED_U_LEVEL,
 ] as const;
+
+/** Get the human-readable level title for UI display. */
+export function getLevelDisplayName(level: LevelDefinition): string {
+  return level.name ?? level.target_unitary;
+}
+
+/**
+ * Solve-page task panel heading (e.g. "Gate X").
+ * Tier-1 single-qubit levels get a "Gate " prefix; two-qubit level names are
+ * left as-is because "Gate CNOT_FLIPPED" etc. read awkwardly.
+ */
+export function getGateHeadingLabel(level: LevelDefinition): string {
+  const name = getLevelDisplayName(level);
+  if (level.number_of_qubits === 1) {
+    return `Gate ${name}`;
+  }
+  return name;
+}
 
 /** Get the next level in the progression, or null if on the last level */
 export function getNextLevel(currentLevel: LevelDefinition): LevelDefinition | null {

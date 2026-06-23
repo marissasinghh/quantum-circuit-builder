@@ -142,7 +142,7 @@ export function OutputTable({
   return (
     <div className="w-full box-border overflow-visible">
       <div className="mb-2">
-        <h2 className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase">
+        <h2 className="panel-heading">
           CIRCUIT OUTPUT
         </h2>
       </div>
@@ -162,7 +162,7 @@ export function OutputTable({
             <button
               type="button"
               onClick={onClearAndRetry}
-              className="mt-2 font-mono text-[10px] tracking-wide uppercase px-3 py-1.5 border border-tier1 rounded-gate text-text-body hover:bg-bg-hover transition"
+              className="mt-2 font-mono text-[10px] tracking-wide uppercase px-3 py-1.5 border border-tier1 rounded-gate text-tier3 hover:bg-bg-hover transition"
             >
               Clear and try again
             </button>
@@ -179,7 +179,7 @@ export function OutputTable({
             <button
               type="button"
               onClick={onClearAndRetry}
-              className="mt-2 font-mono text-[10px] tracking-wide uppercase px-3 py-1.5 border border-tier1 rounded-gate text-text-body hover:bg-bg-hover transition"
+              className="mt-2 font-mono text-[10px] tracking-wide uppercase px-3 py-1.5 border border-tier1 rounded-gate text-tier3 hover:bg-bg-hover transition"
             >
               Clear and try again
             </button>
@@ -190,7 +190,7 @@ export function OutputTable({
       {isChecking && (
         <div className="mb-3 flex items-center gap-2 bg-bg-panel border border-tier1 rounded-md px-3 py-2">
           <LoadingSpinner size={16} />
-          <span className="font-sans text-[12px] text-text-body">Checking circuit…</span>
+          <span className="font-sans text-[12px] text-tier2">Checking circuit…</span>
         </div>
       )}
 
@@ -201,7 +201,7 @@ export function OutputTable({
       )}
 
       {!rows && !error && !isCorrect && !gradingSummary && (
-        <div className="font-sans text-[12px] text-text-body">
+        <div className="font-sans text-[12px] text-tier2">
           Submit to see the truth tables.
         </div>
       )}
@@ -231,20 +231,20 @@ export function OutputTable({
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.input} className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}>
-                    <td className={`${CELL_CLASS} text-text-body`}>{r.input}</td>
-                    <td className={`${CELL_CLASS} ${r.ok ? "text-text-body" : "text-mismatch-text"}`}>
+                    <td className={`${CELL_CLASS} text-tier3`}>{r.input}</td>
+                    <td className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-mismatch-text"}`}>
                       <AmplitudeCell value={r.trial} />
                     </td>
                     <td className={`${CELL_CLASS} text-text-muted`}>
                       <ProbabilityCell probs={r.trialProbabilities} />
                     </td>
-                    <td className={`${CELL_CLASS} text-text-body`}>
+                    <td className={`${CELL_CLASS} text-tier3`}>
                       <AmplitudeCell value={r.target} />
                     </td>
                     <td className={`${CELL_CLASS} text-text-muted`}>
                       <ProbabilityCell probs={r.targetProbabilities} />
                     </td>
-                    <td className={`${CELL_CLASS} ${r.ok ? "text-text-body" : "text-error-action"}`}>
+                    <td className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-error-action"}`}>
                       {r.ok ? "✓" : "✗"}
                     </td>
                   </tr>

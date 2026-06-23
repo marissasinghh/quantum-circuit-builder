@@ -8,6 +8,8 @@ import type { ParameterMode } from "../utils/constants";
 
 /** Shape for a level's UI/UX config. */
 export interface LevelDefinition {
+  /** Human-readable title for UI (falls back to target_unitary when omitted). */
+  name?: string;
   target_unitary: Gate;
   number_of_qubits: number;
   toolbox: readonly Gate[];
