@@ -190,6 +190,7 @@ export const RY_LEVEL: LevelDefinition = {
 // ========================
 export const RANDOM_U_LEVEL: LevelDefinition = {
   target_unitary: Gate.RANDOM_U,
+  name: "Arbitrary U",
   number_of_qubits: LEVEL1_QUBITS,
   toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY] as const,
 
@@ -368,6 +369,11 @@ export const LEVEL_ORDER: readonly LevelDefinition[] = [
   CONTROLLED_H_LEVEL,
   CONTROLLED_U_LEVEL,
 ] as const;
+
+/** Get the human-readable level title for UI display. */
+export function getLevelDisplayName(level: LevelDefinition): string {
+  return level.name ?? level.target_unitary;
+}
 
 /** Get the next level in the progression, or null if on the last level */
 export function getNextLevel(currentLevel: LevelDefinition): LevelDefinition | null {

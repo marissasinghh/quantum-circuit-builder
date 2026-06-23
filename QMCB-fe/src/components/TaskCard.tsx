@@ -5,7 +5,7 @@
 import { useState } from "react";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO } from "../interfaces/truthTable";
-import { LEVEL_ORDER } from "../config/levels";
+import { LEVEL_ORDER, getLevelDisplayName } from "../config/levels";
 import { MathText } from "./MathText";
 
 interface TaskCardProps {
@@ -27,7 +27,7 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
   const levelIndex = LEVEL_ORDER.findIndex(
     (l) => l.target_unitary === level.target_unitary
   );
-  const levelLabel = levelIndex >= 0 ? levelNumber(levelIndex) : level.target_unitary;
+  const levelLabel = levelIndex >= 0 ? levelNumber(levelIndex) : getLevelDisplayName(level);
 
   function toggleHint(n: 1 | 2) {
     if (n === 2 && !hint1Viewed) return;
@@ -43,16 +43,17 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
 
   const hintBtnBase =
     "font-mono text-[11px] px-2 py-0.5 rounded-gate border transition-colors";
-  const hintBtnActive = "border-tier2 text-text-body";
-  const hintBtnIdle = "border-tier2 text-text-body hover:bg-bg-hover";
+  const hintBtnActive = "border-tier2 text-tier2";
+  const hintBtnIdle = "border-tier2 text-tier2 hover:bg-bg-hover";
   const hint2Locked =
     "border-tier1 text-text-muted opacity-50 cursor-not-allowed";
 
   return (
     <div className="bg-bg-panel border border-tier1 rounded-panel px-2.5 py-2 shrink-0">
-      <p className="font-mono text-[9px] tracking-[0.1em] text-text-muted mb-1">
+      <p className="level-label mb-1">
         {`// LEVEL ${levelLabel}`}
       </p>
+      <p className="font-mono text-base font-semibold text-tier3 mb-1">{getLevelDisplayName(level)}</p>
       <MathText
         text={level.description ?? ""}
         className="task-description font-sans text-[13px] text-text-body leading-relaxed"
@@ -71,7 +72,7 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
                   <th className="py-0.5">Out</th>
                 </tr>
               </thead>
-              <tbody className="text-text-body">
+              <tbody className="text-tier2">
                 {truth.input.map((inp, idx) => (
                   <tr key={inp}>
                     <td className="py-0.5 pr-6 max-w-[60px]">{inp}</td>
@@ -83,14 +84,14 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
             {onNewUnitary && (
               <button
                 onClick={onNewUnitary}
-                className="mt-2 font-mono text-[11px] text-text-body hover:text-tier3 underline"
+                className="mt-2 font-mono text-[11px] text-tier3 hover:text-tier3/80 underline"
               >
                 Try a different unitary
               </button>
             )}
           </>
         ) : (
-          <p className="font-sans text-[12px] text-text-body italic">
+          <p className="font-sans text-[12px] text-tier2 italic">
             Parameterized gate — output depends on θ. The backend checks your unitary for any angle.
           </p>
         )}

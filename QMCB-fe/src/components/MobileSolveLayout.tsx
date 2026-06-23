@@ -121,7 +121,7 @@ function tabBtnClass(active: boolean): string {
   return [
     "flex-1 py-2.5 font-mono text-[11px] tracking-[0.08em] uppercase border-b-2 transition-colors",
     active
-      ? "border-tier3 text-text-body"
+      ? "border-tier3 text-tier3"
       : "border-transparent text-text-muted hover:text-text-body",
   ].join(" ");
 }
@@ -200,7 +200,7 @@ export function MobileSolveLayout({
 
               {/* Horizontal gate row */}
               <div className="shrink-0 px-3 pt-3 pb-2 bg-bg-sidebar border-b border-tier1">
-                <p className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-2">
+                <p className="panel-heading mb-2">
                   TOOLBOX
                 </p>
                 <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1">
@@ -215,7 +215,7 @@ export function MobileSolveLayout({
                       >
                         <span
                           draggable={false}
-                          className="font-mono font-medium text-[13px] text-text-body leading-tight pointer-events-none select-none"
+                          className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
                         >
                           {cfg.label}
                         </span>
@@ -271,7 +271,7 @@ export function MobileSolveLayout({
                           <button
                             type="button"
                             onClick={() => setShowOrderTip(false)}
-                            className="absolute top-0.5 right-1 text-text-muted hover:text-text-body leading-none"
+                            className="absolute top-0.5 right-1 text-tier2 hover:text-tier3 leading-none"
                             aria-label="Dismiss tip"
                           >
                             ×
@@ -316,9 +316,9 @@ export function MobileSolveLayout({
                   levelInsight={
                     currentLevel.insight && allCorrect ? (
                       <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">
-                        <p className="font-mono text-[8px] tracking-[0.12em] text-text-muted uppercase mb-1.5">
-                          LEVEL INSIGHT
-                        </p>
+                      <p className="panel-heading mb-1.5">
+                        LEVEL INSIGHT
+                      </p>
                         <p className="font-sans text-sm text-text-body leading-relaxed">
                           {currentLevel.insight}
                         </p>

@@ -7,7 +7,7 @@ import SolveLevelPage from "./pages/SolveLevelPage";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
 import { LevelProgressProvider, useLevelProgress } from "./hooks/useLevelProgress";
-import { LEVEL_ORDER } from "./config/levels";
+import { LEVEL_ORDER, getLevelDisplayName } from "./config/levels";
 import type { LevelDefinition } from "./interfaces/levelDefinition";
 
 type LevelStatus = "locked" | "unlocked" | "completed";
@@ -54,7 +54,7 @@ function LevelSidebar() {
   function renderTier(title: string, items: typeof tier1) {
     return (
       <div>
-        <div className="pt-2 pb-1 font-mono text-[8px] tracking-[0.09em] text-text-muted uppercase whitespace-nowrap">
+        <div className="pt-2 pb-1 section-heading text-sm tracking-[0.09em] whitespace-nowrap">
           {title}
         </div>
         {items.map(({ level, index, status }) => {
@@ -67,11 +67,11 @@ function LevelSidebar() {
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
               className={[
                 "py-1 font-mono text-[11px] cursor-pointer select-none whitespace-nowrap",
-                isActive ? "text-text-body bg-bg-elevated border-l-2 border-tier3 pl-[10px]" : "text-text-muted pl-3",
+                isActive ? "text-tier3 bg-bg-elevated border-l-2 border-tier3 pl-[10px]" : "text-text-muted pl-3",
                 isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover" : "",
               ].join(" ")}
             >
-              {levelNumber(index)} {level.target_unitary}
+              {levelNumber(index)} {getLevelDisplayName(level)}
             </div>
           );
         })}

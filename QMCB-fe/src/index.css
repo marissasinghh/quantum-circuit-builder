@@ -38,3 +38,27 @@ body {
   font-family: "Exo 2", sans-serif;
   font-weight: 600;
 }
+
+@layer components {
+  .page-title {
+    font-family: "Exo 2", sans-serif;
+    font-weight: 600;
+    @apply text-3xl text-tier3 leading-tight;
+  }
+
+  .section-heading {
+    @apply font-mono text-lg tracking-wide text-text-muted uppercase;
+  }
+
+  .panel-heading {
+    @apply font-mono text-lg tracking-[0.12em] text-text-muted uppercase;
+  }
+
+  .figure-caption {
+    @apply font-sans text-sm text-text-muted leading-relaxed;
+  }
+
+  .level-label {
+    @apply font-mono text-base tracking-[0.12em] text-slate uppercase;
+  }
+}
