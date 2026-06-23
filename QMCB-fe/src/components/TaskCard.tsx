@@ -5,18 +5,13 @@
 import { useState } from "react";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO } from "../interfaces/truthTable";
-import { LEVEL_ORDER, getGateHeadingLabel, getLevelDisplayName } from "../config/levels";
+import { LEVEL_ORDER, getGateHeadingLabel, getLevelDisplayName, getLevelNumber } from "../config/levels";
 import { MathText } from "./MathText";
 
 interface TaskCardProps {
   level: LevelDefinition;
   dynamicTruth?: TruthTableDTO;
   onNewUnitary?: () => void;
-}
-
-function levelNumber(index: number): string {
-  if (index < 7) return `1.${index}`;
-  return `2.${index - 6}`;
 }
 
 export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
@@ -27,7 +22,7 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
   const levelIndex = LEVEL_ORDER.findIndex(
     (l) => l.target_unitary === level.target_unitary
   );
-  const levelLabel = levelIndex >= 0 ? levelNumber(levelIndex) : getLevelDisplayName(level);
+  const levelLabel = levelIndex >= 0 ? getLevelNumber(levelIndex) : getLevelDisplayName(level);
 
   function toggleHint(n: 1 | 2) {
     if (n === 2 && !hint1Viewed) return;

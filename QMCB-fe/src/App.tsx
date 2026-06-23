@@ -7,31 +7,7 @@ import SolveLevelPage from "./pages/SolveLevelPage";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
 import { LevelProgressProvider, useLevelProgress } from "./hooks/useLevelProgress";
-import { LEVEL_ORDER, getLevelDisplayName } from "./config/levels";
-import type { LevelDefinition } from "./interfaces/levelDefinition";
-
-type LevelStatus = "locked" | "unlocked" | "completed";
-
-function getLevelStatus(
-  index: number,
-  level: LevelDefinition,
-  completedLevels: string[]
-): LevelStatus {
-  if (level.locked) return "locked";
-
-  const isCompleted = completedLevels.includes(level.target_unitary);
-  const isUnlocked =
-    index === 0 || completedLevels.includes(LEVEL_ORDER[index - 1].target_unitary);
-
-  if (isCompleted) return "completed";
-  if (isUnlocked) return "unlocked";
-  return "locked";
-}
-
-function levelNumber(index: number): string {
-  if (index < 7) return `1.${index}`;
-  return `2.${index - 6}`;
-}
+import { LEVEL_ORDER, getLevelDisplayName, getLevelStatus, getLevelNumber } from "./config/levels";
 
 function LevelSidebar() {
   const { completedLevels } = useLevelProgress();
@@ -50,6 +26,7 @@ function LevelSidebar() {
 
   const tier1 = allItems.filter((item) => item.level.number_of_qubits === 1);
   const tier2 = allItems.filter((item) => item.level.number_of_qubits === 2);
+  const tier3 = allItems.filter((item) => item.level.number_of_qubits === 3);
 
   function renderTier(title: string, items: typeof tier1) {
     return (
@@ -73,7 +50,7 @@ function LevelSidebar() {
                 isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover hover:text-text-secondary" : "",
               ].join(" ")}
             >
-              {levelNumber(index)} {getLevelDisplayName(level)}
+              {getLevelNumber(index)} {getLevelDisplayName(level)}
             </div>
           );
         })}
@@ -87,6 +64,7 @@ function LevelSidebar() {
     >
       {renderTier("TIER 1 — SINGLE QUBIT", tier1)}
       {renderTier("TIER 2 — TWO QUBIT", tier2)}
+      {renderTier("TIER 3 — THREE QUBIT", tier3)}
     </aside>
   );
 }
