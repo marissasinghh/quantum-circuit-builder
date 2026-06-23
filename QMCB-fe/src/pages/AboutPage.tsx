@@ -10,7 +10,7 @@ export default function AboutPage() {
         <h1 className="page-title mb-2">
           About
         </h1>
-        <p className="font-sans text-[14px] text-secondary italic mb-10">
+        <p className="font-sans text-[14px] text-text-secondary italic mb-10">
           A quick intro to how this app thinks about qubits.
         </p>
         <FirstRunOnboarding variant="inline" />

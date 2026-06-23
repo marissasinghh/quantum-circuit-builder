@@ -41,7 +41,7 @@ body {
     font-size: 1.75rem;
     font-weight: 600;
     line-height: 1.2;
-    @apply text-title;
+    @apply text-text-title;
   }
 
   /* // LEVELS, // ABOUT — calm mono caps */
@@ -51,7 +51,7 @@ body {
     font-weight: 400;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    @apply text-faint;
+    @apply text-text-faint;
   }
 
   /* TIER 1 — SINGLE QUBIT — small calm caps */
@@ -61,7 +61,7 @@ body {
     font-weight: 400;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    @apply text-secondary;
+    @apply text-text-secondary;
   }
 
   /* Bits vs. Qubits — readable section title, no shouty caps */
@@ -70,7 +70,7 @@ body {
     font-size: 1.125rem;
     font-weight: 500;
     letter-spacing: 0.02em;
-    @apply text-secondary;
+    @apply text-text-secondary;
   }
 
   /* TOOLBOX, BLOCH SPHERE, CIRCUIT OUTPUT — mid tone panel headers */
@@ -80,7 +80,7 @@ body {
     font-weight: 500;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    @apply text-secondary;
+    @apply text-text-secondary;
   }
 
   /* LEVEL 1.0 card / task labels */
@@ -90,7 +90,7 @@ body {
     font-weight: 400;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    @apply text-faint;
+    @apply text-text-faint;
   }
 
   /* Gate / level display name on cards & task header */
@@ -98,7 +98,7 @@ body {
     font-family: "JetBrains Mono", monospace;
     font-size: 1.125rem;
     font-weight: 500;
-    @apply text-secondary;
+    @apply text-text-secondary;
   }
 
   /* Figure captions — 13px, dimmest readable tier */
@@ -107,6 +107,6 @@ body {
     font-size: 0.8125rem;
     font-weight: 400;
     line-height: 1.45;
-    @apply text-faint;
+    @apply text-text-faint;
   }
 }

@@ -68,9 +68,9 @@ function LevelSidebar() {
               className={[
                 "py-1 font-mono text-[11px] cursor-pointer select-none whitespace-nowrap",
                 isActive
-                  ? "text-emphasis bg-bg-elevated border-l-2 border-tier3 pl-[10px]"
-                  : "text-faint pl-3",
-                isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover hover:text-secondary" : "",
+                  ? "text-text-emphasis bg-bg-elevated border-l-2 border-tier3 pl-[10px]"
+                  : "text-text-faint pl-3",
+                isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover hover:text-text-secondary" : "",
               ].join(" ")}
             >
               {levelNumber(index)} {getLevelDisplayName(level)}
