@@ -1,30 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useLevelProgress } from "../hooks/useLevelProgress";
-import { LEVEL_ORDER, getLevelDisplayName } from "../config/levels";
+import { LEVEL_ORDER, getLevelDisplayName, getLevelStatus, getLevelNumber } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 
 type LevelStatus = "locked" | "unlocked" | "completed";
-
-function getLevelStatus(
-  index: number,
-  level: LevelDefinition,
-  completedLevels: string[]
-): LevelStatus {
-  if (level.locked) return "locked";
-
-  const isCompleted = completedLevels.includes(level.target_unitary);
-  const isUnlocked =
-    index === 0 || completedLevels.includes(LEVEL_ORDER[index - 1].target_unitary);
-
-  if (isCompleted) return "completed";
-  if (isUnlocked) return "unlocked";
-  return "locked";
-}
-
-function levelNumber(index: number): string {
-  if (index < 7) return `1.${index}`;
-  return `2.${index - 6}`;
-}
 
 function LevelCard({
   level,
@@ -82,7 +61,7 @@ function TierSection({
             key={level.target_unitary}
             level={level}
             status={status}
-            levelNum={levelNumber(index)}
+            levelNum={getLevelNumber(index)}
             onClick={() => onNavigate(level.target_unitary)}
           />
         ))}
@@ -103,6 +82,7 @@ export default function LevelsPage() {
 
   const tier1 = allItems.filter((item) => item.level.number_of_qubits === 1);
   const tier2 = allItems.filter((item) => item.level.number_of_qubits === 2);
+  const tier3 = allItems.filter((item) => item.level.number_of_qubits === 3);
 
   return (
     <main className="flex-1 overflow-y-auto canvas-grid p-6 space-y-8">
@@ -123,6 +103,11 @@ export default function LevelsPage() {
       <TierSection
         title="Tier 2 — Two Qubit"
         items={tier2}
+        onNavigate={(id) => navigate("/level/" + id)}
+      />
+      <TierSection
+        title="Tier 3 — Three Qubit"
+        items={tier3}
         onNavigate={(id) => navigate("/level/" + id)}
       />
     </main>

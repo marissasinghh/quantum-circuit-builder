@@ -23,8 +23,10 @@ export const Q1: AnyQubitOrder = [1, 1] as const;
 export const C0_T1: ControlTargetOrder = [0, 1] as const;
 export const C1_T0: ControlTargetOrder = [1, 0] as const;
 
-/** 3-qubit gates */
-export const CC0_C1_T2: readonly [0, 1, 2] = [0, 1, 2] as const;
+/** 3-qubit gates (aliases match backend qubit_orders.py naming) */
+export const C0_C1_T2: readonly [0, 1, 2] = [0, 1, 2] as const;
+export const C0_T1_T2: readonly [0, 1, 2] = [0, 1, 2] as const;
+export const CC0_C1_T2: readonly [0, 1, 2] = C0_C1_T2;
 export const CC0_C2_T1: readonly [0, 2, 1] = [0, 2, 1] as const;
 
 /** Legal control–target orders to offer for 2-qubit primitives */
@@ -90,6 +92,30 @@ export const TWO_QUBIT_INPUTS = [BASIS_00, BASIS_01, BASIS_10, BASIS_11] as cons
 
 export const CH_OUT_10 = "0.707|10⟩ + 0.707|11⟩" as const;
 export const CH_OUT_11 = "0.707|10⟩ - 0.707|11⟩" as const;
+
+// ========================
+// BASIS STATES - 3 QUBITS
+// ========================
+
+export const BASIS_000 = "|000⟩" as const;
+export const BASIS_001 = "|001⟩" as const;
+export const BASIS_010 = "|010⟩" as const;
+export const BASIS_011 = "|011⟩" as const;
+export const BASIS_100 = "|100⟩" as const;
+export const BASIS_101 = "|101⟩" as const;
+export const BASIS_110 = "|110⟩" as const;
+export const BASIS_111 = "|111⟩" as const;
+
+export const THREE_QUBIT_INPUTS = [
+  BASIS_000,
+  BASIS_001,
+  BASIS_010,
+  BASIS_011,
+  BASIS_100,
+  BASIS_101,
+  BASIS_110,
+  BASIS_111,
+] as const;
 
 // ===============
 // GATE CONSTANTS

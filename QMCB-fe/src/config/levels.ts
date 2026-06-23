@@ -9,6 +9,7 @@ import {
   MAX_GATES,
   LEVEL1_QUBITS,
   LEVEL2_QUBITS,
+  LEVEL3_QUBITS,
   SINGLE_QUBIT_GATES,
   Q0,
   Q1,
@@ -26,11 +27,29 @@ import {
   BASIS_01,
   BASIS_10,
   BASIS_11,
+  THREE_QUBIT_INPUTS,
+  BASIS_000,
+  BASIS_001,
+  BASIS_010,
+  BASIS_011,
+  BASIS_100,
+  BASIS_101,
+  BASIS_110,
+  BASIS_111,
   CH_OUT_10,
   CH_OUT_11,
   ParameterMode,
 } from "../utils/constants";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
+
+/** Full Tier 2 toolbox — singles plus all two-qubit primitives unlocked by end of Tier 2. */
+const TIER3_TOOLBOX = [
+  ...SINGLE_QUBIT_GATES,
+  Gate.CNOT,
+  Gate.CONTROLLED_Z,
+  Gate.SWAP,
+  Gate.CONTROLLED_H,
+] as const;
 
 // ========================
 // LEVEL 1.0: X GATE
@@ -351,6 +370,70 @@ export const CONTROLLED_U_LEVEL: LevelDefinition = {
     "you solved the same problem in Level 1.6. Then wrap that single-qubit decomposition in a controlled structure using the gates in your toolbox.",
 } as const;
 
+// ========================
+// LEVEL 3.1: TOFFOLI (CCX)
+// ========================
+export const TOFFOLI_LEVEL: LevelDefinition = {
+  target_unitary: Gate.TOFFOLI,
+  number_of_qubits: LEVEL3_QUBITS,
+  toolbox: TIER3_TOOLBOX,
+
+  expectedTruth: {
+    input: THREE_QUBIT_INPUTS,
+    output: [
+      BASIS_000,
+      BASIS_001,
+      BASIS_010,
+      BASIS_011,
+      BASIS_100,
+      BASIS_101,
+      BASIS_111, // |110⟩ → |111⟩
+      BASIS_110, // |111⟩ → |110⟩
+    ],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "The Toffoli gate applies X to the target qubit (Q2) only when both control qubits (Q0 and Q1) are $|1\\rangle$. Synthesize a circuit whose unitary matches the Toffoli (CCX) gate exactly.",
+  hint1:
+    "The Toffoli is universal for classical reversible computation. Think about how you can build a doubly-controlled NOT from CNOTs and single-qubit gates.",
+  hint2:
+    "The canonical Nielsen & Chuang decomposition uses H, CNOT, T, and T† gates — fifteen gates in total. Can you find a shorter construction with your toolbox?",
+} as const;
+
+// ========================
+// LEVEL 3.2: FREDKIN (CSWAP)
+// ========================
+export const FREDKIN_LEVEL: LevelDefinition = {
+  target_unitary: Gate.FREDKIN,
+  number_of_qubits: LEVEL3_QUBITS,
+  toolbox: TIER3_TOOLBOX,
+
+  expectedTruth: {
+    input: THREE_QUBIT_INPUTS,
+    output: [
+      BASIS_000,
+      BASIS_001,
+      BASIS_010,
+      BASIS_011,
+      BASIS_100,
+      BASIS_110, // |101⟩ → |110⟩
+      BASIS_101, // |110⟩ → |101⟩
+      BASIS_111,
+    ],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "The Fredkin gate swaps qubits Q1 and Q2 only when the control qubit Q0 is $|1\\rangle$. Synthesize a circuit whose unitary matches the Fredkin (CSWAP) gate exactly.",
+  hint1:
+    "When the control is $|0\\rangle$, all three qubits pass through unchanged. Focus on what happens when Q0 is $|1\\rangle$.",
+  hint2:
+    "A Fredkin gate can be built from a Toffoli sandwiched between two CNOTs on the swap wires.",
+} as const;
+
 //---------------------------------------------------------------------------------------
 /** Ordered list of levels for progression */
 export const LEVEL_ORDER: readonly LevelDefinition[] = [
@@ -368,7 +451,59 @@ export const LEVEL_ORDER: readonly LevelDefinition[] = [
   SWAP_LEVEL,
   CONTROLLED_H_LEVEL,
   CONTROLLED_U_LEVEL,
+  // Tier 3 — three-qubit gates
+  TOFFOLI_LEVEL,
+  FREDKIN_LEVEL,
 ] as const;
+
+/** All Tier 2 level definitions (for unlock gating). */
+export const TIER2_LEVELS = LEVEL_ORDER.filter((l) => l.number_of_qubits === 2);
+
+/** True when every Tier 2 level has been completed. */
+export function allTier2Complete(completedLevels: string[]): boolean {
+  return TIER2_LEVELS.every((l) => completedLevels.includes(l.target_unitary));
+}
+
+/** Whether a level is playable (not considering completion status). */
+export function isLevelUnlocked(
+  index: number,
+  level: LevelDefinition,
+  completedLevels: string[],
+): boolean {
+  if (level.locked) return false;
+  if (index === 0) return true;
+
+  if (level.number_of_qubits === 3) {
+    const firstTier3Index = LEVEL_ORDER.findIndex((l) => l.number_of_qubits === 3);
+    if (index === firstTier3Index) return allTier2Complete(completedLevels);
+  }
+
+  return completedLevels.includes(LEVEL_ORDER[index - 1].target_unitary);
+}
+
+export type LevelStatus = "locked" | "unlocked" | "completed";
+
+export function getLevelStatus(
+  index: number,
+  level: LevelDefinition,
+  completedLevels: string[],
+): LevelStatus {
+  if (level.locked) return "locked";
+
+  const isCompleted = completedLevels.includes(level.target_unitary);
+  if (isCompleted) return "completed";
+  if (isLevelUnlocked(index, level, completedLevels)) return "unlocked";
+  return "locked";
+}
+
+/** Display label such as "1.0", "2.3", "3.1". */
+export function getLevelNumber(index: number): string {
+  const level = LEVEL_ORDER[index];
+  const sameTier = LEVEL_ORDER.filter((l) => l.number_of_qubits === level.number_of_qubits);
+  const withinTier = sameTier.findIndex((l) => l.target_unitary === level.target_unitary);
+  if (level.number_of_qubits === 1) return `1.${withinTier}`;
+  return `${level.number_of_qubits}.${withinTier + 1}`;
+}
 
 /** Get the human-readable level title for UI display. */
 export function getLevelDisplayName(level: LevelDefinition): string {
