@@ -5,7 +5,12 @@
  * - Serialization returns arrays in column order, matching backend expectations.
  */
 
-import type { PlacedGate, ControlTargetOrder, AnyQubitOrder } from "../types/global";
+import type {
+  PlacedGate,
+  PlacedSingleQubitGate,
+  ControlTargetOrder,
+  AnyQubitOrder,
+} from "../types/global";
 import { isValidOrderFor } from "../config/gates";
 import { Gate } from "../types/global";
 import type { UnitaryGateEntry } from "../interfaces/unitary";
@@ -28,6 +33,11 @@ function placedGateToUnitaryEntry(g: PlacedGate): UnitaryGateEntry {
 /** Return a new array sorted by column (ascending) */
 function sortByColumn(gates: PlacedGate[]) {
   return [...gates].sort((a, b) => a.column - b.column);
+}
+
+/** Canonical gate sequence for rendering, simulation, and Bloch preview. */
+export function gatesInColumnOrder(gates: PlacedGate[]): PlacedGate[] {
+  return sortByColumn(gates);
 }
 
 /** Normalize columns to 0..n-1 after any change */
@@ -72,6 +82,15 @@ export function setOrder(gates: PlacedGate[], id: string, order: ControlTargetOr
     const next = isValidOrderFor(g.type, order) ? order : DEFAULT_QUBIT_ORDER;
     return { ...g, order: next };
   });
+}
+
+/** Move a single-qubit gate to a different wire without changing its column. */
+export function setWire(
+  gates: PlacedGate[],
+  id: string,
+  wire: PlacedSingleQubitGate["wire"]
+): PlacedGate[] {
+  return gates.map((g) => (g.id === id && "wire" in g ? { ...g, wire } : g));
 }
 
 /** Reset the circuit to empty */

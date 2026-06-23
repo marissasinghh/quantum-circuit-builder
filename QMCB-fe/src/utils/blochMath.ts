@@ -20,6 +20,7 @@
 
 import { Gate } from "../types/global";
 import type { PlacedGate, PlacedSingleQubitGate } from "../types/global";
+import { gatesInColumnOrder } from "./circuit";
 
 // ---------------------------------------------------------------------------
 // Complex number arithmetic
@@ -198,7 +199,7 @@ export function gateSequenceToBlochState(
   // |0⟩ = [1, 0] (north pole); |1⟩ = [0, 1] (south pole)
   let state: StateVec = initialState === 1 ? [c(0), c(1)] : [c(1), c(0)];
 
-  for (const gate of gates) {
+  for (const gate of gatesInColumnOrder(gates)) {
     if (!isSingleQubitGate(gate)) continue;
 
     const mat = gateMatrix(gate.type as Gate, gate.theta);

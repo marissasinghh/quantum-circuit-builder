@@ -6,6 +6,7 @@ import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global"
 import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, RZGlyph, UGlyph, XGlyph, SqrtXGlyph } from "./GateDesign";
 import { DroppableStrip } from "./DragAndDropWrappers";
 import { allowedOrdersFor } from "../config/gates";
+import { gatesInColumnOrder } from "../utils/circuit";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
 
@@ -81,7 +82,9 @@ export function CircuitCanvas({
   isChecking,
 }: CircuitCanvasProps) {
   const COL_W = 90;
-  const CANVAS_W = Math.max(600, PAD_X * 2 + Math.max(1, gates.length) * COL_W);
+  const orderedGates = gatesInColumnOrder(gates);
+  const columnCount = orderedGates.length > 0 ? orderedGates[orderedGates.length - 1].column + 1 : 1;
+  const CANVAS_W = Math.max(600, PAD_X * 2 + columnCount * COL_W);
   const canvasH = canvasHeightFor(numberOfQubits);
 
   const wireYs = computeWireYs(numberOfQubits, canvasH);
@@ -158,8 +161,8 @@ export function CircuitCanvas({
               </text>
             ))}
 
-            {gates.map((g, i) => {
-            const xCenter = PAD_X + i * COL_W;
+            {orderedGates.map((g) => {
+            const xCenter = PAD_X + g.column * COL_W;
 
             if (TWO_QUBIT_GATES.has(g.type) && "order" in g) {
               let GlyphComponent = CNOTGlyph;
@@ -289,7 +292,7 @@ export function CircuitCanvas({
           </div>
         )}
 
-        {gates.map((g, idx) => {
+        {orderedGates.map((g) => {
           const isTwoQubit = TWO_QUBIT_GATES.has(g.type);
           const isParameterized = !isTwoQubit && PARAMETERIZED_GATES.has(g.type);
           const orders = isTwoQubit ? allowedOrdersFor(g.type as Gate) : [];
@@ -305,10 +308,10 @@ export function CircuitCanvas({
                 {!isTwoQubit && "wire" in g && numberOfQubits > 1 ? (
                   <div className="flex flex-col font-mono text-[10px] text-tier2 leading-tight shrink-0">
                     <span>wire {g.wire}</span>
-                    <span>order {idx}</span>
+                    <span>order {g.column}</span>
                   </div>
                 ) : (
-                  <span className="font-mono text-[10px] text-tier2 shrink-0">order {idx}</span>
+                  <span className="font-mono text-[10px] text-tier2 shrink-0">order {g.column}</span>
                 )}
               </div>
 

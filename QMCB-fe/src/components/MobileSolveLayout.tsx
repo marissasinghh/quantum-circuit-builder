@@ -26,6 +26,7 @@ import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
 import {
   CNOTGlyph,
+  ControlledZGlyph,
   HGlyph,
   TGlyph,
   SGlyph,
@@ -335,6 +336,9 @@ export function MobileSolveLayout({
             {activeId === "tool-x" && <XGlyph width={64} height={44} />}
             {activeId === "tool-sqrt-x" && <SqrtXGlyph width={64} height={44} />}
             {activeId === "tool-cnot" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
+            {activeId === "tool-cnot-flipped" && <CNOTGlyph order={[1, 0]} width={84} height={64} />}
+            {activeId === "tool-cz" && <ControlledZGlyph order={[0, 1]} width={84} height={64} />}
+            {activeId === "tool-swap" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
             {activeId === "tool-h" && <HGlyph width={64} height={44} />}
             {activeId === "tool-t" && <TGlyph width={76} height={44} />}
             {activeId === "tool-s" && <SGlyph width={76} height={44} />}
