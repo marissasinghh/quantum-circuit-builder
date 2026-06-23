@@ -35,6 +35,7 @@ Level 3.2 (FREDKIN / CSWAP):
 
 Run from QMCB-be/:
     python -m pytest tests/test_tier3_targets.py -v
+    python -m pytest -v -k "toffoli or fredkin"
 """
 
 from __future__ import annotations
