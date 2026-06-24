@@ -11,6 +11,7 @@ import {
   type PlacedTwoQubitGate,
   type ControlTargetOrder,
   type SingleQubitGate,
+  type SingleWire,
   TwoQubitGate,
 } from "../types/global";
 import { DEFAULT_QUBIT_ORDER } from "../utils/constants";
@@ -18,8 +19,7 @@ import {
   append,
   remove,
   setOrder as setOrderInCircuit,
-  setWire as setWireInCircuit,
-  moveToColumn,
+  moveGate as moveGateInCircuit,
   clear as clearCircuit,
 } from "../utils/circuit";
 
@@ -57,12 +57,8 @@ export function useCircuit() {
     setGates((prev) => setOrderInCircuit(prev, id, order));
   }, []);
 
-  const setGateWire = useCallback((id: string, wire: 0 | 1) => {
-    setGates((prev) => setWireInCircuit(prev, id, wire));
-  }, []);
-
-  const moveGateToColumn = useCallback((id: string, to: number) => {
-    setGates((prev) => moveToColumn(prev, id, to));
+  const moveGate = useCallback((id: string, to: number, wire?: SingleWire) => {
+    setGates((prev) => moveGateInCircuit(prev, id, to, wire));
   }, []);
 
   const setGateTheta = useCallback((id: string, theta: number) => {
@@ -93,8 +89,7 @@ export function useCircuit() {
     addTwoQubitGate,
     addSingleQubitGate,
     setGateOrder,
-    setGateWire,
-    moveGateToColumn,
+    moveGate,
     setGateTheta,
     setParameterSlot,
     removeGate,

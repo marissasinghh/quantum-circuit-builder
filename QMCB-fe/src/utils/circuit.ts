@@ -40,9 +40,9 @@ export function gatesInColumnOrder(gates: PlacedGate[]): PlacedGate[] {
   return sortByColumn(gates);
 }
 
-/** Normalize columns to 0..n-1 after any change */
+/** Normalize columns to 0..n-1 after any change; preserves array order (caller must supply sequence order). */
 function renumberColumns(gates: PlacedGate[]): PlacedGate[] {
-  return sortByColumn(gates).map((g, i) => ({ ...g, column: i }));
+  return gates.map((g, i) => ({ ...g, column: i }));
 }
 
 /**
@@ -91,6 +91,18 @@ export function setWire(
   wire: PlacedSingleQubitGate["wire"]
 ): PlacedGate[] {
   return gates.map((g) => (g.id === id && "wire" in g ? { ...g, wire } : g));
+}
+
+/** Reorder a gate (and optionally change its wire) in one step. */
+export function moveGate(
+  gates: PlacedGate[],
+  id: string,
+  to: number,
+  wire?: PlacedSingleQubitGate["wire"]
+): PlacedGate[] {
+  // Wire first: setWire is column-preserving, so moveToColumn splices the fully-updated gate object.
+  const withWire = wire !== undefined ? setWire(gates, id, wire) : gates;
+  return moveToColumn(withWire, id, to);
 }
 
 /** Reset the circuit to empty */
