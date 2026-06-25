@@ -21,7 +21,7 @@ export function LevelCompleteModal({
 
   return (
     <div
-      className="absolute inset-0 z-10 flex items-center justify-center bg-[rgba(9,15,29,0.85)]"
+      className="absolute inset-0 z-modal flex items-center justify-center bg-[rgba(9,15,29,0.85)]"
       aria-modal="true"
       role="dialog"
     >

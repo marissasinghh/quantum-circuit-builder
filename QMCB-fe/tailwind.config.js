@@ -60,6 +60,9 @@ export default {
         wire: "0 0 6px rgba(79,195,247,0.4)",
         glow: "0 0 10px rgba(79,195,247,0.2)",
       },
+      zIndex: {
+        modal: "50",
+      },
     },
   },
   plugins: [],
