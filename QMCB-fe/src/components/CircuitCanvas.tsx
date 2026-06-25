@@ -2,17 +2,23 @@
  * Circuit Canvas: contains SVG visualization and gate controls.
  */
 
-import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
-import { CNOTGlyph, ControlledZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, RZGlyph, UGlyph, XGlyph, SqrtXGlyph } from "./GateDesign";
-import { DroppableStrip } from "./DragAndDropWrappers";
+import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
+
+import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder } from "../types/global";
+import { CNOTGlyph, ControlledZGlyph } from "./GateDesign";
+import { DroppableStrip, TrashDropZone } from "./DragAndDropWrappers";
+import { SortablePlacedGate } from "./SortablePlacedGate";
 import { allowedOrdersFor } from "../config/gates";
 import { gatesInColumnOrder } from "../utils/circuit";
+import { buildWireContainers, isSingleQubitGate, type WireContainers } from "../utils/placedGateDrag";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
 
 interface CircuitCanvasProps {
   gates: PlacedGate[];
   numberOfQubits: number;
+  dragContainers?: WireContainers | null;
+  isDraggingPlacedGate?: boolean;
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
   onSetGateTheta: (id: string, theta: number) => void;
@@ -38,7 +44,6 @@ const PAD_X = 100;
 const CANVAS_H = 200;
 const SQ_W = 44;
 const SQ_H = 40;
-const ANGLE_PILL_BORDER = "#2a4a6f";
 const WIRE_COLOR = colors.wire;
 
 const controlInputClass =
@@ -55,23 +60,11 @@ function computeWireYs(numberOfQubits: number, canvasH: number): number[] {
   );
 }
 
-function singleQubitGlyphWidth(type: Gate): number {
-  switch (type) {
-    case Gate.S:
-    case Gate.T:
-    case Gate.RZ:
-      return SQ_W + 8;
-    case Gate.RX:
-    case Gate.RY:
-      return SQ_W + 4;
-    default:
-      return SQ_W;
-  }
-}
-
 export function CircuitCanvas({
   gates,
   numberOfQubits,
+  dragContainers = null,
+  isDraggingPlacedGate = false,
   onRemoveGate,
   onSetGateOrder,
   onSetGateTheta,
@@ -102,6 +95,9 @@ export function CircuitCanvas({
   );
   const showParameterSlotHint =
     showParameterSlotControls && hasRotationGate && !hasParameterSlot;
+
+  const wireContainers = dragContainers ?? buildWireContainers(gates, numberOfQubits);
+  const gateById = new Map(gates.map((g) => [g.id, g]));
 
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
@@ -177,101 +173,39 @@ export function CircuitCanvas({
               );
             }
 
-            if ("wire" in g) {
-              const y = wireYs[g.wire];
-              const glyphW = singleQubitGlyphWidth(g.type);
-              const x = xCenter - SQ_W / 2;
-              const isParameterized = PARAMETERIZED_GATES.has(g.type);
-              const thetaLabel =
-                g.theta !== undefined
-                  ? `${((g.theta * 180) / Math.PI).toFixed(0)}°`
-                  : null;
-              const isSlot = g.isParameterSlot === true;
-
-              return (
-                <g key={g.id} transform={`translate(${x}, ${y - SQ_H / 2})`}>
-                  {isSlot && (
-                    <g transform={`translate(${glyphW / 2}, ${SQ_H + 6})`}>
-                      <rect
-                        x={-20}
-                        y={-7}
-                        width={40}
-                        height={12}
-                        rx={4}
-                        fill={colors.cyanMuted}
-                        fillOpacity={0.25}
-                        stroke={colors.cyanMuted}
-                        strokeWidth={1}
-                      />
-                      <text
-                        x={0}
-                        y={0}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontFamily={fonts.mono}
-                        fontSize={8}
-                        fill={colors.cyanMuted}
-                      >
-                        θ slot
-                      </text>
-                    </g>
-                  )}
-                  {isParameterized && thetaLabel && (
-                    <g transform={`translate(${SQ_W / 2}, -11)`}>
-                      <rect
-                        x={-22}
-                        y={-9}
-                        width={44}
-                        height={14}
-                        rx={8}
-                        fill={colors.grid}
-                        stroke={ANGLE_PILL_BORDER}
-                        strokeWidth={1}
-                      />
-                      <text
-                        x={0}
-                        y={1}
-                        textAnchor="middle"
-                        dominantBaseline="middle"
-                        fontFamily={fonts.mono}
-                        fontSize={9}
-                        fill={colors.cyanMuted}
-                      >
-                        {thetaLabel}
-                      </text>
-                    </g>
-                  )}
-                  {(() => {
-                    switch (g.type) {
-                      case Gate.X:
-                        return <XGlyph width={SQ_W} height={SQ_H} />;
-                      case Gate.SQRT_X:
-                        return <SqrtXGlyph width={SQ_W} height={SQ_H} />;
-                      case Gate.S:
-                        return <SGlyph width={SQ_W + 8} height={SQ_H} />;
-                      case Gate.T:
-                        return <TGlyph width={SQ_W + 8} height={SQ_H} />;
-                      case Gate.H:
-                        return <HGlyph width={SQ_W} height={SQ_H} />;
-                      case Gate.RX:
-                        return <RXGlyph width={SQ_W + 4} height={SQ_H} />;
-                      case Gate.RY:
-                        return <RYGlyph width={SQ_W + 4} height={SQ_H} />;
-                      case Gate.RZ:
-                        return <RZGlyph width={SQ_W + 8} height={SQ_H} />;
-                      case Gate.U:
-                        return <UGlyph width={SQ_W} height={SQ_H} />;
-                      default:
-                        return <HGlyph width={SQ_W} height={SQ_H} />;
-                    }
-                  })()}
-                </g>
-              );
-            }
-
             return null;
           })}
           </svg>
+
+          {wireYs.map((y, wireIndex) => {
+            const wireIds = wireContainers[wireIndex] ?? [];
+            return (
+              <div
+                key={`sortable-wire-${wireIndex}`}
+                className="absolute left-0 right-0 z-20"
+                style={{ top: y - 20, height: 40 }}
+              >
+                <SortableContext items={wireIds} strategy={horizontalListSortingStrategy}>
+                  {wireIds.map((gateId) => {
+                    const g = gateById.get(gateId);
+                    if (!g || !isSingleQubitGate(g)) return null;
+                    const left = PAD_X + g.column * COL_W - SQ_W / 2;
+                    return (
+                      <SortablePlacedGate
+                        key={gateId}
+                        gate={g as PlacedSingleQubitGate}
+                        left={left}
+                        top={20 - SQ_H / 2}
+                        onRemoveGate={onRemoveGate}
+                      />
+                    );
+                  })}
+                </SortableContext>
+              </div>
+            );
+          })}
+
+          <TrashDropZone visible={isDraggingPlacedGate} />
         </div>
         </div>
         </div>

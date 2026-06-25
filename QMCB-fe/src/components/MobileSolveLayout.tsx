@@ -8,11 +8,16 @@ import React from "react";
 import {
   DndContext,
   DragOverlay,
+  closestCenter,
   useSensors,
+  type DragCancelEvent,
   type DragEndEvent,
+  type DragOverEvent,
+  type DragStartEvent,
 } from "@dnd-kit/core";
 
 import { CircuitCanvas } from "./CircuitCanvas";
+import { DragGateOverlay } from "./DragGateOverlay";
 import { LevelCompleteModal } from "./LevelCompleteModal";
 import { OutputTable, type GradingSummary } from "./OutputTable";
 import { TaskCard } from "./TaskCard";
@@ -24,20 +29,8 @@ import {
 } from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
-import {
-  CNOTGlyph,
-  ControlledZGlyph,
-  HGlyph,
-  TGlyph,
-  SGlyph,
-  RXGlyph,
-  RYGlyph,
-  UGlyph,
-  RZGlyph,
-  XGlyph,
-  SqrtXGlyph,
-} from "./GateDesign";
 import { getNextLevel } from "../config/levels";
+import type { WireContainers } from "../utils/placedGateDrag";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
 import type { BlochState } from "../utils/blochMath";
@@ -99,7 +92,11 @@ interface MobileSolveLayoutProps {
 
   // Drag and drop
   activeId: string | null;
-  setActiveId: (id: string | null) => void;
+  dragContainers: WireContainers | null;
+  isDraggingPlacedGate: boolean;
+  onDragStart: (event: DragStartEvent) => void;
+  onDragOver: (event: DragOverEvent) => void;
+  onDragCancel: (event: DragCancelEvent) => void;
   onDragEnd: (event: DragEndEvent) => void;
   sensors: ReturnType<typeof useSensors>;
 
@@ -151,7 +148,11 @@ export function MobileSolveLayout({
   handleNextLevel,
   showCompletionModal,
   activeId,
-  setActiveId,
+  dragContainers,
+  isDraggingPlacedGate,
+  onDragStart,
+  onDragOver,
+  onDragCancel,
   onDragEnd,
   sensors,
   blochState,
@@ -170,12 +171,11 @@ export function MobileSolveLayout({
       <div className="flex flex-1 flex-col min-h-0 w-full h-full">
         <DndContext
           sensors={sensors}
-          onDragStart={(e) => setActiveId(String(e.active.id))}
-          onDragCancel={() => setActiveId(null)}
-          onDragEnd={(e) => {
-            setActiveId(null);
-            onDragEnd(e);
-          }}
+          collisionDetection={closestCenter}
+          onDragStart={onDragStart}
+          onDragOver={onDragOver}
+          onDragCancel={onDragCancel}
+          onDragEnd={onDragEnd}
         >
           {/* ── Tab bar ── */}
           <div className="flex shrink-0 border-b border-tier1 bg-bg-sidebar">
@@ -239,6 +239,8 @@ export function MobileSolveLayout({
                 <CircuitCanvas
                   gates={gates}
                   numberOfQubits={currentLevel.number_of_qubits}
+                  dragContainers={dragContainers}
+                  isDraggingPlacedGate={isDraggingPlacedGate}
                   onRemoveGate={removeGate}
                   onSetGateOrder={setGateOrder}
                   onSetGateTheta={setGateTheta}
@@ -333,19 +335,7 @@ export function MobileSolveLayout({
 
           {/* DragOverlay — must stay inside DndContext */}
           <DragOverlay>
-            {activeId === "tool-x" && <XGlyph width={64} height={44} />}
-            {activeId === "tool-sqrt-x" && <SqrtXGlyph width={64} height={44} />}
-            {activeId === "tool-cnot" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
-            {activeId === "tool-cnot-flipped" && <CNOTGlyph order={[1, 0]} width={84} height={64} />}
-            {activeId === "tool-cz" && <ControlledZGlyph order={[0, 1]} width={84} height={64} />}
-            {activeId === "tool-swap" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
-            {activeId === "tool-h" && <HGlyph width={64} height={44} />}
-            {activeId === "tool-t" && <TGlyph width={76} height={44} />}
-            {activeId === "tool-s" && <SGlyph width={76} height={44} />}
-            {activeId === "tool-rx" && <RXGlyph width={76} height={44} />}
-            {activeId === "tool-ry" && <RYGlyph width={76} height={44} />}
-            {activeId === "tool-rz" && <RZGlyph width={76} height={44} />}
-            {activeId === "tool-u" && <UGlyph width={64} height={44} />}
+            <DragGateOverlay activeId={activeId} gates={gates} />
           </DragOverlay>
         </DndContext>
       </div>
