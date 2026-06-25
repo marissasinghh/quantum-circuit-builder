@@ -10,7 +10,7 @@ import type { TargetParamsDTO, UnitaryRequestDTO } from "../interfaces/unitary";
 import type { SimulationResponseDTO } from "../interfaces/responseDTO";
 import type { TruthRow } from "../interfaces/truthTable";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
-import { serializeOrders, serializeUnitaryGateEntries } from "../utils/circuit";
+import { serializeOrders, serializeUnitaryGateEntries, gatesInColumnOrder } from "../utils/circuit";
 import { ParameterMode } from "../utils/constants";
 
 /** Build the POST body from the level's static info + student's gates. */
@@ -30,13 +30,14 @@ export function buildRequestFromLevel(
   let targetTheta: number | undefined;
   let parameterGateIndex: number | undefined;
   if (level.parameterMode === ParameterMode.RANDOM_THETA) {
-    const slotIdx = gates.findIndex(
+    const orderedGates = gatesInColumnOrder(gates);
+    const slotIdx = orderedGates.findIndex(
       (g): g is PlacedGate & { theta: number; isParameterSlot: true } =>
         "wire" in g && g.isParameterSlot === true
     );
     if (slotIdx >= 0) {
       parameterGateIndex = slotIdx;
-      const slotGate = gates[slotIdx];
+      const slotGate = orderedGates[slotIdx];
       if ("theta" in slotGate && typeof slotGate.theta === "number") {
         targetTheta = Math.abs(slotGate.theta);
       }

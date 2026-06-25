@@ -367,7 +367,7 @@ export const CONTROLLED_U_LEVEL: LevelDefinition = {
     "Focus on the rows where control is $|1\\rangle$ — those reveal what U does to $|0\\rangle$ and $|1\\rangle$.",
   hint2:
     "Once you know what U is from the truth table, you already know how to decompose it — " +
-    "you solved the same problem in Level 1.6. Then wrap that single-qubit decomposition in a controlled structure using the gates in your toolbox.",
+    "you solved the same problem in Level 1.6. Then wrap that single-qubit decomposition in a controlled structure using the gates in your gateset.",
 } as const;
 
 // ========================
@@ -399,7 +399,7 @@ export const TOFFOLI_LEVEL: LevelDefinition = {
   hint1:
     "The Toffoli is universal for classical reversible computation. Think about how you can build a doubly-controlled NOT from CNOTs and single-qubit gates.",
   hint2:
-    "The canonical Nielsen & Chuang decomposition uses H, CNOT, T, and T† gates — fifteen gates in total. Can you find a shorter construction with your toolbox?",
+    "The canonical Nielsen & Chuang decomposition uses H, CNOT, T, and T† gates — fifteen gates in total. Can you find a shorter construction with your gateset?",
 } as const;
 
 // ========================

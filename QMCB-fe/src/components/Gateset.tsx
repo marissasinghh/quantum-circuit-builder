@@ -1,5 +1,5 @@
 /**
- * Toolbox: contains draggable gate components.
+ * Gateset: contains draggable gate components.
  */
 
 import type { ReactNode } from "react";
@@ -10,7 +10,7 @@ import { DraggableTool } from "./DragAndDropWrappers";
 import { Tooltip, TooltipMath } from "./Tooltip";
 import SuperpositionTable from "./SuperpositionTable";
 
-interface ToolboxProps {
+interface GatesetProps {
   availableGates: readonly Gate[];
   activeId: string | null;
   numberOfQubits: number;
@@ -239,13 +239,13 @@ export function BlochPreviewToggle({
   );
 }
 
-export function Toolbox({ availableGates, numberOfQubits }: ToolboxProps) {
+export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
   const { completedLevels } = useLevelProgress();
 
   return (
     <div className="relative shrink-0 min-w-0">
       <h2 className="panel-heading mb-2">
-        TOOLBOX
+        GATESET
       </h2>
       <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:overflow-x-hidden sm:pb-0">
         {availableGates.map((gate) => {

@@ -11,9 +11,17 @@ import {
   type PlacedTwoQubitGate,
   type ControlTargetOrder,
   type SingleQubitGate,
+  type SingleWire,
   TwoQubitGate,
 } from "../types/global";
 import { DEFAULT_QUBIT_ORDER } from "../utils/constants";
+import {
+  append,
+  remove,
+  setOrder as setOrderInCircuit,
+  moveGate as moveGateInCircuit,
+  clear as clearCircuit,
+} from "../utils/circuit";
 
 const ROTATION_GATES = new Set<SingleQubitGate>([Gate.RX, Gate.RY, Gate.RZ]);
 
@@ -22,39 +30,35 @@ function isRotationGate(type: SingleQubitGate): boolean {
 }
 
 export function useCircuit() {
-  /** Current circuit, as an ordered list of placed gate chips. */
+  /** Current circuit, always stored in column order (0..n-1). */
   const [gates, setGates] = useState<PlacedGate[]>([]);
 
-  const addTwoQubitGate = useCallback(
-    (gate: TwoQubitGate) => {
-      const g: PlacedTwoQubitGate = {
-        id: crypto.randomUUID(),
-        type: gate,
-        order: DEFAULT_QUBIT_ORDER,
-        column: gates.length,
-      };
-      setGates((prev) => [...prev, g]);
-    },
-    [gates.length]
-  );
+  const addTwoQubitGate = useCallback((gate: TwoQubitGate) => {
+    const g: PlacedTwoQubitGate = {
+      id: crypto.randomUUID(),
+      type: gate,
+      order: DEFAULT_QUBIT_ORDER,
+      column: 0,
+    };
+    setGates((prev) => append(prev, g));
+  }, []);
 
-  const addSingleQubitGate = useCallback(
-    (type: SingleQubitGate, wire: 0 | 1) => {
-      setGates((prev) => {
-        const g: PlacedSingleQubitGate = {
-          id: crypto.randomUUID(),
-          type,
-          wire,
-          column: prev.length,
-        };
-        return [...prev, g];
-      });
-    },
-    []
-  );
+  const addSingleQubitGate = useCallback((type: SingleQubitGate, wire: 0 | 1) => {
+    const g: PlacedSingleQubitGate = {
+      id: crypto.randomUUID(),
+      type,
+      wire,
+      column: 0,
+    };
+    setGates((prev) => append(prev, g));
+  }, []);
 
   const setGateOrder = useCallback((id: string, order: ControlTargetOrder) => {
-    setGates((prev) => prev.map((g) => (g.id === id && "order" in g ? { ...g, order } : g)));
+    setGates((prev) => setOrderInCircuit(prev, id, order));
+  }, []);
+
+  const moveGate = useCallback((id: string, to: number, wire?: SingleWire) => {
+    setGates((prev) => moveGateInCircuit(prev, id, to, wire));
   }, []);
 
   const setGateTheta = useCallback((id: string, theta: number) => {
@@ -74,19 +78,18 @@ export function useCircuit() {
 
   /** Remove a chip by id. */
   const removeGate = useCallback((id: string) => {
-    setGates((prev) =>
-      prev.filter((g) => g.id !== id).map((g, i) => ({ ...g, column: i }))
-    );
+    setGates((prev) => remove(prev, id));
   }, []);
 
   /** Clear the circuit. */
-  const clearAll = useCallback(() => setGates([]), []);
+  const clearAll = useCallback(() => setGates(clearCircuit()), []);
 
   return {
     gates,
     addTwoQubitGate,
     addSingleQubitGate,
     setGateOrder,
+    moveGate,
     setGateTheta,
     setParameterSlot,
     removeGate,

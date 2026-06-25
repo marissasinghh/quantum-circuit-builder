@@ -299,7 +299,7 @@ function OnboardingContent({
       <BodyParagraph>
         So here is what we are going to do. We are starting from the simplest quantum gates and
         building up one level at a time. Each level gives you a target transformation to
-        implement. Your job is to assemble a circuit from the gates in your toolbox, watch the
+        implement. Your job is to assemble a circuit from the gates in your gateset, watch the
         Bloch sphere update in real time as you place and tune each gate, and match the target
         output. You will build intuition for what each gate does, how rotations combine, and how
         to engineer a specific quantum transformation from scratch!

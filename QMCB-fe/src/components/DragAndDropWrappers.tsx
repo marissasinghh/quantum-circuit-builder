@@ -44,3 +44,39 @@ export function DroppableStrip({ id, top, height }: { id: string; top: number; h
     />
   );
 }
+
+interface TrashDropZoneProps {
+  visible: boolean;
+}
+
+export function TrashDropZone({ visible }: TrashDropZoneProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: "trash-can" });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={[
+        "absolute bottom-3 right-3 z-30 flex items-center justify-center w-12 h-12 rounded-panel border-2 transition-all duration-200",
+        visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        isOver
+          ? "border-error-action bg-error-action/20 scale-110"
+          : "border-tier2 bg-bg-elevated/90",
+      ].join(" ")}
+      aria-label="Drop gate here to remove"
+      aria-hidden={!visible}
+    >
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        className={isOver ? "text-error-action" : "text-tier2"}
+        aria-hidden
+      >
+        <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+      </svg>
+    </div>
+  );
+}

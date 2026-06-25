@@ -5,6 +5,7 @@ import {
   DragOverlay,
   PointerSensor,
   TouchSensor,
+  closestCenter,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -17,24 +18,13 @@ import { useControlledUnitary } from "../hooks/useControlledUnitary";
 import { useDragAndDrop } from "../hooks/useDragAndDrop";
 
 import { TaskCard } from "../components/TaskCard";
-import { Toolbox, BlochPreviewToggle, BlochSphereHeader, BLOCH_SPHERE_TOOLTIP } from "../components/Toolbox";
+import { Gateset, BlochPreviewToggle, BlochSphereHeader, BLOCH_SPHERE_TOOLTIP } from "../components/Gateset";
 import { Tooltip, TooltipProvider } from "../components/Tooltip";
 import { CircuitCanvas } from "../components/CircuitCanvas";
+import { DragGateOverlay } from "../components/DragGateOverlay";
 import { OutputTable, type GradingSummary } from "../components/OutputTable";
 import { LevelCompleteModal } from "../components/LevelCompleteModal";
 import { BlochSphere } from "../components/BlochSphere";
-import {
-  CNOTGlyph,
-  HGlyph,
-  TGlyph,
-  SGlyph,
-  RXGlyph,
-  RYGlyph,
-  UGlyph,
-  RZGlyph,
-  XGlyph,
-  SqrtXGlyph,
-} from "../components/GateDesign";
 
 import { LEVEL_ORDER, getNextLevel } from "../config/levels";
 import { ParameterMode } from "../utils/constants";
@@ -89,7 +79,7 @@ function SolveLevelContent({
 }) {
   const navigate = useNavigate();
 
-  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, setGateOrder, setGateTheta, setParameterSlot, clearAll } =
+  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setGateTheta, setParameterSlot, clearAll } =
     useCircuit();
 
   const isRandomThetaLevel =
@@ -122,14 +112,28 @@ function SolveLevelContent({
     !isControlledU ? randomUnitaryQuery.data?.angles : undefined
   );
 
-  const { activeId, setActiveId, onDragEnd } = useDragAndDrop(addSingleQubitGate, addTwoQubitGate);
+  const {
+    activeId,
+    dragContainers,
+    isDraggingPlacedGate,
+    onDragStart,
+    onDragOver,
+    onDragCancel,
+    onDragEnd,
+  } = useDragAndDrop(
+    gates,
+    currentLevel.number_of_qubits,
+    addSingleQubitGate,
+    addTwoQubitGate,
+    moveGate,
+    removeGate
+  );
 
   // Mouse/stylus: start drag after 8 px of movement (prevents accidental drags on click).
-  // Touch: 150 ms hold before drag activates; up to 8 px movement allowed during the hold
-  // so the browser can still recognise a scroll intent and cancel the drag.
+  // Touch: 250 ms hold before drag activates so double-tap-to-delete can complete first.
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
   );
 
   const blochState = useMemo(
@@ -273,7 +277,11 @@ function SolveLevelContent({
         showCompletionModal={showCompletionModal}
         setShowCompletionModal={setShowCompletionModal}
         activeId={activeId}
-        setActiveId={setActiveId}
+        dragContainers={dragContainers}
+        isDraggingPlacedGate={isDraggingPlacedGate}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragCancel={onDragCancel}
         onDragEnd={onDragEnd}
         sensors={sensors}
         blochState={blochState}
@@ -293,12 +301,11 @@ function SolveLevelContent({
     <div className="flex flex-1 min-h-0 w-full h-full">
       <DndContext
         sensors={sensors}
-        onDragStart={(e) => setActiveId(String(e.active.id))}
-        onDragCancel={() => setActiveId(null)}
-        onDragEnd={(e) => {
-          setActiveId(null);
-          onDragEnd(e);
-        }}
+        collisionDetection={closestCenter}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragCancel={onDragCancel}
+        onDragEnd={onDragEnd}
       >
         <div className="flex-1 w-full min-w-0 flex flex-col sm:flex-row sm:min-h-0 sm:h-full overflow-y-auto sm:overflow-y-hidden">
           {/* Center: Task + Circuit Canvas */}
@@ -311,6 +318,8 @@ function SolveLevelContent({
             <CircuitCanvas
               gates={gates}
               numberOfQubits={currentLevel.number_of_qubits}
+              dragContainers={dragContainers}
+              isDraggingPlacedGate={isDraggingPlacedGate}
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
               onSetGateTheta={setGateTheta}
@@ -328,12 +337,12 @@ function SolveLevelContent({
             />
           </section>
 
-          {/* Right: Toolbox + Bloch + Output */}
+          {/* Right: Gateset + Bloch + Output */}
           <aside
             className="w-full sm:w-auto sm:shrink sm:basis-[523px] sm:min-w-[200px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto flex flex-col gap-0 min-h-0 sm:h-full"
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
-              <Toolbox availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
+              <Gateset availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
             </div>
             {currentLevel.number_of_qubits === 1 && (
               <>
@@ -409,16 +418,7 @@ function SolveLevelContent({
         </div>
 
         <DragOverlay>
-          {activeId === "tool-x" && <XGlyph width={64} height={44} />}
-          {activeId === "tool-sqrt-x" && <SqrtXGlyph width={64} height={44} />}
-          {activeId === "tool-cnot" && <CNOTGlyph order={[0, 1]} width={84} height={64} />}
-          {activeId === "tool-h" && <HGlyph width={64} height={44} />}
-          {activeId === "tool-t" && <TGlyph width={76} height={44} />}
-          {activeId === "tool-s" && <SGlyph width={76} height={44} />}
-          {activeId === "tool-rx" && <RXGlyph width={76} height={44} />}
-          {activeId === "tool-ry" && <RYGlyph width={76} height={44} />}
-          {activeId === "tool-rz" && <RZGlyph width={76} height={44} />}
-          {activeId === "tool-u" && <UGlyph width={64} height={44} />}
+          <DragGateOverlay activeId={activeId} gates={gates} />
         </DragOverlay>
       </DndContext>
     </div>
