@@ -117,7 +117,7 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
     <div
       ref={setNodeRef}
       style={style}
-      className="cursor-grab active:cursor-grabbing select-none"
+      className="cursor-grab active:cursor-grabbing select-none pointer-events-auto"
       {...attributes}
       {...listeners}
       onDoubleClick={(e) => {

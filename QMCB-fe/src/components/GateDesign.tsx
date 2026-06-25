@@ -215,6 +215,48 @@ export function FredkinGlyph({
   );
 }
 
+/** SWAP glyph: × on both wires */
+export function SwapGlyph({
+  width = 80,
+  height = 60,
+}: {
+  width?: number;
+  height?: number;
+}) {
+  const pad = 10;
+  const yTop = 12;
+  const yBot = height - 12;
+  const cx = width / 2;
+  const bridgeHalf = (yBot - yTop) * 0.38;
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="SWAP">
+      <Wire x1={pad} x2={width - pad} y={yTop} />
+      <Wire x1={pad} x2={width - pad} y={yBot} />
+      <XMark cx={cx} cy={yTop} />
+      <XMark cx={cx} cy={yBot} />
+      <line
+        x1={cx - bridgeHalf}
+        y1={yTop}
+        x2={cx + bridgeHalf}
+        y2={yBot}
+        stroke={colors.cyan}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      <line
+        x1={cx + bridgeHalf}
+        y1={yTop}
+        x2={cx - bridgeHalf}
+        y2={yBot}
+        stroke={colors.cyan}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 /** Single-qubit gate block (H, T, Rz, etc.) */
 function GateBlock({
   label,

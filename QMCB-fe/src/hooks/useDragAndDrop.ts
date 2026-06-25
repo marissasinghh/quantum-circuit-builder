@@ -16,6 +16,8 @@ import {
   insertIndexFromContainers,
   reorderWithinContainer,
   wireFromDropId,
+  isMultiQubitGateId,
+  MULTI_QUBIT_OWNER_WIRE,
   type WireContainers,
 } from "../utils/placedGateDrag";
 
@@ -91,11 +93,14 @@ export function useDragAndDrop(
 
       if (toWire === null || overIndex === null) return;
 
+      if (isMultiQubitGateId(activeGateId, gates) && toWire !== MULTI_QUBIT_OWNER_WIRE) return;
+
       setDragContainers((prev) => {
         if (!prev) return prev;
         if (fromWire === toWire && isPlacedGateId(overId, gates)) {
           return reorderWithinContainer(prev, toWire, activeGateId, overId);
         }
+        if (isMultiQubitGateId(activeGateId, gates) && toWire !== fromWire) return prev;
         return moveBetweenContainers(prev, activeGateId, fromWire, toWire, overIndex);
       });
     },
@@ -130,7 +135,10 @@ export function useDragAndDrop(
         const dropWire = wireFromDropId(overId);
         if (dropWire !== null) {
           const fromWire = findWireForGate(containers, id);
-          if (fromWire !== null) {
+          if (
+            fromWire !== null &&
+            !(isMultiQubitGateId(id, gates) && dropWire !== MULTI_QUBIT_OWNER_WIRE)
+          ) {
             containers = moveBetweenContainers(
               containers,
               id,
@@ -143,11 +151,15 @@ export function useDragAndDrop(
           const toWire = findWireForGate(containers, overId);
           const fromWire = findWireForGate(containers, id);
           if (toWire !== null && fromWire !== null) {
+            if (isMultiQubitGateId(id, gates) && toWire !== MULTI_QUBIT_OWNER_WIRE) {
+              // multi-qubit gates reorder only within wire-0 ownership context
+            } else {
             const overIndex = insertIndexForOver(containers[toWire] ?? [], id, overId);
             if (fromWire === toWire) {
               containers = reorderWithinContainer(containers, toWire, id, overId);
-            } else {
+            } else if (!isMultiQubitGateId(id, gates)) {
               containers = moveBetweenContainers(containers, id, fromWire, toWire, overIndex);
+            }
             }
           }
         }
@@ -156,7 +168,7 @@ export function useDragAndDrop(
 
         if (placement) {
           const { to, wire } = globalIndexForWireDrop(gates, id, placement.wire, placement.index);
-          if (wire !== undefined) {
+          if (wire !== undefined && !isMultiQubitGateId(id, gates)) {
             moveGate(id, to, wire);
           } else {
             moveGate(id, to);
