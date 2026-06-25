@@ -27,14 +27,47 @@ export function isSingleQubitGate(g: PlacedGate): g is PlacedSingleQubitGate {
   return "wire" in g;
 }
 
-/** Per-wire lists of 1q gate ids sorted by global column (2q gates excluded). */
+/** Gates that live in a single wire's sortable list (not cross-wire draggable). */
+export function isMultiQubitGate(g: PlacedGate): boolean {
+  return !("wire" in g);
+}
+
+/** Wire-0 owns all multi-qubit chips for dnd-kit (one context, no duplication). */
+export const MULTI_QUBIT_OWNER_WIRE = 0;
+
+export function sortableOwnerWire(g: PlacedGate): number {
+  if (isSingleQubitGate(g)) return g.wire;
+  return MULTI_QUBIT_OWNER_WIRE;
+}
+
+export function isMultiQubitGateId(id: string, gates: PlacedGate[]): boolean {
+  const g = gates.find((gate) => gate.id === id);
+  return g !== undefined && isMultiQubitGate(g);
+}
+
+/** Per-wire sortable id lists in global column order. Wire 0 also owns all multi-qubit gates. */
 export function buildWireContainers(gates: PlacedGate[], numberOfQubits: number): WireContainers {
   const ordered = gatesInColumnOrder(gates);
   const containers: WireContainers = {};
   for (let w = 0; w < numberOfQubits; w++) {
-    containers[w] = ordered.filter((g): g is PlacedSingleQubitGate => isSingleQubitGate(g) && g.wire === w).map((g) => g.id);
+    if (w === MULTI_QUBIT_OWNER_WIRE) {
+      containers[w] = ordered
+        .filter((g) => isMultiQubitGate(g) || (isSingleQubitGate(g) && g.wire === w))
+        .map((g) => g.id);
+    } else {
+      containers[w] = ordered
+        .filter((g): g is PlacedSingleQubitGate => isSingleQubitGate(g) && g.wire === w)
+        .map((g) => g.id);
+    }
   }
   return containers;
+}
+
+function sortableGatesForWire(global: PlacedGate[], targetWire: number): PlacedGate[] {
+  if (targetWire === MULTI_QUBIT_OWNER_WIRE) {
+    return global.filter((g) => isMultiQubitGate(g) || (isSingleQubitGate(g) && g.wire === 0));
+  }
+  return global.filter((g): g is PlacedSingleQubitGate => isSingleQubitGate(g) && g.wire === targetWire);
 }
 
 export function findWireForGate(containers: WireContainers, gateId: string): number | null {
@@ -95,21 +128,22 @@ export function globalIndexForWireDrop(
   insertIndex: number
 ): { to: number; wire?: SingleWire } {
   const global = gatesInColumnOrder(gates).filter((g) => g.id !== movedId);
-  const onWire = global.filter((g): g is PlacedSingleQubitGate => isSingleQubitGate(g) && g.wire === targetWire);
+  const inContainer = sortableGatesForWire(global, targetWire);
 
   const moved = gates.find((g) => g.id === movedId);
-  const sameWire = moved && isSingleQubitGate(moved) && moved.wire === targetWire;
+  const sameWire =
+    moved && isSingleQubitGate(moved) && moved.wire === targetWire;
 
   let to: number;
-  if (insertIndex >= onWire.length) {
-    if (onWire.length === 0) {
+  if (insertIndex >= inContainer.length) {
+    if (inContainer.length === 0) {
       to = global.length;
     } else {
-      const lastOnWire = onWire[onWire.length - 1];
-      to = global.findIndex((g) => g.id === lastOnWire.id) + 1;
+      const lastInContainer = inContainer[inContainer.length - 1];
+      to = global.findIndex((g) => g.id === lastInContainer.id) + 1;
     }
   } else {
-    const beforeGate = onWire[insertIndex];
+    const beforeGate = inContainer[insertIndex];
     to = global.findIndex((g) => g.id === beforeGate.id);
   }
 

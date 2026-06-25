@@ -5,12 +5,21 @@
 import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 
 import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder } from "../types/global";
-import { CNOTGlyph, ControlledZGlyph } from "./GateDesign";
 import { DroppableStrip, TrashDropZone } from "./DragAndDropWrappers";
 import { SortablePlacedGate } from "./SortablePlacedGate";
+import {
+  SortablePlacedMultiQubitGate,
+  multiQubitGlyphDimensions,
+} from "./SortablePlacedMultiQubitGate";
 import { allowedOrdersFor } from "../config/gates";
 import { gatesInColumnOrder } from "../utils/circuit";
-import { buildWireContainers, isSingleQubitGate, type WireContainers } from "../utils/placedGateDrag";
+import {
+  buildWireContainers,
+  isSingleQubitGate,
+  isMultiQubitGate,
+  MULTI_QUBIT_OWNER_WIRE,
+  type WireContainers,
+} from "../utils/placedGateDrag";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
 
@@ -84,9 +93,6 @@ export function CircuitCanvas({
   const wireTop = wireYs[0];
   const wireSpan = wireYs.length > 1 ? wireYs[wireYs.length - 1] - wireYs[0] : 0;
 
-  const CNOT_W = 80;
-  const CNOT_H = wireSpan > 0 ? wireSpan + 24 : SQ_H + 12;
-
   const hasRotationGate = gates.some(
     (g) => "wire" in g && PARAMETERIZED_GATES.has(g.type)
   );
@@ -157,27 +163,57 @@ export function CircuitCanvas({
               </text>
             ))}
 
-            {orderedGates.map((g) => {
-            const xCenter = PAD_X + g.column * COL_W;
-
-            if (TWO_QUBIT_GATES.has(g.type) && "order" in g) {
-              let GlyphComponent = CNOTGlyph;
-              if (g.type === Gate.CONTROLLED_Z) {
-                GlyphComponent = ControlledZGlyph;
-              }
-
-              return (
-                <g key={g.id} transform={`translate(${xCenter - CNOT_W / 2}, ${wireTop - 12})`}>
-                  <GlyphComponent order={g.order} width={CNOT_W} height={CNOT_H} />
-                </g>
-              );
-            }
-
-            return null;
-          })}
           </svg>
 
+          {wireYs.length > 0 && (
+            <SortableContext
+              key="sortable-wire-0"
+              items={wireContainers[MULTI_QUBIT_OWNER_WIRE] ?? []}
+              strategy={horizontalListSortingStrategy}
+            >
+              <div className="absolute inset-0 z-20 pointer-events-none">
+                <div
+                  className="absolute left-0 right-0 pointer-events-none"
+                  style={{ top: wireYs[0] - 20, height: 40 }}
+                >
+                  {(wireContainers[0] ?? []).map((gateId) => {
+                    const g = gateById.get(gateId);
+                    if (!g || !isSingleQubitGate(g)) return null;
+                    const left = PAD_X + g.column * COL_W - SQ_W / 2;
+                    return (
+                      <SortablePlacedGate
+                        key={gateId}
+                        gate={g as PlacedSingleQubitGate}
+                        left={left}
+                        top={20 - SQ_H / 2}
+                        onRemoveGate={onRemoveGate}
+                      />
+                    );
+                  })}
+                </div>
+                {(wireContainers[0] ?? []).map((gateId) => {
+                  const g = gateById.get(gateId);
+                  if (!g || !isMultiQubitGate(g) || !("order" in g)) return null;
+                  const { width, height } = multiQubitGlyphDimensions(g.type, numberOfQubits, wireSpan);
+                  const left = PAD_X + g.column * COL_W - width / 2;
+                  return (
+                    <SortablePlacedMultiQubitGate
+                      key={gateId}
+                      gate={g}
+                      left={left}
+                      top={wireTop - 12}
+                      width={width}
+                      height={height}
+                      onRemoveGate={onRemoveGate}
+                    />
+                  );
+                })}
+              </div>
+            </SortableContext>
+          )}
+
           {wireYs.map((y, wireIndex) => {
+            if (wireIndex === 0) return null;
             const wireIds = wireContainers[wireIndex] ?? [];
             return (
               <div

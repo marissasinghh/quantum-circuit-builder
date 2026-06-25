@@ -335,7 +335,7 @@ export function MobileSolveLayout({
 
           {/* DragOverlay — must stay inside DndContext */}
           <DragOverlay>
-            <DragGateOverlay activeId={activeId} gates={gates} />
+            <DragGateOverlay activeId={activeId} gates={gates} numberOfQubits={currentLevel.number_of_qubits} />
           </DragOverlay>
         </DndContext>
       </div>
