@@ -85,6 +85,8 @@ interface MobileSolveLayoutProps {
   handleNewUnitary: (() => void) | undefined;
   handleRepeat: () => void;
   handleNextLevel: () => void;
+  handleSkipLevel: () => void;
+  showSkip: boolean;
 
   // Completion modal
   showCompletionModal: boolean;
@@ -146,6 +148,8 @@ export function MobileSolveLayout({
   handleNewUnitary,
   handleRepeat,
   handleNextLevel,
+  handleSkipLevel,
+  showSkip,
   showCompletionModal,
   activeId,
   dragContainers,
@@ -249,6 +253,8 @@ export function MobileSolveLayout({
                   onCheck={handleCheck}
                   onClear={handleClear}
                   isChecking={isMutationPending}
+                  onSkip={handleSkipLevel}
+                  showSkip={showSkip}
                 />
               </div>
 

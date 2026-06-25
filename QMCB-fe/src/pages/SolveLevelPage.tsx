@@ -85,7 +85,8 @@ function SolveLevelContent({
   const isRandomThetaLevel =
     currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
 
-  const { markLevelComplete, unlockGateForLevel } = useLevelProgress();
+  const { completedLevels, skippedLevels, markLevelComplete, unlockGateForLevel, skipLevel } =
+    useLevelProgress();
 
   const isSeedDrivenLevel =
     currentLevel.parameterMode === ParameterMode.SEED_ZXZ ||
@@ -236,6 +237,16 @@ function SolveLevelContent({
     }
   };
 
+  const handleSkipLevel = () => {
+    skipLevel(currentLevel);
+    const next = getNextLevel(currentLevel);
+    navigate(next ? "/level/" + next.target_unitary : "/levels");
+  };
+
+  const levelId = currentLevel.target_unitary;
+  const showSkip =
+    !completedLevels.includes(levelId) && !skippedLevels.includes(levelId);
+
   const isMobile = useMobileView(768);
 
   const isMutationPending = mutation.isPending;
@@ -292,6 +303,8 @@ function SolveLevelContent({
         setShowOrderTip={setShowOrderTip}
         isSLevel={isSLevel}
         circuitOutputRef={circuitOutputRef}
+        handleSkipLevel={handleSkipLevel}
+        showSkip={showSkip}
       />
     );
   }
@@ -328,6 +341,8 @@ function SolveLevelContent({
               onCheck={handleCheck}
               onClear={handleClear}
               isChecking={mutation.isPending}
+              onSkip={handleSkipLevel}
+              showSkip={showSkip}
             />
             <LevelCompleteModal
               isOpen={showCompletionModal}

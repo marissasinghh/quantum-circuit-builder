@@ -36,6 +36,8 @@ interface CircuitCanvasProps {
   onCheck: () => void;
   onClear: () => void;
   isChecking: boolean;
+  onSkip?: () => void;
+  showSkip?: boolean;
 }
 
 const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTROLLED_Z, Gate.SWAP]);
@@ -82,6 +84,8 @@ export function CircuitCanvas({
   onCheck,
   onClear,
   isChecking,
+  onSkip,
+  showSkip = false,
 }: CircuitCanvasProps) {
   const COL_W = 90;
   const orderedGates = gatesInColumnOrder(gates);
@@ -397,6 +401,15 @@ export function CircuitCanvas({
         >
           CLEAR CIRCUIT
         </button>
+        {showSkip && onSkip && (
+          <button
+            type="button"
+            onClick={onSkip}
+            className="w-full py-1 bg-transparent border border-tier1/50 rounded-gate font-mono text-[11px] uppercase text-text-faint hover:border-tier1 hover:text-text-secondary transition-colors"
+          >
+            ⏭ Skip this level
+          </button>
+        )}
       </div>
       </div>
     </div>

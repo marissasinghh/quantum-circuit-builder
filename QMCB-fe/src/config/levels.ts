@@ -459,9 +459,23 @@ export const LEVEL_ORDER: readonly LevelDefinition[] = [
 /** All Tier 2 level definitions (for unlock gating). */
 export const TIER2_LEVELS = LEVEL_ORDER.filter((l) => l.number_of_qubits === 2);
 
-/** True when every Tier 2 level has been completed. */
-export function allTier2Complete(completedLevels: string[]): boolean {
-  return TIER2_LEVELS.every((l) => completedLevels.includes(l.target_unitary));
+/** True when a level has been completed or skipped. */
+export function isLevelCleared(
+  levelId: string,
+  completedLevels: string[],
+  skippedLevels: string[],
+): boolean {
+  return completedLevels.includes(levelId) || skippedLevels.includes(levelId);
+}
+
+/** True when every Tier 2 level has been completed or skipped. */
+export function allTier2Complete(
+  completedLevels: string[],
+  skippedLevels: string[] = [],
+): boolean {
+  return TIER2_LEVELS.every((l) =>
+    isLevelCleared(l.target_unitary, completedLevels, skippedLevels),
+  );
 }
 
 /** Whether a level is playable (not considering completion status). */
@@ -469,30 +483,40 @@ export function isLevelUnlocked(
   index: number,
   level: LevelDefinition,
   completedLevels: string[],
+  skippedLevels: string[] = [],
 ): boolean {
   if (level.locked) return false;
   if (index === 0) return true;
 
   if (level.number_of_qubits === 3) {
     const firstTier3Index = LEVEL_ORDER.findIndex((l) => l.number_of_qubits === 3);
-    if (index === firstTier3Index) return allTier2Complete(completedLevels);
+    if (index === firstTier3Index) return allTier2Complete(completedLevels, skippedLevels);
   }
 
-  return completedLevels.includes(LEVEL_ORDER[index - 1].target_unitary);
+  return isLevelCleared(
+    LEVEL_ORDER[index - 1].target_unitary,
+    completedLevels,
+    skippedLevels,
+  );
 }
 
-export type LevelStatus = "locked" | "unlocked" | "completed";
+export type LevelStatus = "locked" | "unlocked" | "completed" | "skipped";
 
 export function getLevelStatus(
   index: number,
   level: LevelDefinition,
   completedLevels: string[],
+  skippedLevels: string[] = [],
 ): LevelStatus {
   if (level.locked) return "locked";
 
   const isCompleted = completedLevels.includes(level.target_unitary);
   if (isCompleted) return "completed";
-  if (isLevelUnlocked(index, level, completedLevels)) return "unlocked";
+
+  const isSkipped = skippedLevels.includes(level.target_unitary);
+  if (isSkipped) return "skipped";
+
+  if (isLevelUnlocked(index, level, completedLevels, skippedLevels)) return "unlocked";
   return "locked";
 }
 
