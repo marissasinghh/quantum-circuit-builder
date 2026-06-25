@@ -19,11 +19,12 @@ const STARTING_GATES: Gate[] = [Gate.RZ, Gate.SQRT_X];
 
 interface ProgressState {
   completedLevels: string[];
+  skippedLevels: string[];
   unlockedGates: Gate[];
 }
 
 function defaultProgress(): ProgressState {
-  return { completedLevels: [], unlockedGates: [...STARTING_GATES] };
+  return { completedLevels: [], skippedLevels: [], unlockedGates: [...STARTING_GATES] };
 }
 
 function isValidProgressState(value: unknown): value is ProgressState {
@@ -32,8 +33,17 @@ function isValidProgressState(value: unknown): value is ProgressState {
   return (
     Array.isArray(v.completedLevels) &&
     v.completedLevels.every((id) => typeof id === "string") &&
-    Array.isArray(v.unlockedGates)
+    Array.isArray(v.unlockedGates) &&
+    (v.skippedLevels === undefined ||
+      (Array.isArray(v.skippedLevels) && v.skippedLevels.every((id) => typeof id === "string")))
   );
+}
+
+function normalizeProgress(value: ProgressState): ProgressState {
+  return {
+    ...value,
+    skippedLevels: value.skippedLevels ?? [],
+  };
 }
 
 function loadProgress(): ProgressState {
@@ -41,7 +51,7 @@ function loadProgress(): ProgressState {
     const raw = localStorage.getItem(LEVEL_PROGRESS_KEY);
     if (raw) {
       const parsed: unknown = JSON.parse(raw);
-      if (isValidProgressState(parsed)) return parsed;
+      if (isValidProgressState(parsed)) return normalizeProgress(parsed);
     }
   } catch {}
   return defaultProgress();
@@ -49,9 +59,12 @@ function loadProgress(): ProgressState {
 
 interface LevelProgressContextValue {
   completedLevels: string[];
+  skippedLevels: string[];
   unlockedGates: Gate[];
   markLevelComplete: (level: LevelDefinition) => void;
+  markLevelSkipped: (level: LevelDefinition) => void;
   unlockGateForLevel: (level: LevelDefinition) => void;
+  skipLevel: (level: LevelDefinition) => void;
   resetProgress: () => void;
 }
 
@@ -69,8 +82,25 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
     setProgress((prev) => {
       if (prev.completedLevels.includes(levelId)) return prev;
       const next: ProgressState = {
+        ...prev,
         completedLevels: [...prev.completedLevels, levelId],
-        unlockedGates: prev.unlockedGates,
+      };
+      localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  /**
+   * Records that the player skipped a level without marking it completed.
+   * Idempotent: calling this multiple times for the same level is safe.
+   */
+  const markLevelSkipped = useCallback((level: LevelDefinition) => {
+    const levelId = level.target_unitary;
+    setProgress((prev) => {
+      if (prev.skippedLevels.includes(levelId)) return prev;
+      const next: ProgressState = {
+        ...prev,
+        skippedLevels: [...prev.skippedLevels, levelId],
       };
       localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
       return next;
@@ -95,6 +125,30 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  /**
+   * Marks a level skipped and unlocks its gate in a single localStorage write.
+   */
+  const skipLevel = useCallback((level: LevelDefinition) => {
+    const levelId = level.target_unitary;
+    const isRealGate = levelId !== Gate.RANDOM_U;
+    setProgress((prev) => {
+      const alreadySkipped = prev.skippedLevels.includes(levelId);
+      const gateAlreadyUnlocked = !isRealGate || prev.unlockedGates.includes(levelId as Gate);
+      if (alreadySkipped && gateAlreadyUnlocked) return prev;
+
+      const next: ProgressState = {
+        ...prev,
+        skippedLevels: alreadySkipped ? prev.skippedLevels : [...prev.skippedLevels, levelId],
+        unlockedGates:
+          gateAlreadyUnlocked || !isRealGate
+            ? prev.unlockedGates
+            : [...prev.unlockedGates, levelId as Gate],
+      };
+      localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const resetProgress = useCallback(() => {
     const fresh = defaultProgress();
     localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(fresh));
@@ -103,9 +157,12 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
 
   const value: LevelProgressContextValue = {
     completedLevels: progress.completedLevels,
+    skippedLevels: progress.skippedLevels,
     unlockedGates: progress.unlockedGates,
     markLevelComplete,
+    markLevelSkipped,
     unlockGateForLevel,
+    skipLevel,
     resetProgress,
   };
 
