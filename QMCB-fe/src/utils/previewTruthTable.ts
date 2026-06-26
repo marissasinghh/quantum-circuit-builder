@@ -3,10 +3,10 @@ import type { TruthTableDTO } from "../interfaces/truthTable";
 import type { TruthRow } from "../interfaces/truthTable";
 import type { PlacedGate } from "../types/global";
 import { ParameterMode } from "./constants";
+import { formatColumnAsDiracNormalized } from "./diracFormatting";
 import {
   columnFromUnitary,
   computeTrialUnitary,
-  formatColumnAsDirac,
   probabilitiesFromColumn,
   probabilitiesFromDiracString,
 } from "./trialUnitary";
@@ -34,7 +34,7 @@ export function buildPreviewTruthRows(
 
   return truth.input.map((input, i) => {
     const col = columnFromUnitary(unitary, i);
-    const trial = formatColumnAsDirac(col, qubitCount);
+    const trial = formatColumnAsDiracNormalized(col, qubitCount);
     const trialProbabilities = probabilitiesFromColumn(col);
     const target = truth.output[i] ?? "";
     const targetProbabilities = probabilitiesFromDiracString(target, qubitCount);
