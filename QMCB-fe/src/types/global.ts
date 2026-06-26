@@ -41,8 +41,11 @@ export type TwoQubitGate =
   | Gate.CONTROLLED_H
   | Gate.CONTROLLED_U;
 
-/** For single-qubit placement: which wire the chip sits on. */
-export type SingleWire = 0 | 1;
+/**
+ * For single-qubit placement: which wire the chip sits on.
+ * Capped at 2 for the current roadmap (max 3 qubits per level).
+ */
+export type SingleWire = 0 | 1 | 2;
 
 /** Order type that can represent any 2-bit pair */
 export type AnyQubitOrder = readonly [0 | 1, 0 | 1]; // covers [0,0], [1,1], [0,1], [1,0]

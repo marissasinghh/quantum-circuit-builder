@@ -29,6 +29,7 @@ import { BlochSphere } from "../components/BlochSphere";
 import { LEVEL_ORDER, getNextLevel } from "../config/levels";
 import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState, amplitudesToBlochState, canonicalStepsToBlochState, type BlochState } from "../utils/blochMath";
+import { buildPreviewTruthRows } from "../utils/previewTruthTable";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 import { useMobileView } from "../hooks/useMobileView";
@@ -80,7 +81,7 @@ function SolveLevelContent({
   const navigate = useNavigate();
 
   const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setGateTheta, setParameterSlot, clearAll } =
-    useCircuit();
+    useCircuit(currentLevel.number_of_qubits);
 
   const isRandomThetaLevel =
     currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
@@ -112,6 +113,17 @@ function SolveLevelContent({
     undefined,
     !isControlledU ? randomUnitaryQuery.data?.angles : undefined
   );
+
+  const seedDrivenTruth = isSeedDrivenLevel ? seedDrivenQuery.data?.truth_table : undefined;
+
+  const isGraded = mutation.status === "success" && rows != null;
+  const previewRows = useMemo(
+    () => buildPreviewTruthRows(gates, currentLevel, seedDrivenTruth),
+    [gates, currentLevel, seedDrivenTruth]
+  );
+  const displayRows = isGraded ? rows : previewRows;
+  const outputTableMode = isGraded ? "graded" : "preview";
+  const displayIsCorrect = isGraded && allCorrect;
 
   const {
     activeId,
@@ -273,8 +285,9 @@ function SolveLevelContent({
         setGateTheta={setGateTheta}
         setParameterSlot={setParameterSlot}
         showParameterSlotControls={isRandomThetaLevel}
-        rows={rows}
-        allCorrect={allCorrect}
+        rows={displayRows}
+        allCorrect={displayIsCorrect}
+        outputTableMode={outputTableMode}
         handleCheck={handleCheck}
         validationError={validationError}
         isChecking={isChecking}
@@ -400,8 +413,9 @@ function SolveLevelContent({
             <div className="border-t border-tier1 my-3 shrink-0" />
             <div ref={circuitOutputRef} className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
               <OutputTable
-                rows={rows}
-                isCorrect={allCorrect}
+                rows={displayRows}
+                mode={outputTableMode}
+                isCorrect={displayIsCorrect}
                 error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
                 isChecking={isChecking}
                 onClearAndRetry={handleClear}

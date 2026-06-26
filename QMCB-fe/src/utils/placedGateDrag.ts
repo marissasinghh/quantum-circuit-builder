@@ -6,6 +6,7 @@ import { arrayMove } from "@dnd-kit/sortable";
 
 import type { PlacedGate, PlacedSingleQubitGate, SingleWire } from "../types/global";
 import { gatesInColumnOrder } from "./circuit";
+import { isValidSingleWire } from "./wireValidation";
 
 export type WireContainers = Record<number, string[]>;
 
@@ -125,7 +126,8 @@ export function globalIndexForWireDrop(
   gates: PlacedGate[],
   movedId: string,
   targetWire: number,
-  insertIndex: number
+  insertIndex: number,
+  numberOfQubits: number
 ): { to: number; wire?: SingleWire } {
   const global = gatesInColumnOrder(gates).filter((g) => g.id !== movedId);
   const inContainer = sortableGatesForWire(global, targetWire);
@@ -150,7 +152,10 @@ export function globalIndexForWireDrop(
   if (sameWire) {
     return { to };
   }
-  return { to, wire: targetWire as SingleWire };
+  if (!isValidSingleWire(targetWire, numberOfQubits)) {
+    return { to };
+  }
+  return { to, wire: targetWire };
 }
 
 /** Resolve final insert index from preview containers after a drag. */

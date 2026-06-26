@@ -19,7 +19,7 @@ import {
 import { CircuitCanvas } from "./CircuitCanvas";
 import { DragGateOverlay } from "./DragGateOverlay";
 import { LevelCompleteModal } from "./LevelCompleteModal";
-import { OutputTable, type GradingSummary } from "./OutputTable";
+import { OutputTable, type GradingSummary, type OutputTableMode } from "./OutputTable";
 import { TaskCard } from "./TaskCard";
 import { BlochSphere } from "./BlochSphere";
 import {
@@ -73,6 +73,7 @@ interface MobileSolveLayoutProps {
   // Validation
   rows: TruthRow[] | null;
   allCorrect: boolean;
+  outputTableMode: OutputTableMode;
   handleCheck: () => void;
   validationError: Error | null;
   isChecking: boolean;
@@ -138,6 +139,7 @@ export function MobileSolveLayout({
   showParameterSlotControls = false,
   rows,
   allCorrect,
+  outputTableMode,
   handleCheck,
   validationError,
   isChecking,
@@ -317,6 +319,7 @@ export function MobileSolveLayout({
               <div ref={circuitOutputRef}>
                 <OutputTable
                   rows={rows}
+                  mode={outputTableMode}
                   isCorrect={allCorrect}
                   error={validationError ?? mutationError}
                   isChecking={isChecking}

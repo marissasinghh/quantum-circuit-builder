@@ -109,7 +109,7 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.35 : 1,
-    zIndex: isDragging ? 20 : 15,
+    zIndex: isDragging ? 20 : undefined,
     touchAction: "none",
   };
 

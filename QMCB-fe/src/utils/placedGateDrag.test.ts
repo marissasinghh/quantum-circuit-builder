@@ -28,7 +28,7 @@ describe("placedGateDrag", () => {
 
   it("globalIndexForWireDrop appends 1q gate after last wire-0 slot in global order", () => {
     const gates = interleavedFixture();
-    const { to } = globalIndexForWireDrop(gates, "h", 0, 2);
+    const { to } = globalIndexForWireDrop(gates, "h", 0, 2, 2);
     expect(to).toBe(3);
 
     const result = moveGate(gates, "h", to);
@@ -37,7 +37,7 @@ describe("placedGateDrag", () => {
 
   it("globalIndexForWireDrop reorders multi-qubit gate in global sequence", () => {
     const gates = interleavedFixture();
-    const { to } = globalIndexForWireDrop(gates, "cnot", 0, 1);
+    const { to } = globalIndexForWireDrop(gates, "cnot", 0, 1, 2);
     expect(to).toBe(2);
 
     const result = moveGate(gates, "cnot", to);
@@ -46,7 +46,7 @@ describe("placedGateDrag", () => {
 
   it("globalIndexForWireDrop maps wire-local index to moveGate to for 1q on wire 0", () => {
     const gates = interleavedFixture();
-    const { to } = globalIndexForWireDrop(gates, "x", 0, 1);
+    const { to } = globalIndexForWireDrop(gates, "x", 0, 1, 2);
     expect(to).toBe(1);
 
     const result = moveGate(gates, "x", to);
@@ -63,7 +63,7 @@ describe("placedGateDrag", () => {
 
   it("globalIndexForWireDrop handles cross-wire insert before existing gate", () => {
     const gates = interleavedFixture();
-    const { to, wire } = globalIndexForWireDrop(gates, "h", 1, 0);
+    const { to, wire } = globalIndexForWireDrop(gates, "h", 1, 0, 2);
     expect(to).toBe(1);
     expect(wire).toBe(1);
 

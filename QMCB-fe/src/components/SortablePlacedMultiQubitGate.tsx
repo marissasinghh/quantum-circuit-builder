@@ -99,7 +99,7 @@ export function SortablePlacedMultiQubitGate({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.35 : 1,
-    zIndex: isDragging ? 25 : 18,
+    zIndex: isDragging ? 25 : undefined,
     touchAction: "none",
   };
 
