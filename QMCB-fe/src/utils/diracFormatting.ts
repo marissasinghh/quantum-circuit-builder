@@ -1,10 +1,10 @@
 /**
  * Dirac ket string formatting for client-side preview.
- * Mirrors Cirq dirac_notation(decimals=3) after optional leading-phase normalization.
+ * Mirrors Cirq dirac_notation(decimals=3) on whole-matrix phase-normalized unitaries.
  * Graded output uses backend Cirq strings directly — see toTruthRows().
  */
 
-import { cabs, cconj, cmul, type C } from "./complexMath";
+import { cabs, cconj, cmul, type C, type ComplexMatrix } from "./complexMath";
 import { basisInputLabel } from "./trialUnitary";
 
 function roundTo(val: number, decimals: number): number {
@@ -19,28 +19,39 @@ function formatGeneral(n: number, decimals: number): string {
 }
 
 /**
- * Divide the amplitude vector by the phase of its first nonzero entry.
- * Removes global phase so equivalent states share a canonical representation.
+ * Divide every entry in the unitary by the phase of the first nonzero entry
+ * found in row-major order. One global scalar per circuit — not per column.
  */
-export function normalizeLeadingPhase(amplitudes: readonly C[], epsilon = 1e-9): C[] {
-  let k = -1;
-  for (let i = 0; i < amplitudes.length; i++) {
-    if (cabs(amplitudes[i]) > epsilon) {
-      k = i;
-      break;
+export function normalizeUnitaryLeadingPhase(
+  unitary: ComplexMatrix,
+  epsilon = 1e-9
+): ComplexMatrix {
+  let anchor: C | null = null;
+
+  for (const row of unitary) {
+    for (const entry of row) {
+      if (cabs(entry) > epsilon) {
+        anchor = entry;
+        break;
+      }
     }
-  }
-  if (k === -1) {
-    return amplitudes.map((a) => ({ re: a.re, im: a.im }));
+    if (anchor) break;
   }
 
-  const mag = cabs(amplitudes[k]);
-  const phase = { re: amplitudes[k].re / mag, im: amplitudes[k].im / mag };
-  return amplitudes.map((amp) => cmul(amp, cconj(phase)));
+  if (!anchor) {
+    return unitary.map((row) => row.map((cell) => ({ re: cell.re, im: cell.im })));
+  }
+
+  const mag = cabs(anchor);
+  const phase = { re: anchor.re / mag, im: anchor.im / mag };
+  const phaseConj = cconj(phase);
+
+  return unitary.map((row) => row.map((cell) => cmul(cell, phaseConj)));
 }
 
 /**
  * Format a state vector as a Dirac string using Cirq dirac_notation rules.
+ * Callers must apply normalizeUnitaryLeadingPhase to the trial unitary first.
  */
 export function formatStateVectorAsDirac(
   amplitudes: readonly C[],
@@ -84,16 +95,7 @@ export function formatStateVectorAsDirac(
   return components.join(" + ").replace(/ \+ -/g, " - ");
 }
 
-/** Leading-phase normalization then Cirq-style Dirac formatting (preview trial kets). */
-export function formatColumnAsDiracNormalized(
-  col: readonly C[],
-  qubitCount: number,
-  decimals = 3
-): string {
-  return formatStateVectorAsDirac(normalizeLeadingPhase(col), qubitCount, decimals);
-}
-
-/** Format raw amplitudes without phase normalization (legacy / non-preview use). */
+/** Format raw amplitudes without phase normalization. */
 export function formatColumnAsDirac(
   col: readonly C[],
   qubitCount: number,
