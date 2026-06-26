@@ -26,6 +26,18 @@ describe("level skip status", () => {
     expect(isLevelUnlocked(1, sLevel, [], skippedX)).toBe(true);
   });
 
+  it("does not unlock the next level when the previous is only completed", () => {
+    const sLevel = LEVEL_ORDER[1];
+    expect(isLevelUnlocked(1, sLevel, [Gate.X], [], [])).toBe(false);
+    expect(getLevelStatus(1, sLevel, [Gate.X], [], [])).toBe("locked");
+  });
+
+  it("unlocks the next level when the previous is in advancedPastLevels", () => {
+    const sLevel = LEVEL_ORDER[1];
+    expect(isLevelUnlocked(1, sLevel, [Gate.X], [], [Gate.X])).toBe(true);
+    expect(getLevelStatus(1, sLevel, [Gate.X], [], [Gate.X])).toBe("unlocked");
+  });
+
   it("allTier2Complete returns true when Tier 2 levels are skipped", () => {
     const skippedTier2 = TIER2_LEVELS.map((l) => l.target_unitary);
     expect(allTier2Complete([], skippedTier2)).toBe(true);

@@ -119,13 +119,13 @@ function TierSection({
 }
 
 export default function LevelsPage() {
-  const { completedLevels, skippedLevels } = useLevelProgress();
+  const { completedLevels, skippedLevels, advancedPastLevels } = useLevelProgress();
   const navigate = useNavigate();
 
   const allItems = LEVEL_ORDER.map((level, index) => ({
     level,
     index,
-    status: getLevelStatus(index, level, completedLevels, skippedLevels),
+    status: getLevelStatus(index, level, completedLevels, skippedLevels, advancedPastLevels),
   }));
 
   const tier1 = allItems.filter((item) => item.level.number_of_qubits === 1);

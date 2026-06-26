@@ -86,7 +86,7 @@ function SolveLevelContent({
   const isRandomThetaLevel =
     currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
 
-  const { completedLevels, skippedLevels, markLevelComplete, unlockGateForLevel, skipLevel } =
+  const { completedLevels, skippedLevels, markLevelComplete, advancePastLevel, unlockGateForLevel, skipLevel } =
     useLevelProgress();
 
   const isSeedDrivenLevel =
@@ -243,6 +243,7 @@ function SolveLevelContent({
   const handleNextLevel = () => {
     const next = getNextLevel(currentLevel);
     if (next) {
+      advancePastLevel(currentLevel);
       unlockGateForLevel(currentLevel);
       setShowCompletionModal(false);
       navigate("/level/" + next.target_unitary);

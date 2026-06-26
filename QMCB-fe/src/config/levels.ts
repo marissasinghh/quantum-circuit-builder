@@ -478,26 +478,67 @@ export function allTier2Complete(
   );
 }
 
+/** True when every Tier 2 level was skipped or the player clicked Next past it. */
+export function allTier2AdvancedPast(
+  skippedLevels: string[] = [],
+  advancedPastLevels: string[] = [],
+): boolean {
+  return TIER2_LEVELS.every(
+    (l) =>
+      skippedLevels.includes(l.target_unitary) ||
+      advancedPastLevels.includes(l.target_unitary),
+  );
+}
+
+/** Backfill for saves before advancedPastLevels existed. */
+export function deriveAdvancedPastLevels(
+  completedLevels: string[],
+  skippedLevels: string[] = [],
+): string[] {
+  const advanced = new Set(skippedLevels);
+  let maxCompletedIndex = -1;
+  for (let i = 0; i < LEVEL_ORDER.length; i++) {
+    if (completedLevels.includes(LEVEL_ORDER[i].target_unitary)) {
+      maxCompletedIndex = i;
+    }
+  }
+  for (let i = 0; i < maxCompletedIndex; i++) {
+    advanced.add(LEVEL_ORDER[i].target_unitary);
+  }
+  return [...advanced];
+}
+
+/** Whether the previous level in the chain grants access (skip or explicit Next). */
+function previousLevelGrantsAccess(
+  index: number,
+  skippedLevels: string[],
+  advancedPastLevels: string[],
+): boolean {
+  const previousId = LEVEL_ORDER[index - 1].target_unitary;
+  return (
+    skippedLevels.includes(previousId) || advancedPastLevels.includes(previousId)
+  );
+}
+
 /** Whether a level is playable (not considering completion status). */
 export function isLevelUnlocked(
   index: number,
   level: LevelDefinition,
-  completedLevels: string[],
+  _completedLevels: string[],
   skippedLevels: string[] = [],
+  advancedPastLevels: string[] = [],
 ): boolean {
   if (level.locked) return false;
   if (index === 0) return true;
 
   if (level.number_of_qubits === 3) {
     const firstTier3Index = LEVEL_ORDER.findIndex((l) => l.number_of_qubits === 3);
-    if (index === firstTier3Index) return allTier2Complete(completedLevels, skippedLevels);
+    if (index === firstTier3Index) {
+      return allTier2AdvancedPast(skippedLevels, advancedPastLevels);
+    }
   }
 
-  return isLevelCleared(
-    LEVEL_ORDER[index - 1].target_unitary,
-    completedLevels,
-    skippedLevels,
-  );
+  return previousLevelGrantsAccess(index, skippedLevels, advancedPastLevels);
 }
 
 export type LevelStatus = "locked" | "unlocked" | "completed" | "skipped";
@@ -507,6 +548,7 @@ export function getLevelStatus(
   level: LevelDefinition,
   completedLevels: string[],
   skippedLevels: string[] = [],
+  advancedPastLevels: string[] = [],
 ): LevelStatus {
   if (level.locked) return "locked";
 
@@ -516,7 +558,17 @@ export function getLevelStatus(
   const isSkipped = skippedLevels.includes(level.target_unitary);
   if (isSkipped) return "skipped";
 
-  if (isLevelUnlocked(index, level, completedLevels, skippedLevels)) return "unlocked";
+  if (
+    isLevelUnlocked(
+      index,
+      level,
+      completedLevels,
+      skippedLevels,
+      advancedPastLevels,
+    )
+  ) {
+    return "unlocked";
+  }
   return "locked";
 }
 
