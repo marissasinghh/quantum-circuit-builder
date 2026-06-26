@@ -14,17 +14,24 @@ import {
 import { Gate } from "../types/global";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { LEVEL_PROGRESS_KEY } from "../utils/constants";
+import { deriveAdvancedPastLevels } from "../config/levels";
 
 const STARTING_GATES: Gate[] = [Gate.RZ, Gate.SQRT_X];
 
 interface ProgressState {
   completedLevels: string[];
   skippedLevels: string[];
+  advancedPastLevels: string[];
   unlockedGates: Gate[];
 }
 
 function defaultProgress(): ProgressState {
-  return { completedLevels: [], skippedLevels: [], unlockedGates: [...STARTING_GATES] };
+  return {
+    completedLevels: [],
+    skippedLevels: [],
+    advancedPastLevels: [],
+    unlockedGates: [...STARTING_GATES],
+  };
 }
 
 function isValidProgressState(value: unknown): value is ProgressState {
@@ -35,14 +42,22 @@ function isValidProgressState(value: unknown): value is ProgressState {
     v.completedLevels.every((id) => typeof id === "string") &&
     Array.isArray(v.unlockedGates) &&
     (v.skippedLevels === undefined ||
-      (Array.isArray(v.skippedLevels) && v.skippedLevels.every((id) => typeof id === "string")))
+      (Array.isArray(v.skippedLevels) && v.skippedLevels.every((id) => typeof id === "string"))) &&
+    (v.advancedPastLevels === undefined ||
+      (Array.isArray(v.advancedPastLevels) &&
+        v.advancedPastLevels.every((id) => typeof id === "string")))
   );
 }
 
 function normalizeProgress(value: ProgressState): ProgressState {
+  const skippedLevels = value.skippedLevels ?? [];
+  const completedLevels = value.completedLevels;
   return {
     ...value,
-    skippedLevels: value.skippedLevels ?? [],
+    skippedLevels,
+    advancedPastLevels:
+      value.advancedPastLevels ??
+      deriveAdvancedPastLevels(completedLevels, skippedLevels),
   };
 }
 
@@ -60,9 +75,11 @@ function loadProgress(): ProgressState {
 interface LevelProgressContextValue {
   completedLevels: string[];
   skippedLevels: string[];
+  advancedPastLevels: string[];
   unlockedGates: Gate[];
   markLevelComplete: (level: LevelDefinition) => void;
   markLevelSkipped: (level: LevelDefinition) => void;
+  advancePastLevel: (level: LevelDefinition) => void;
   unlockGateForLevel: (level: LevelDefinition) => void;
   skipLevel: (level: LevelDefinition) => void;
   resetProgress: () => void;
@@ -101,6 +118,23 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
       const next: ProgressState = {
         ...prev,
         skippedLevels: [...prev.skippedLevels, levelId],
+      };
+      localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  /**
+   * Records that the player clicked Next past this level, unlocking the following level.
+   * Idempotent: calling this multiple times for the same level is safe.
+   */
+  const advancePastLevel = useCallback((level: LevelDefinition) => {
+    const levelId = level.target_unitary;
+    setProgress((prev) => {
+      if (prev.advancedPastLevels.includes(levelId)) return prev;
+      const next: ProgressState = {
+        ...prev,
+        advancedPastLevels: [...prev.advancedPastLevels, levelId],
       };
       localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
       return next;
@@ -158,9 +192,11 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
   const value: LevelProgressContextValue = {
     completedLevels: progress.completedLevels,
     skippedLevels: progress.skippedLevels,
+    advancedPastLevels: progress.advancedPastLevels,
     unlockedGates: progress.unlockedGates,
     markLevelComplete,
     markLevelSkipped,
+    advancePastLevel,
     unlockGateForLevel,
     skipLevel,
     resetProgress,
