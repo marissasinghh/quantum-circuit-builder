@@ -20,6 +20,7 @@ import {
   MULTI_QUBIT_OWNER_WIRE,
   type WireContainers,
 } from "../utils/placedGateDrag";
+import { isValidSingleWire } from "../utils/wireValidation";
 
 const TOOL_TO_GATE: Record<string, Gate> = {
   "tool-x": Gate.X,
@@ -42,7 +43,7 @@ const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTRO
 export function useDragAndDrop(
   gates: PlacedGate[],
   numberOfQubits: number,
-  addSingleQubitGate: (gate: SingleQubitGate, wire: 0 | 1) => void,
+  addSingleQubitGate: (gate: SingleQubitGate, wire: SingleWire) => void,
   addTwoQubitGate: (gate: TwoQubitGate) => void,
   moveGate: (id: string, to: number, wire?: SingleWire) => void,
   removeGate: (id: string) => void
@@ -167,7 +168,13 @@ export function useDragAndDrop(
         const placement = insertIndexFromContainers(containers, id);
 
         if (placement) {
-          const { to, wire } = globalIndexForWireDrop(gates, id, placement.wire, placement.index);
+          const { to, wire } = globalIndexForWireDrop(
+            gates,
+            id,
+            placement.wire,
+            placement.index,
+            numberOfQubits
+          );
           if (wire !== undefined && !isMultiQubitGateId(id, gates)) {
             moveGate(id, to, wire);
           } else {
@@ -185,14 +192,14 @@ export function useDragAndDrop(
 
       const wireMatch = overId.match(/^drop-wire-(\d+)$/);
       if (!wireMatch) return;
-      const wire = parseInt(wireMatch[1], 10) as 0 | 1;
+      const wire = parseInt(wireMatch[1], 10);
 
       const gateType = TOOL_TO_GATE[id];
       if (!gateType) return;
 
       if (TWO_QUBIT_GATES.has(gateType)) {
         addTwoQubitGate(gateType as TwoQubitGate);
-      } else {
+      } else if (isValidSingleWire(wire, numberOfQubits)) {
         addSingleQubitGate(gateType as SingleQubitGate, wire);
       }
     },

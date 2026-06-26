@@ -18,6 +18,8 @@ export interface GradingSummary {
   samplesPassed: number;
 }
 
+export type OutputTableMode = "preview" | "graded";
+
 interface OutputTableProps {
   rows: TruthRow[] | null;
   isCorrect: boolean;
@@ -27,6 +29,8 @@ interface OutputTableProps {
   onClearAndRetry?: () => void;
   /** Present for random-theta levels (Rx, Ry) where the backend grades via unitary comparison. */
   gradingSummary?: GradingSummary;
+  /** Preview: live client-side trial rows without match indicators. Graded: post-Check-Solution. */
+  mode?: OutputTableMode;
 }
 
 const CELL_CLASS = "px-3 py-1.5";
@@ -133,9 +137,11 @@ export function OutputTable({
   isChecking = false,
   onClearAndRetry,
   gradingSummary,
+  mode = "graded",
 }: OutputTableProps) {
+  const isPreview = mode === "preview";
   const hasPartialMismatch =
-    rows && rows.length > 0 && !isCorrect && !error;
+    !isPreview && rows && rows.length > 0 && !isCorrect && !error;
   const matchCount = hasPartialMismatch ? rows.filter((r) => r.ok).length : 0;
   const totalRows = rows?.length ?? 0;
 
@@ -147,7 +153,7 @@ export function OutputTable({
         </h2>
       </div>
 
-      {isCorrect && (
+      {isCorrect && !isPreview && (
         <div className="mb-3 bg-match-bg border border-tier1 rounded-md px-3 py-2 text-sm font-sans text-text-body">
           All rows match — circuit verified ✓
         </div>
@@ -202,7 +208,9 @@ export function OutputTable({
 
       {!rows && !error && !isCorrect && !gradingSummary && (
         <div className="font-sans text-[12px] text-tier2">
-          Submit to see the truth tables.
+          {isPreview
+            ? "Build a circuit to preview outputs."
+            : "Submit to see the truth tables."}
         </div>
       )}
 
@@ -225,14 +233,25 @@ export function OutputTable({
                     P(e)
                     <ExpectedPHeaderTooltip />
                   </th>
-                  <th className={`${CELL_CLASS} text-left font-normal`}>Match</th>
+                  {!isPreview && (
+                    <th className={`${CELL_CLASS} text-left font-normal`}>Match</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.input} className={r.ok ? "bg-match-bg" : "bg-mismatch-bg"}>
+                  <tr
+                    key={r.input}
+                    className={
+                      isPreview ? undefined : r.ok ? "bg-match-bg" : "bg-mismatch-bg"
+                    }
+                  >
                     <td className={`${CELL_CLASS} text-tier3`}>{r.input}</td>
-                    <td className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-mismatch-text"}`}>
+                    <td
+                      className={`${CELL_CLASS} ${
+                        isPreview || r.ok ? "text-tier3" : "text-mismatch-text"
+                      }`}
+                    >
                       <AmplitudeCell value={r.trial} />
                     </td>
                     <td className={`${CELL_CLASS} text-text-muted`}>
@@ -244,9 +263,13 @@ export function OutputTable({
                     <td className={`${CELL_CLASS} text-text-muted`}>
                       <ProbabilityCell probs={r.targetProbabilities} />
                     </td>
-                    <td className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-error-action"}`}>
-                      {r.ok ? "✓" : "✗"}
-                    </td>
+                    {!isPreview && (
+                      <td
+                        className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-error-action"}`}
+                      >
+                        {r.ok ? "✓" : "✗"}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

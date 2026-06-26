@@ -22,6 +22,7 @@ import {
   moveGate as moveGateInCircuit,
   clear as clearCircuit,
 } from "../utils/circuit";
+import { isValidSingleWire } from "../utils/wireValidation";
 
 const ROTATION_GATES = new Set<SingleQubitGate>([Gate.RX, Gate.RY, Gate.RZ]);
 
@@ -29,7 +30,7 @@ function isRotationGate(type: SingleQubitGate): boolean {
   return ROTATION_GATES.has(type);
 }
 
-export function useCircuit() {
+export function useCircuit(numberOfQubits: number) {
   /** Current circuit, always stored in column order (0..n-1). */
   const [gates, setGates] = useState<PlacedGate[]>([]);
 
@@ -43,23 +44,32 @@ export function useCircuit() {
     setGates((prev) => append(prev, g));
   }, []);
 
-  const addSingleQubitGate = useCallback((type: SingleQubitGate, wire: 0 | 1) => {
-    const g: PlacedSingleQubitGate = {
-      id: crypto.randomUUID(),
-      type,
-      wire,
-      column: 0,
-    };
-    setGates((prev) => append(prev, g));
-  }, []);
+  const addSingleQubitGate = useCallback(
+    (type: SingleQubitGate, wire: SingleWire) => {
+      if (!isValidSingleWire(wire, numberOfQubits)) return;
+
+      const g: PlacedSingleQubitGate = {
+        id: crypto.randomUUID(),
+        type,
+        wire,
+        column: 0,
+      };
+      setGates((prev) => append(prev, g));
+    },
+    [numberOfQubits]
+  );
 
   const setGateOrder = useCallback((id: string, order: ControlTargetOrder) => {
     setGates((prev) => setOrderInCircuit(prev, id, order));
   }, []);
 
-  const moveGate = useCallback((id: string, to: number, wire?: SingleWire) => {
-    setGates((prev) => moveGateInCircuit(prev, id, to, wire));
-  }, []);
+  const moveGate = useCallback(
+    (id: string, to: number, wire?: SingleWire) => {
+      if (wire !== undefined && !isValidSingleWire(wire, numberOfQubits)) return;
+      setGates((prev) => moveGateInCircuit(prev, id, to, wire));
+    },
+    [numberOfQubits]
+  );
 
   const setGateTheta = useCallback((id: string, theta: number) => {
     setGates((prev) => prev.map((g) => (g.id === id && "wire" in g ? { ...g, theta } : g)));
