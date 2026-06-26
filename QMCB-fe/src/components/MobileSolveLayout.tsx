@@ -203,7 +203,7 @@ export function MobileSolveLayout({
 
           {/* ── Play tab ── */}
           {activeTab === "play" && (
-            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto panel-scroll">
 
               {/* Horizontal gate row */}
               <div className="shrink-0 px-3 pt-3 pb-2 bg-bg-sidebar border-b border-tier1">
@@ -310,7 +310,7 @@ export function MobileSolveLayout({
 
           {/* ── Info tab ── */}
           {activeTab === "info" && (
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-4">
+            <div className="flex-1 min-h-0 overflow-y-auto panel-scroll p-4 flex flex-col gap-4">
               <TaskCard
                 level={currentLevel}
                 dynamicTruth={isSeedDrivenLevel ? dynamicTruth : undefined}

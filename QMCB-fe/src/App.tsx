@@ -60,7 +60,7 @@ function LevelSidebar() {
 
   return (
     <aside
-      className="hidden sm:block sm:shrink sm:basis-[180px] sm:min-w-[120px] bg-bg-sidebar border-r border-tier1 overflow-y-auto h-full px-3"
+      className="hidden sm:block sm:shrink sm:basis-[180px] sm:min-w-[120px] bg-bg-sidebar border-r border-tier1 overflow-y-auto panel-scroll h-full px-3"
     >
       {renderTier("TIER 1 — SINGLE QUBIT", tier1)}
       {renderTier("TIER 2 — TWO QUBIT", tier2)}

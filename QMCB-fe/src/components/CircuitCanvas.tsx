@@ -222,7 +222,7 @@ export function CircuitCanvas({
             return (
               <div
                 key={`sortable-wire-${wireIndex}`}
-                className="absolute left-0 right-0 z-20"
+                className="absolute left-0 right-0 z-20 pointer-events-none"
                 style={{ top: y - 20, height: 40 }}
               >
                 <SortableContext items={wireIds} strategy={horizontalListSortingStrategy}>

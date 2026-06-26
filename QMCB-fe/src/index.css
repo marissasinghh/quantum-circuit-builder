@@ -140,4 +140,29 @@ body {
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
+
+  /* Scrollable panels — solve page columns, sidebar, levels page */
+  .panel-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #4a6474 #0c1828;
+  }
+
+  .panel-scroll::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  .panel-scroll::-webkit-scrollbar-track {
+    background: #0c1828;
+    border-radius: 4px;
+  }
+
+  .panel-scroll::-webkit-scrollbar-thumb {
+    background: #4a6474;
+    border-radius: 4px;
+  }
+
+  .panel-scroll::-webkit-scrollbar-thumb:hover {
+    background: #8ab4c8;
+  }
 }
