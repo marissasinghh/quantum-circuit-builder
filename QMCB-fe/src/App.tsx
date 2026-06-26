@@ -37,18 +37,29 @@ function LevelSidebar() {
         {items.map(({ level, index, status }) => {
           const isLocked = status === "locked";
           const isActive = activeId === level.target_unitary;
+          const isCompleted = status === "completed";
+
+          let rowClass =
+            "nav-level-row py-1 select-none whitespace-nowrap ";
+          if (isActive) {
+            rowClass +=
+              "text-text-emphasis bg-bg-elevated border-l-2 border-tier3 pl-[10px] cursor-pointer";
+          } else if (isLocked) {
+            rowClass += "text-text-faint pl-3 cursor-not-allowed opacity-60";
+          } else if (isCompleted) {
+            rowClass +=
+              "text-text-faint pl-3 cursor-pointer hover:bg-bg-hover hover:text-text-secondary";
+          } else {
+            // unlocked or skipped — reachable, lighter than locked
+            rowClass +=
+              "text-text-secondary pl-3 cursor-pointer hover:bg-bg-hover hover:text-text-body";
+          }
 
           return (
             <div
               key={level.target_unitary}
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
-              className={[
-                "nav-level-row py-1 cursor-pointer select-none whitespace-nowrap",
-                isActive
-                  ? "text-text-emphasis bg-bg-elevated border-l-2 border-tier3 pl-[10px]"
-                  : "text-text-faint pl-3",
-                isLocked ? "cursor-not-allowed opacity-60" : !isActive ? "hover:bg-bg-hover hover:text-text-secondary" : "",
-              ].join(" ")}
+              className={rowClass}
             >
               {getLevelNumber(index)} {getLevelDisplayName(level)}
             </div>
