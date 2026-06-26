@@ -37,7 +37,6 @@ function LevelSidebar() {
         {items.map(({ level, index, status }) => {
           const isLocked = status === "locked";
           const isActive = activeId === level.target_unitary;
-          const isCompleted = status === "completed";
 
           let rowClass =
             "nav-level-row py-1 select-none whitespace-nowrap ";
@@ -46,11 +45,8 @@ function LevelSidebar() {
               "text-text-emphasis bg-bg-elevated border-l-2 border-tier3 pl-[10px] cursor-pointer";
           } else if (isLocked) {
             rowClass += "text-text-faint pl-3 cursor-not-allowed opacity-60";
-          } else if (isCompleted) {
-            rowClass +=
-              "text-text-faint pl-3 cursor-pointer hover:bg-bg-hover hover:text-text-secondary";
           } else {
-            // unlocked or skipped — reachable, lighter than locked
+            // reachable: completed, skipped, or unlocked-not-started
             rowClass +=
               "text-text-secondary pl-3 cursor-pointer hover:bg-bg-hover hover:text-text-body";
           }
