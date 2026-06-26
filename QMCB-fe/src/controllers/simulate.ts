@@ -92,6 +92,8 @@ export function buildRequestFromLevel(
 /**
  * Convert backend DTO into rows the table can render.
  * Returns null for random-theta responses where the backend sends no truth tables.
+ * Trial/target ket strings are pre-formatted by Cirq on the backend; the client-side
+ * counterpart for live preview is formatColumnAsDiracNormalized in utils/diracFormatting.ts.
  */
 export function toTruthRows(res: SimulationResponseDTO): TruthRow[] | null {
   const t = res.trial_truth_table;

@@ -77,47 +77,6 @@ export function probabilitiesFromColumn(col: readonly C[], decimals = 3): number
   });
 }
 
-function formatComplexCoeff(amp: C, decimals: number): string {
-  const re = Number(amp.re.toFixed(decimals));
-  const im = Number(amp.im.toFixed(decimals));
-
-  if (Math.abs(re) < 10 ** -decimals && Math.abs(im) < 10 ** -decimals) {
-    return "0";
-  }
-  if (Math.abs(im) < 10 ** -decimals) {
-    return `${re}`;
-  }
-  if (Math.abs(re) < 10 ** -decimals) {
-    return im === 1 ? "j" : im === -1 ? "-j" : `${im}j`;
-  }
-  const imPart = im === 1 ? "+j" : im === -1 ? "-j" : im >= 0 ? `+${im}j` : `${im}j`;
-  return `(${re}${imPart})`;
-}
-
-/** Format an amplitude column as a Dirac string (decimals=3, Cirq-style). */
-export function formatColumnAsDirac(col: readonly C[], qubitCount: number, decimals = 3): string {
-  const terms: string[] = [];
-
-  for (let i = 0; i < col.length; i++) {
-    const amp = col[i];
-    if (cabs(amp) < 10 ** -decimals) continue;
-
-    const ket = basisInputLabel(qubitCount, i);
-    const coeff = formatComplexCoeff(amp, decimals);
-
-    if (coeff === "1") {
-      terms.push(ket);
-    } else if (coeff === "-1") {
-      terms.push(`-${ket}`);
-    } else {
-      terms.push(`${coeff}${ket}`);
-    }
-  }
-
-  if (terms.length === 0) return "0";
-  return terms.join(" + ").replace(/\+ -/g, "- ");
-}
-
 export function roundProbabilities(probs: readonly number[], decimals = 3): number[] {
   return probs.map((p) => Number(p.toFixed(decimals)));
 }
