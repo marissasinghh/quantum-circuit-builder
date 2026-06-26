@@ -335,7 +335,7 @@ function SolveLevelContent({
       >
         <div className="flex-1 w-full min-w-0 flex flex-col sm:flex-row sm:min-h-0 sm:h-full overflow-y-auto sm:overflow-y-hidden">
           {/* Center: Task + Circuit Canvas */}
-          <section className="relative w-full sm:flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 overflow-hidden gap-3 min-h-[320px] sm:min-h-0">
+          <section className="relative w-full sm:flex-1 flex flex-col min-w-0 bg-bg-app canvas-grid p-4 gap-3 min-h-[320px] sm:min-h-0 sm:h-full sm:overflow-y-auto panel-scroll">
             <TaskCard
               level={currentLevel}
               dynamicTruth={isSeedDrivenLevel ? seedDrivenQuery.data?.truth_table : undefined}
@@ -367,7 +367,7 @@ function SolveLevelContent({
 
           {/* Right: Gateset + Bloch + Output */}
           <aside
-            className="w-full sm:w-auto sm:shrink sm:basis-[523px] sm:min-w-[200px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto flex flex-col gap-0 min-h-0 sm:h-full"
+            className="w-full sm:w-auto sm:shrink sm:basis-[523px] sm:min-w-[200px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto panel-scroll flex flex-col gap-0 min-h-0 sm:h-full"
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
               <Gateset availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
