@@ -91,7 +91,6 @@ interface MobileSolveLayoutProps {
 
   // Completion modal
   showCompletionModal: boolean;
-  setShowCompletionModal: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Drag and drop
   activeId: string | null;
