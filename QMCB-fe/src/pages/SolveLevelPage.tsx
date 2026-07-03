@@ -250,6 +250,8 @@ function SolveLevelContent({
   };
 
   const handleRepeat = () => {
+    advancePastLevel(currentLevel);
+    unlockGateForLevel(currentLevel);
     handleClear();
     setShowCompletionModal(false);
   };
