@@ -106,19 +106,36 @@ export function moveBetweenContainers(
   return next;
 }
 
+/**
+ * Returns the index at which activeId should be inserted relative to overId in containerIds.
+ * activeId is expected to be absent from containerIds (cross-wire / toolbox drop scenario).
+ * Returns containerIds.length when overId is not found (append to end).
+ */
 export function insertIndexForOver(
   containerIds: string[],
-  activeId: string,
+  _activeId: string,
   overId: string
 ): number {
-  const overIndex = containerIds.indexOf(overId);
-  if (overIndex < 0) return containerIds.length;
+  const idx = containerIds.indexOf(overId);
+  return idx >= 0 ? idx : containerIds.length;
+}
 
-  const activeIndex = containerIds.indexOf(activeId);
-  if (activeIndex >= 0 && activeIndex < overIndex) {
-    return overIndex;
-  }
-  return overIndex;
+/**
+ * Immutable helper: move activeId to insertIndex within wire, removing it first if already
+ * present. All other wires in containers are left unchanged.
+ */
+export function insertAtIndex(
+  containers: WireContainers,
+  wire: number,
+  activeId: string,
+  insertIndex: number
+): WireContainers {
+  const list = [...(containers[wire] ?? [])];
+  const oldIdx = list.indexOf(activeId);
+  if (oldIdx >= 0) list.splice(oldIdx, 1);
+  const pos = Math.max(0, Math.min(insertIndex, list.length));
+  list.splice(pos, 0, activeId);
+  return { ...containers, [wire]: list };
 }
 
 /** Convert wire-local insert index to global moveGate `to` (and optional wire for cross-wire). */

@@ -26,9 +26,28 @@ export function DraggableTool({
   );
 }
 
-/** A measurable droppable strip (absolute inside a relatively positioned container). */
-export function DroppableStrip({ id, top, height }: { id: string; top: number; height: number }) {
-  const { setNodeRef, isOver } = useDroppable({ id });
+/**
+ * A measurable droppable strip (absolute inside a relatively positioned container).
+ *
+ * Visual state is driven by the `isActiveTarget` prop rather than dnd-kit's own
+ * `isOver` flag.  With the wireFirstCollision strategy, `isOver` is always correct
+ * (the strip wins over chips), but we make the data flow explicit so the indicator
+ * and the functional drop path share the same computed {wire, index} source of truth.
+ * useDroppable is still called so dnd-kit can measure the strip's bounding rect
+ * (used by wireFirstCollision and by onDragMove to compute canvas-relative x).
+ */
+export function DroppableStrip({
+  id,
+  top,
+  height,
+  isActiveTarget = false,
+}: {
+  id: string;
+  top: number;
+  height: number;
+  isActiveTarget?: boolean;
+}) {
+  const { setNodeRef } = useDroppable({ id });
   return (
     <div
       ref={setNodeRef}
@@ -38,7 +57,7 @@ export function DroppableStrip({ id, top, height }: { id: string; top: number; h
         right: 0,
         top,
         height,
-        outline: isOver ? "2px dashed #7dc4e0" : "none",
+        outline: isActiveTarget ? "2px dashed #7dc4e0" : "none",
         outlineOffset: 2,
       }}
     />

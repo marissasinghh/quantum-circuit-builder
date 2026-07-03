@@ -100,6 +100,12 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
   const thetaLabel =
     gate.theta !== undefined ? `${((gate.theta * 180) / Math.PI).toFixed(0)}°` : null;
 
+  // Combine dnd-kit's sortable transition (handles transform) with a left-position
+  // transition so chips animate smoothly when dragContainers reorders them.
+  const combinedTransition = [transition, "left 150ms ease"]
+    .filter(Boolean)
+    .join(", ");
+
   const style: React.CSSProperties = {
     position: "absolute",
     left,
@@ -107,7 +113,7 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
     width: glyphW,
     height: sqH,
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: combinedTransition,
     opacity: isDragging ? 0.35 : 1,
     zIndex: isDragging ? 20 : undefined,
     touchAction: "none",
