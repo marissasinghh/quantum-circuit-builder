@@ -132,7 +132,9 @@ export function useDragAndDrop(
           return;
         }
 
-        let containers = dragContainers ?? buildWireContainers(gates, numberOfQubits);
+        // Always rebuild from committed gate state so the result is deterministic
+        // regardless of whether onDragOver's setDragContainers has committed yet.
+        let containers = buildWireContainers(gates, numberOfQubits);
         const dropWire = wireFromDropId(overId);
         if (dropWire !== null) {
           const fromWire = findWireForGate(containers, id);
@@ -155,12 +157,12 @@ export function useDragAndDrop(
             if (isMultiQubitGateId(id, gates) && toWire !== MULTI_QUBIT_OWNER_WIRE) {
               // multi-qubit gates reorder only within wire-0 ownership context
             } else {
-            const overIndex = insertIndexForOver(containers[toWire] ?? [], id, overId);
-            if (fromWire === toWire) {
-              containers = reorderWithinContainer(containers, toWire, id, overId);
-            } else if (!isMultiQubitGateId(id, gates)) {
-              containers = moveBetweenContainers(containers, id, fromWire, toWire, overIndex);
-            }
+              const overIndex = insertIndexForOver(containers[toWire] ?? [], id, overId);
+              if (fromWire === toWire) {
+                containers = reorderWithinContainer(containers, toWire, id, overId);
+              } else if (!isMultiQubitGateId(id, gates)) {
+                containers = moveBetweenContainers(containers, id, fromWire, toWire, overIndex);
+              }
             }
           }
         }
@@ -190,9 +192,21 @@ export function useDragAndDrop(
 
       if (!isToolboxDragId(id)) return;
 
+      // Resolve target wire from drop-wire-N OR from a placed gate chip that
+      // closestCenter selected instead of the DroppableStrip (dead-zone fix).
+      let wire: number | undefined;
       const wireMatch = overId.match(/^drop-wire-(\d+)$/);
-      if (!wireMatch) return;
-      const wire = parseInt(wireMatch[1], 10);
+      if (wireMatch) {
+        wire = parseInt(wireMatch[1], 10);
+      } else if (isPlacedGateId(overId, gates)) {
+        const overGate = gates.find((g) => g.id === overId);
+        if (overGate && "wire" in overGate) {
+          wire = overGate.wire;
+        }
+        // multi-qubit chip has no single wire — leave wire undefined → no-op
+      }
+
+      if (wire === undefined) return;
 
       const gateType = TOOL_TO_GATE[id];
       if (!gateType) return;
@@ -203,7 +217,7 @@ export function useDragAndDrop(
         addSingleQubitGate(gateType as SingleQubitGate, wire);
       }
     },
-    [gates, numberOfQubits, dragContainers, moveGate, removeGate, addTwoQubitGate, addSingleQubitGate]
+    [gates, numberOfQubits, moveGate, removeGate, addTwoQubitGate, addSingleQubitGate]
   );
 
   return {
