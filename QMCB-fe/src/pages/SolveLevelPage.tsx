@@ -5,10 +5,10 @@ import {
   DragOverlay,
   PointerSensor,
   TouchSensor,
-  closestCenter,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { wireFirstCollision } from "../utils/collisionDetection";
 
 import { useCircuit } from "../hooks/useCircuit";
 import { useLevelProgress } from "../hooks/useLevelProgress";
@@ -136,8 +136,10 @@ function SolveLevelContent({
     activeId,
     dragContainers,
     isDraggingPlacedGate,
+    activeTargetWire,
     onDragStart,
     onDragOver,
+    onDragMove,
     onDragCancel,
     onDragEnd,
   } = useDragAndDrop(
@@ -318,8 +320,10 @@ function SolveLevelContent({
         activeId={activeId}
         dragContainers={dragContainers}
         isDraggingPlacedGate={isDraggingPlacedGate}
+        activeTargetWire={activeTargetWire}
         onDragStart={onDragStart}
         onDragOver={onDragOver}
+        onDragMove={onDragMove}
         onDragCancel={onDragCancel}
         onDragEnd={onDragEnd}
         sensors={sensors}
@@ -342,8 +346,9 @@ function SolveLevelContent({
     <div className="flex flex-1 min-h-0 w-full h-full">
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={wireFirstCollision}
         onDragStart={onDragStart}
+        onDragMove={onDragMove}
         onDragOver={onDragOver}
         onDragCancel={onDragCancel}
         onDragEnd={onDragEnd}
@@ -361,6 +366,7 @@ function SolveLevelContent({
               numberOfQubits={currentLevel.number_of_qubits}
               dragContainers={dragContainers}
               isDraggingPlacedGate={isDraggingPlacedGate}
+              activeDropWire={activeTargetWire}
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
               onSetGateTheta={setGateTheta}

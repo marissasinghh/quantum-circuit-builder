@@ -8,13 +8,14 @@ import React from "react";
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
   useSensors,
   type DragCancelEvent,
   type DragEndEvent,
+  type DragMoveEvent,
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
+import { wireFirstCollision } from "../utils/collisionDetection";
 
 import { CircuitCanvas } from "./CircuitCanvas";
 import { DragGateOverlay } from "./DragGateOverlay";
@@ -96,8 +97,10 @@ interface MobileSolveLayoutProps {
   activeId: string | null;
   dragContainers: WireContainers | null;
   isDraggingPlacedGate: boolean;
+  activeTargetWire: number | null;
   onDragStart: (event: DragStartEvent) => void;
   onDragOver: (event: DragOverEvent) => void;
+  onDragMove: (event: DragMoveEvent) => void;
   onDragCancel: (event: DragCancelEvent) => void;
   onDragEnd: (event: DragEndEvent) => void;
   sensors: ReturnType<typeof useSensors>;
@@ -155,8 +158,10 @@ export function MobileSolveLayout({
   activeId,
   dragContainers,
   isDraggingPlacedGate,
+  activeTargetWire,
   onDragStart,
   onDragOver,
+  onDragMove,
   onDragCancel,
   onDragEnd,
   sensors,
@@ -176,8 +181,9 @@ export function MobileSolveLayout({
       <div className="flex flex-1 flex-col min-h-0 w-full h-full">
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCenter}
+          collisionDetection={wireFirstCollision}
           onDragStart={onDragStart}
+          onDragMove={onDragMove}
           onDragOver={onDragOver}
           onDragCancel={onDragCancel}
           onDragEnd={onDragEnd}
@@ -246,6 +252,7 @@ export function MobileSolveLayout({
                   numberOfQubits={currentLevel.number_of_qubits}
                   dragContainers={dragContainers}
                   isDraggingPlacedGate={isDraggingPlacedGate}
+                  activeDropWire={activeTargetWire}
                   onRemoveGate={removeGate}
                   onSetGateOrder={setGateOrder}
                   onSetGateTheta={setGateTheta}

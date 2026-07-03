@@ -20,6 +20,7 @@ import {
   MULTI_QUBIT_OWNER_WIRE,
   type WireContainers,
 } from "../utils/placedGateDrag";
+import { CANVAS_PAD_X, CANVAS_COL_W } from "../utils/canvasGeometry";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
 
@@ -28,6 +29,8 @@ interface CircuitCanvasProps {
   numberOfQubits: number;
   dragContainers?: WireContainers | null;
   isDraggingPlacedGate?: boolean;
+  /** Wire index that the current drag is targeting — drives the DroppableStrip indicator. */
+  activeDropWire?: number | null;
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
   onSetGateTheta: (id: string, theta: number) => void;
@@ -51,7 +54,8 @@ const THETA_PRESETS = [
 ] as const;
 
 const LABEL_PAD = 36;
-const PAD_X = 100;
+const PAD_X = CANVAS_PAD_X;
+const COL_W_CONST = CANVAS_COL_W;
 const CANVAS_H = 200;
 const SQ_W = 44;
 const SQ_H = 40;
@@ -76,6 +80,7 @@ export function CircuitCanvas({
   numberOfQubits,
   dragContainers = null,
   isDraggingPlacedGate = false,
+  activeDropWire = null,
   onRemoveGate,
   onSetGateOrder,
   onSetGateTheta,
@@ -87,10 +92,9 @@ export function CircuitCanvas({
   onSkip,
   showSkip = false,
 }: CircuitCanvasProps) {
-  const COL_W = 90;
   const orderedGates = gatesInColumnOrder(gates);
   const columnCount = orderedGates.length > 0 ? orderedGates[orderedGates.length - 1].column + 1 : 1;
-  const CANVAS_W = Math.max(600, PAD_X * 2 + columnCount * COL_W);
+  const CANVAS_W = Math.max(600, PAD_X * 2 + columnCount * COL_W_CONST);
   const canvasH = canvasHeightFor(numberOfQubits);
 
   const wireYs = computeWireYs(numberOfQubits, canvasH);
@@ -123,7 +127,13 @@ export function CircuitCanvas({
           style={{ minWidth: CANVAS_W, height: canvasH }}
         >
           {wireYs.map((y, i) => (
-            <DroppableStrip key={i} id={`drop-wire-${i}`} top={y - 20} height={40} />
+            <DroppableStrip
+              key={i}
+              id={`drop-wire-${i}`}
+              top={y - 20}
+              height={40}
+              isActiveTarget={activeDropWire === i}
+            />
           ))}
 
           {/* Full-width wires — span drop zone, independent of gate count */}
@@ -180,10 +190,12 @@ export function CircuitCanvas({
                   className="absolute left-0 right-0 pointer-events-none"
                   style={{ top: wireYs[0] - 20, height: 40 }}
                 >
-                  {(wireContainers[0] ?? []).map((gateId) => {
+                  {(wireContainers[0] ?? []).map((gateId, orderIdx) => {
                     const g = gateById.get(gateId);
                     if (!g || !isSingleQubitGate(g)) return null;
-                    const left = PAD_X + g.column * COL_W - SQ_W / 2;
+                    const left = dragContainers
+                      ? PAD_X + orderIdx * COL_W_CONST - SQ_W / 2
+                      : PAD_X + g.column * COL_W_CONST - SQ_W / 2;
                     return (
                       <SortablePlacedGate
                         key={gateId}
@@ -195,11 +207,13 @@ export function CircuitCanvas({
                     );
                   })}
                 </div>
-                {(wireContainers[0] ?? []).map((gateId) => {
+                {(wireContainers[0] ?? []).map((gateId, orderIdx) => {
                   const g = gateById.get(gateId);
                   if (!g || !isMultiQubitGate(g) || !("order" in g)) return null;
                   const { width, height } = multiQubitGlyphDimensions(g.type, numberOfQubits, wireSpan);
-                  const left = PAD_X + g.column * COL_W - width / 2;
+                  const left = dragContainers
+                    ? PAD_X + orderIdx * COL_W_CONST - width / 2
+                    : PAD_X + g.column * COL_W_CONST - width / 2;
                   return (
                     <SortablePlacedMultiQubitGate
                       key={gateId}
@@ -226,10 +240,12 @@ export function CircuitCanvas({
                 style={{ top: y - 20, height: 40 }}
               >
                 <SortableContext items={wireIds} strategy={horizontalListSortingStrategy}>
-                  {wireIds.map((gateId) => {
+                  {wireIds.map((gateId, orderIdx) => {
                     const g = gateById.get(gateId);
                     if (!g || !isSingleQubitGate(g)) return null;
-                    const left = PAD_X + g.column * COL_W - SQ_W / 2;
+                    const left = dragContainers
+                      ? PAD_X + orderIdx * COL_W_CONST - SQ_W / 2
+                      : PAD_X + g.column * COL_W_CONST - SQ_W / 2;
                     return (
                       <SortablePlacedGate
                         key={gateId}
