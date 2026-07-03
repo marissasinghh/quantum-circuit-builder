@@ -48,13 +48,6 @@ function rzThetaSignature(gates: PlacedGate[]): string {
 
 export default function SolveLevelPage() {
   const { id } = useParams<{ id: string }>();
-  const [showCompletionModal, setShowCompletionModal] = React.useState(false);
-
-  // Explicitly close modal whenever the level id changes in the URL
-  React.useEffect(() => {
-    setShowCompletionModal(false);
-  }, [id]);
-
   const currentLevel = LEVEL_ORDER.find((l) => l.target_unitary === id) ?? null;
 
   if (!currentLevel) return <Navigate to="/levels" replace />;
@@ -63,20 +56,14 @@ export default function SolveLevelPage() {
     <SolveLevelContent
       key={currentLevel.target_unitary}
       currentLevel={currentLevel}
-      showCompletionModal={showCompletionModal}
-      setShowCompletionModal={setShowCompletionModal}
     />
   );
 }
 
 function SolveLevelContent({
   currentLevel,
-  showCompletionModal,
-  setShowCompletionModal,
 }: {
   currentLevel: LevelDefinition;
-  showCompletionModal: boolean;
-  setShowCompletionModal: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const navigate = useNavigate();
 
@@ -86,8 +73,28 @@ function SolveLevelContent({
   const isRandomThetaLevel =
     currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
 
-  const { completedLevels, skippedLevels, markLevelComplete, advancePastLevel, unlockGateForLevel, skipLevel } =
+  const { completedLevels, skippedLevels, advancedPastLevels, markLevelComplete, advancePastLevel, unlockGateForLevel, skipLevel } =
     useLevelProgress();
+
+  const levelId = currentLevel.target_unitary;
+
+  // True when the student has solved this level but hasn't yet clicked "Next level →".
+  // This state is fully persisted (completedLevels / advancedPastLevels are in localStorage),
+  // so it survives refresh, "Repeat level," and sidebar navigation.
+  const isCompletedPendingAdvance =
+    completedLevels.includes(levelId) &&
+    !advancedPastLevels.includes(levelId) &&
+    !skippedLevels.includes(levelId);
+
+  // Tracks whether a correct grading result has been received this mount.
+  // Lets the allCorrect effect distinguish "cold mount, no check yet" (where
+  // the modal should stay open if isCompletedPendingAdvance is already true)
+  // from "a re-check returned wrong" (where the modal should close).
+  const hasBeenCorrectRef = React.useRef(false);
+
+  // Initialise from persisted state so the modal re-opens automatically on
+  // refresh or sidebar navigation when isCompletedPendingAdvance is true.
+  const [showCompletionModal, setShowCompletionModal] = React.useState(isCompletedPendingAdvance);
 
   const isSeedDrivenLevel =
     currentLevel.parameterMode === ParameterMode.SEED_ZXZ ||
@@ -218,12 +225,19 @@ function SolveLevelContent({
     // the server returned a passing grade. rows may be null for random-theta levels
     // (Rx/Ry) where the backend grades via unitary comparison with no truth table.
     if (allCorrect) {
+      hasBeenCorrectRef.current = true;
       markLevelComplete(currentLevel);
       const t = setTimeout(() => setShowCompletionModal(true), 300);
       return () => clearTimeout(t);
     }
-    setShowCompletionModal(false);
-  }, [allCorrect, markLevelComplete, currentLevel, setShowCompletionModal]);
+    // Only close the modal when this mount has already seen a correct result.
+    // Without this guard, the effect would fire on every cold mount (allCorrect=false)
+    // and immediately collapse the modal that was opened from persisted state
+    // (isCompletedPendingAdvance=true after a refresh or sidebar navigation).
+    if (hasBeenCorrectRef.current) {
+      setShowCompletionModal(false);
+    }
+  }, [allCorrect, markLevelComplete, currentLevel]);
 
   const handleClear = () => {
     clearAll();
@@ -256,7 +270,6 @@ function SolveLevelContent({
     navigate(next ? "/level/" + next.target_unitary : "/levels");
   };
 
-  const levelId = currentLevel.target_unitary;
   const showSkip =
     !completedLevels.includes(levelId) && !skippedLevels.includes(levelId);
 
@@ -300,7 +313,6 @@ function SolveLevelContent({
         handleRepeat={handleRepeat}
         handleNextLevel={handleNextLevel}
         showCompletionModal={showCompletionModal}
-        setShowCompletionModal={setShowCompletionModal}
         activeId={activeId}
         dragContainers={dragContainers}
         isDraggingPlacedGate={isDraggingPlacedGate}
