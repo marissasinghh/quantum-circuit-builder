@@ -16,20 +16,6 @@ import {
 
 const PARAMETERIZED_GATES = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 
-function singleQubitGlyphWidth(type: Gate): number {
-  switch (type) {
-    case Gate.S:
-    case Gate.T:
-    case Gate.RZ:
-      return 52;
-    case Gate.RX:
-    case Gate.RY:
-      return 48;
-    default:
-      return 44;
-  }
-}
-
 function PlacedGateGlyph({ gate, width, height }: { gate: PlacedSingleQubitGate; width: number; height: number }) {
   switch (gate.type) {
     case Gate.X:
@@ -37,17 +23,17 @@ function PlacedGateGlyph({ gate, width, height }: { gate: PlacedSingleQubitGate;
     case Gate.SQRT_X:
       return <SqrtXGlyph width={width} height={height} />;
     case Gate.S:
-      return <SGlyph width={width + 8} height={height} />;
+      return <SGlyph width={width} height={height} />;
     case Gate.T:
-      return <TGlyph width={width + 8} height={height} />;
+      return <TGlyph width={width} height={height} />;
     case Gate.H:
       return <HGlyph width={width} height={height} />;
     case Gate.RX:
-      return <RXGlyph width={width + 4} height={height} />;
+      return <RXGlyph width={width} height={height} />;
     case Gate.RY:
-      return <RYGlyph width={width + 4} height={height} />;
+      return <RYGlyph width={width} height={height} />;
     case Gate.RZ:
-      return <RZGlyph width={width + 8} height={height} />;
+      return <RZGlyph width={width} height={height} />;
     case Gate.U:
       return <UGlyph width={width} height={height} />;
     default:
@@ -94,7 +80,6 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
 
   const sqW = 44;
   const sqH = 40;
-  const glyphW = singleQubitGlyphWidth(gate.type);
   const isParameterized = PARAMETERIZED_GATES.has(gate.type);
   const thetaLabel =
     gate.theta !== undefined ? `${((gate.theta * 180) / Math.PI).toFixed(0)}°` : null;
@@ -159,5 +144,3 @@ export function PlacedGateOverlayContent({ gate }: { gate: PlacedSingleQubitGate
     </div>
   );
 }
-
-export { singleQubitGlyphWidth };
