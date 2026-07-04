@@ -1,39 +1,40 @@
 /**
- * Handles drag-and-drop logic for placing gates on the circuit and reordering placed gates.
+ * Drag-and-drop logic for the circuit canvas (grid-cell model).
  *
- * Architecture (post coordinate-based collision overhaul):
- * - wireFirstCollision (collisionDetection.ts) returns only the y-closest DroppableStrip,
- *   so over.id is always "drop-wire-N" or "trash-can" — never a chip.
- * - onDragMove fires on every pointer move. It computes {wire, index} directly from pointer
- *   x-coordinates (canvas-relative) and updates:
- *     1. dropTarget (shared state → drives indicator via activeTargetWire)
- *     2. dragContainers (preview chip ordering → drives order-based chip positions in canvas)
- *   Both are derived from the same pointer position, so they always agree.
- * - onDragEnd consumes lastDropTargetRef (a ref, not state, to avoid stale-closure) for the
- *   final committed placement.
- * - onDragOver is kept as a no-op for backward compatibility with callers.
+ * Architecture:
+ * - The canvas is divided into a discrete grid of droppable cells, one per
+ *   (column-slot × wire) combination, with IDs like `cell-col2-wire1`.
+ * - cellFirstCollision resolves every drag to the nearest cell centre (2D),
+ *   so `over.id` is always a cell ID or "trash-can" — never a chip.
+ * - onDragMove/onDragOver record whichever cell is currently hovered.
+ * - onDragEnd reads the final cell ID directly; no coordinate math is needed.
+ *   For placed-gate reorders: moveGate(id, col, wire).  Wire is ignored for
+ *   multi-qubit gates, which use moveGate(id, col) only.
+ * - For toolbox drags the wire is read from the cell; gates are still appended
+ *   to the end of the sequence (position-aware insertion is Phase 2+).
+ *
+ * Structural guarantee re: "wire change without column change":
+ *   If the user drags a gate vertically with no horizontal movement, the
+ *   pointer stays over the same column slot → the cell ID encodes the same
+ *   col value → moveGate(id, col, newWire) calls moveToColumn with `to`
+ *   equal to the gate's current index → renumberColumns leaves it in place.
+ *   The only thing that changes is the wire field. This is structural, not
+ *   incidental: the cell column directly becomes the `to` argument.
  */
 
 import { useState, useCallback, useRef } from "react";
 import type { DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core";
-import { Gate, type TwoQubitGate, type SingleQubitGate, type PlacedGate, type SingleWire } from "../types/global";
 import {
-  isToolboxDragId,
-  isPlacedGateId,
-  buildWireContainers,
-  findWireForGate,
-  moveBetweenContainers,
-  insertAtIndex,
-  globalIndexForWireDrop,
-  insertIndexFromContainers,
-  wireFromDropId,
-  isMultiQubitGateId,
-  isSingleQubitGate,
-  MULTI_QUBIT_OWNER_WIRE,
-  type WireContainers,
-} from "../utils/placedGateDrag";
+  Gate,
+  type TwoQubitGate,
+  type SingleQubitGate,
+  type PlacedGate,
+  type SingleWire,
+} from "../types/global";
+import { isToolboxDragId, isPlacedGateId } from "../utils/placedGateDrag";
 import { isValidSingleWire } from "../utils/wireValidation";
-import { CANVAS_PAD_X, CANVAS_COL_W } from "../utils/canvasGeometry";
+
+// ── Tool-id → Gate enum ───────────────────────────────────────────────────────
 
 const TOOL_TO_GATE: Record<string, Gate> = {
   "tool-x": Gate.X,
@@ -51,12 +52,32 @@ const TOOL_TO_GATE: Record<string, Gate> = {
   "tool-u": Gate.U,
 };
 
-const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTROLLED_Z, Gate.SWAP]);
+const TWO_QUBIT_GATES = new Set<Gate>([
+  Gate.CNOT,
+  Gate.CNOT_FLIPPED,
+  Gate.CONTROLLED_Z,
+  Gate.SWAP,
+]);
 
-interface DropTarget {
-  wire: number;
-  index: number;
+// ── Cell ID parsing ───────────────────────────────────────────────────────────
+
+/**
+ * Parse a cell droppable ID of the form `cell-col{N}-wire{W}`.
+ * Returns null for any other ID (trash-can, legacy strip IDs, etc.).
+ */
+function parseCellId(id: string): { col: number; wire: number } | null {
+  const m = id.match(/^cell-col(\d+)-wire(\d+)$/);
+  if (!m) return null;
+  return { col: parseInt(m[1], 10), wire: parseInt(m[2], 10) };
 }
+
+/** Returns true when the placed gate has no `wire` field (i.e. it's a multi-qubit gate). */
+function isMultiQubitPlacedGate(id: string, gates: PlacedGate[]): boolean {
+  const g = gates.find((gate) => gate.id === id);
+  return g !== undefined && !("wire" in g);
+}
+
+// ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useDragAndDrop(
   gates: PlacedGate[],
@@ -67,219 +88,109 @@ export function useDragAndDrop(
   removeGate: (id: string) => void
 ) {
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [dragContainers, setDragContainers] = useState<WireContainers | null>(null);
-  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
+  const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
 
-  // Ref-backed mirror of dropTarget so onDragEnd can read the latest value
-  // without a stale closure (state updates are async; refs are synchronous).
-  const lastDropTargetRef = useRef<DropTarget | null>(null);
+  // Ref-backed mirror of hoveredCellId so onDragEnd always reads the latest
+  // value without a stale closure (React state updates are async).
+  const hoveredCellRef = useRef<string | null>(null);
 
   const isDraggingPlacedGate = activeId !== null && isPlacedGateId(activeId, gates);
 
-  // ── drag start ──────────────────────────────────────────────────────────
+  // ── helpers ────────────────────────────────────────────────────────────────
 
-  const onDragStart = useCallback(
-    (event: DragStartEvent) => {
-      const id = String(event.active.id);
-      setActiveId(id);
-      setDropTarget(null);
-      lastDropTargetRef.current = null;
-      if (isPlacedGateId(id, gates)) {
-        setDragContainers(buildWireContainers(gates, numberOfQubits));
-      }
-    },
-    [gates, numberOfQubits]
-  );
+  const updateHoveredCell = useCallback((overId: string | null) => {
+    if (overId === hoveredCellRef.current) return;
+    hoveredCellRef.current = overId;
+    setHoveredCellId(overId);
+  }, []);
 
-  // ── drag move (fires on every pointer move) ──────────────────────────────
+  // ── drag start ─────────────────────────────────────────────────────────────
+
+  const onDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(String(event.active.id));
+    hoveredCellRef.current = null;
+    setHoveredCellId(null);
+  }, []);
+
+  // ── drag move (every pointer move) ────────────────────────────────────────
   //
-  // Computes {wire, index} directly from pointer x/y coordinates — completely
-  // independent of which chip droppable closestCenter would have chosen.
-  //
-  // Wire  = determined by wireFirstCollision already (over.id = "drop-wire-N")
-  // Index = pointer x vs committed gate column positions on that wire
+  // event.over is the droppable resolved by cellFirstCollision at this frame.
+  // We just record it; no coordinate math needed here.
 
   const onDragMove = useCallback(
     (event: DragMoveEvent) => {
-      const { active, over } = event;
-
-      if (!over) {
-        if (lastDropTargetRef.current !== null) {
-          lastDropTargetRef.current = null;
-          setDropTarget(null);
-        }
-        return;
-      }
-
-      const activeGateId = String(active.id);
-      const overId = String(over.id);
-
-      if (overId === "trash-can") {
-        if (lastDropTargetRef.current !== null) {
-          lastDropTargetRef.current = null;
-          setDropTarget(null);
-        }
-        return;
-      }
-
-      const targetWire = wireFromDropId(overId);
-      if (targetWire === null) return;
-
-      // Pointer x relative to the canvas left edge.
-      // over.rect is the DroppableStrip's viewport rect; its left edge IS the canvas left edge
-      // (strip uses left:0 / right:0 inside div.relative).  This stays correct even when the
-      // canvas panel is scrolled horizontally because getBoundingClientRect() updates live.
-      const activeRect = active.rect.current.translated;
-      if (!activeRect) return;
-      const activeCenterX = (activeRect.left + activeRect.right) / 2;
-      const pointerCanvasX = activeCenterX - over.rect.left;
-
-      // Gates on target wire (committed state, excluding the active gate itself).
-      const targetWireGates = gates.filter((g) => {
-        if (g.id === activeGateId) return false;
-        if (isSingleQubitGate(g)) return g.wire === targetWire;
-        return targetWire === MULTI_QUBIT_OWNER_WIRE;
-      });
-
-      // Insertion index: insert before the first chip whose centre is to the right of the pointer.
-      const sortedColumns = targetWireGates
-        .map((g) => g.column)
-        .sort((a, b) => a - b);
-      let insertionIndex = sortedColumns.length;
-      for (let i = 0; i < sortedColumns.length; i++) {
-        if (pointerCanvasX < CANVAS_PAD_X + (sortedColumns[i] - 0.5) * CANVAS_COL_W) {
-          insertionIndex = i;
-          break;
-        }
-      }
-
-      // Dedup: skip state updates when nothing changed (avoids thrashing renders
-      // on every pixel move when the effective slot hasn't changed).
-      const prev = lastDropTargetRef.current;
-      if (prev?.wire === targetWire && prev?.index === insertionIndex) return;
-
-      lastDropTargetRef.current = { wire: targetWire, index: insertionIndex };
-      setDropTarget({ wire: targetWire, index: insertionIndex });
-
-      // dragContainers preview: only meaningful for placed-gate reorders/moves.
-      if (!isPlacedGateId(activeGateId, gates)) return;
-      if (isMultiQubitGateId(activeGateId, gates) && targetWire !== MULTI_QUBIT_OWNER_WIRE) return;
-
-      // Always rebuild from committed gate state for a fresh, deterministic preview.
-      setDragContainers(() => {
-        const fresh = buildWireContainers(gates, numberOfQubits);
-        const fromWire = findWireForGate(fresh, activeGateId);
-        if (fromWire === null) return fresh;
-        if (fromWire === targetWire) {
-          return insertAtIndex(fresh, targetWire, activeGateId, insertionIndex);
-        }
-        return moveBetweenContainers(fresh, activeGateId, fromWire, targetWire, insertionIndex);
-      });
+      updateHoveredCell(event.over?.id ? String(event.over.id) : null);
     },
-    [gates, numberOfQubits]
+    [updateHoveredCell]
   );
 
-  // ── drag over (no-op; all logic moved to onDragMove) ─────────────────────
+  // ── drag over (fires when over changes) ───────────────────────────────────
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const onDragOver = useCallback((_event: DragOverEvent) => {
-    // Intentionally empty. Coordinate-based targeting is handled in onDragMove.
-  }, []);
+  const onDragOver = useCallback(
+    (event: DragOverEvent) => {
+      updateHoveredCell(event.over?.id ? String(event.over.id) : null);
+    },
+    [updateHoveredCell]
+  );
 
-  // ── drag cancel ──────────────────────────────────────────────────────────
+  // ── drag cancel ───────────────────────────────────────────────────────────
 
   const onDragCancel = useCallback(() => {
     setActiveId(null);
-    setDragContainers(null);
-    setDropTarget(null);
-    lastDropTargetRef.current = null;
+    setHoveredCellId(null);
+    hoveredCellRef.current = null;
   }, []);
 
-  // ── drag end ─────────────────────────────────────────────────────────────
+  // ── drag end ──────────────────────────────────────────────────────────────
 
   const onDragEnd = useCallback(
     (event: DragEndEvent) => {
       const id = String(event.active.id);
-      const overId = event.over?.id ? String(event.over.id) : undefined;
+      // Prefer the ref over event.over so we never get a stale value even if
+      // the pointer lifted before the last onDragMove state flush.
+      const overId = hoveredCellRef.current ?? (event.over?.id ? String(event.over.id) : null);
 
       setActiveId(null);
-      setDragContainers(null);
-
-      // Read the last computed drop target from the ref (not state) to avoid
-      // stale-closure issues with React's async state scheduling.
-      const target: DropTarget | null = (() => {
-        if (lastDropTargetRef.current) return lastDropTargetRef.current;
-        // Fallback: strip id encodes the wire; append to end of that wire.
-        const dropWire = overId ? wireFromDropId(overId) : null;
-        if (dropWire !== null) {
-          const fresh = buildWireContainers(gates, numberOfQubits);
-          return { wire: dropWire, index: fresh[dropWire]?.length ?? 0 };
-        }
-        return null;
-      })();
-
-      setDropTarget(null);
-      lastDropTargetRef.current = null;
+      setHoveredCellId(null);
+      hoveredCellRef.current = null;
 
       if (!overId) return;
 
-      // ── placed gate ────────────────────────────────────────────────────
+      // ── trash can ────────────────────────────────────────────────────────
 
-      if (isPlacedGateId(id, gates)) {
-        if (overId === "trash-can") {
-          removeGate(id);
-          return;
-        }
-
-        if (!target) return;
-
-        const containers = buildWireContainers(gates, numberOfQubits);
-        const fromWire = findWireForGate(containers, id);
-        if (fromWire === null) return;
-
-        let finalContainers: WireContainers;
-        if (isMultiQubitGateId(id, gates) && target.wire !== MULTI_QUBIT_OWNER_WIRE) {
-          finalContainers = containers;
-        } else if (fromWire === target.wire) {
-          finalContainers = insertAtIndex(containers, target.wire, id, target.index);
-        } else {
-          finalContainers = moveBetweenContainers(
-            containers,
-            id,
-            fromWire,
-            target.wire,
-            target.index
-          );
-        }
-
-        const placement = insertIndexFromContainers(finalContainers, id);
-        if (placement) {
-          const { to, wire } = globalIndexForWireDrop(
-            gates,
-            id,
-            placement.wire,
-            placement.index,
-            numberOfQubits
-          );
-          if (wire !== undefined && !isMultiQubitGateId(id, gates)) {
-            moveGate(id, to, wire);
-          } else {
-            moveGate(id, to);
-          }
-        }
-
+      if (overId === "trash-can") {
+        if (isPlacedGateId(id, gates)) removeGate(id);
         return;
       }
 
-      // ── toolbox gate ───────────────────────────────────────────────────
+      // ── parse cell ───────────────────────────────────────────────────────
+
+      const cell = parseCellId(overId);
+      if (!cell) return;
+
+      const { col, wire } = cell;
+
+      // ── placed gate reorder ──────────────────────────────────────────────
+
+      if (isPlacedGateId(id, gates)) {
+        if (isMultiQubitPlacedGate(id, gates)) {
+          // Multi-qubit gates have no wire field; only column matters.
+          moveGate(id, col);
+        } else {
+          // Single-qubit gate: both column and wire come straight from the cell.
+          // isValidSingleWire narrows `wire` to SingleWire for the type system.
+          if (isValidSingleWire(wire, numberOfQubits)) {
+            moveGate(id, col, wire);
+          } else {
+            moveGate(id, col);
+          }
+        }
+        return;
+      }
+
+      // ── toolbox gate placement ────────────────────────────────────────────
 
       if (!isToolboxDragId(id)) return;
-
-      // Wire from lastDropTargetRef (most accurate) or from strip id in overId.
-      const wire =
-        target?.wire ??
-        (overId ? wireFromDropId(overId) : null);
-      if (wire === null || wire === undefined) return;
 
       const gateType = TOOL_TO_GATE[id];
       if (!gateType) return;
@@ -293,14 +204,10 @@ export function useDragAndDrop(
     [gates, numberOfQubits, moveGate, removeGate, addTwoQubitGate, addSingleQubitGate]
   );
 
-  // activeTargetWire is consumed by CircuitCanvas → DroppableStrip for the indicator.
-  const activeTargetWire = dropTarget?.wire ?? null;
-
   return {
     activeId,
-    dragContainers,
+    hoveredCellId,
     isDraggingPlacedGate,
-    activeTargetWire,
     onDragStart,
     onDragOver,
     onDragMove,

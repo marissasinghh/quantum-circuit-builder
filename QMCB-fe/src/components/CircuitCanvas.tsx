@@ -1,11 +1,19 @@
 /**
- * Circuit Canvas: contains SVG visualization and gate controls.
+ * Circuit Canvas: SVG wire visualization + placed gate chips + cell droppable grid.
+ *
+ * Gate chips are positioned absolutely at `PAD_X + column * COL_W` (committed state).
+ * An invisible grid of DroppableCell overlays — one per (column-slot × wire) — is
+ * rendered below the chips. cellFirstCollision resolves any drag to the nearest cell,
+ * giving unambiguous (col, wire) values without coordinate-threshold math.
+ *
+ * Phase 2 will add speculative-preview rendering: computing `moveGate` on a local
+ * copy of `gates` for the hovered cell and rendering chips at those preview positions
+ * (CSS `left` transition animates the slide). The `transition: "left 150ms ease"` is
+ * already in place on both chip components in anticipation of this.
  */
 
-import { SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
-
 import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder } from "../types/global";
-import { DroppableStrip, TrashDropZone } from "./DragAndDropWrappers";
+import { DroppableCell, TrashDropZone } from "./DragAndDropWrappers";
 import { SortablePlacedGate } from "./SortablePlacedGate";
 import {
   SortablePlacedMultiQubitGate,
@@ -13,13 +21,7 @@ import {
 } from "./SortablePlacedMultiQubitGate";
 import { allowedOrdersFor } from "../config/gates";
 import { gatesInColumnOrder } from "../utils/circuit";
-import {
-  buildWireContainers,
-  isSingleQubitGate,
-  isMultiQubitGate,
-  MULTI_QUBIT_OWNER_WIRE,
-  type WireContainers,
-} from "../utils/placedGateDrag";
+import { isSingleQubitGate, isMultiQubitGate } from "../utils/placedGateDrag";
 import { CANVAS_PAD_X, CANVAS_COL_W } from "../utils/canvasGeometry";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
@@ -27,10 +29,9 @@ import { Tooltip } from "./Tooltip";
 interface CircuitCanvasProps {
   gates: PlacedGate[];
   numberOfQubits: number;
-  dragContainers?: WireContainers | null;
+  /** Cell ID currently being hovered during a drag — drives the DroppableCell indicator. */
+  hoveredCellId?: string | null;
   isDraggingPlacedGate?: boolean;
-  /** Wire index that the current drag is targeting — drives the DroppableStrip indicator. */
-  activeDropWire?: number | null;
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
   onSetGateTheta: (id: string, theta: number) => void;
@@ -55,7 +56,9 @@ const THETA_PRESETS = [
 
 const LABEL_PAD = 36;
 const PAD_X = CANVAS_PAD_X;
-const COL_W_CONST = CANVAS_COL_W;
+const COL_W = CANVAS_COL_W;
+/** Height of each droppable cell — must span the full gate chip height (40px). */
+const CELL_H = 44;
 const CANVAS_H = 200;
 const SQ_W = 44;
 const SQ_H = 40;
@@ -78,9 +81,8 @@ function computeWireYs(numberOfQubits: number, canvasH: number): number[] {
 export function CircuitCanvas({
   gates,
   numberOfQubits,
-  dragContainers = null,
+  hoveredCellId = null,
   isDraggingPlacedGate = false,
-  activeDropWire = null,
   onRemoveGate,
   onSetGateOrder,
   onSetGateTheta,
@@ -93,10 +95,12 @@ export function CircuitCanvas({
   showSkip = false,
 }: CircuitCanvasProps) {
   const orderedGates = gatesInColumnOrder(gates);
-  const columnCount = orderedGates.length > 0 ? orderedGates[orderedGates.length - 1].column + 1 : 1;
-  const CANVAS_W = Math.max(600, PAD_X * 2 + columnCount * COL_W_CONST);
-  const canvasH = canvasHeightFor(numberOfQubits);
 
+  // One extra slot past the last gate allows "append after all" drops.
+  const numSlots = orderedGates.length + 1;
+  const CANVAS_W = Math.max(600, PAD_X * 2 + numSlots * COL_W);
+
+  const canvasH = canvasHeightFor(numberOfQubits);
   const wireYs = computeWireYs(numberOfQubits, canvasH);
   const wireTop = wireYs[0];
   const wireSpan = wireYs.length > 1 ? wireYs[wireYs.length - 1] - wireYs[0] : 0;
@@ -109,9 +113,6 @@ export function CircuitCanvas({
   );
   const showParameterSlotHint =
     showParameterSlotControls && hasRotationGate && !hasParameterSlot;
-
-  const wireContainers = dragContainers ?? buildWireContainers(gates, numberOfQubits);
-  const gateById = new Map(gates.map((g) => [g.id, g]));
 
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
@@ -126,17 +127,28 @@ export function CircuitCanvas({
           className="relative"
           style={{ minWidth: CANVAS_W, height: canvasH }}
         >
-          {wireYs.map((y, i) => (
-            <DroppableStrip
-              key={i}
-              id={`drop-wire-${i}`}
-              top={y - 20}
-              height={40}
-              isActiveTarget={activeDropWire === i}
-            />
-          ))}
+          {/* ── Cell droppable grid ──────────────────────────────────────────
+               One DroppableCell per (column-slot × wire). Cells are invisible
+               (pointer-events: none) and sit below the chip layer in z-order.
+               cellFirstCollision resolves drags to the nearest cell centre.    */}
+          {wireYs.map((y, wireIndex) =>
+            Array.from({ length: numSlots }, (_, col) => {
+              const cellId = `cell-col${col}-wire${wireIndex}`;
+              return (
+                <DroppableCell
+                  key={cellId}
+                  id={cellId}
+                  left={PAD_X + col * COL_W - COL_W / 2}
+                  top={y - CELL_H / 2}
+                  width={COL_W}
+                  height={CELL_H}
+                  isActiveTarget={hoveredCellId === cellId}
+                />
+              );
+            })
+          )}
 
-          {/* Full-width wires — span drop zone, independent of gate count */}
+          {/* ── Wire lines ───────────────────────────────────────────────── */}
           {wireYs.map((y, i) => (
             <div
               key={`wire-${i}`}
@@ -157,6 +169,7 @@ export function CircuitCanvas({
             </div>
           ))}
 
+          {/* ── SVG wire labels ──────────────────────────────────────────── */}
           <svg
             width={CANVAS_W}
             height={canvasH}
@@ -176,84 +189,46 @@ export function CircuitCanvas({
                 {`|q${i}⟩`}
               </text>
             ))}
-
           </svg>
 
-          {wireYs.length > 0 && (
-            <SortableContext
-              key="sortable-wire-0"
-              items={wireContainers[MULTI_QUBIT_OWNER_WIRE] ?? []}
-              strategy={horizontalListSortingStrategy}
-            >
-              <div className="absolute inset-0 z-20 pointer-events-none">
-                <div
-                  className="absolute left-0 right-0 pointer-events-none"
-                  style={{ top: wireYs[0] - 20, height: 40 }}
-                >
-                  {(wireContainers[0] ?? []).map((gateId) => {
-                    const g = gateById.get(gateId);
-                    if (!g || !isSingleQubitGate(g)) return null;
-                    const left = PAD_X + g.column * COL_W_CONST - SQ_W / 2;
-                    return (
-                      <SortablePlacedGate
-                        key={gateId}
-                        gate={g as PlacedSingleQubitGate}
-                        left={left}
-                        top={20 - SQ_H / 2}
-                        onRemoveGate={onRemoveGate}
-                      />
-                    );
-                  })}
-                </div>
-                {(wireContainers[0] ?? []).map((gateId) => {
-                  const g = gateById.get(gateId);
-                  if (!g || !isMultiQubitGate(g) || !("order" in g)) return null;
-                  const { width, height } = multiQubitGlyphDimensions(g.type, numberOfQubits, wireSpan);
-                  const left = PAD_X + g.column * COL_W_CONST - width / 2;
-                  return (
-                    <SortablePlacedMultiQubitGate
-                      key={gateId}
-                      gate={g}
-                      left={left}
-                      top={wireTop - 12}
-                      width={width}
-                      height={height}
-                      onRemoveGate={onRemoveGate}
-                    />
-                  );
-                })}
-              </div>
-            </SortableContext>
-          )}
-
-          {wireYs.map((y, wireIndex) => {
-            if (wireIndex === 0) return null;
-            const wireIds = wireContainers[wireIndex] ?? [];
-            return (
-              <div
-                key={`sortable-wire-${wireIndex}`}
-                className="absolute left-0 right-0 z-20 pointer-events-none"
-                style={{ top: y - 20, height: 40 }}
-              >
-                <SortableContext items={wireIds} strategy={horizontalListSortingStrategy}>
-                  {wireIds.map((gateId) => {
-                    const g = gateById.get(gateId);
-                    if (!g || !isSingleQubitGate(g)) return null;
-                    const left = PAD_X + g.column * COL_W_CONST - SQ_W / 2;
-                    return (
-                      <SortablePlacedGate
-                        key={gateId}
-                        gate={g as PlacedSingleQubitGate}
-                        left={left}
-                        top={20 - SQ_H / 2}
-                        onRemoveGate={onRemoveGate}
-                      />
-                    );
-                  })}
-                </SortableContext>
-              </div>
-            );
-          })}
+          {/* ── Gate chips ───────────────────────────────────────────────────
+               Absolutely positioned at committed column × wire.  pointer-events-none
+               on the wrapper; each chip resets to pointer-events-auto via className.
+               Phase 2 will compute speculative preview positions here instead.      */}
+          <div className="absolute inset-0 z-20 pointer-events-none">
+            {orderedGates.map((g) => {
+              if (isSingleQubitGate(g)) {
+                return (
+                  <SortablePlacedGate
+                    key={g.id}
+                    gate={g as PlacedSingleQubitGate}
+                    left={PAD_X + g.column * COL_W - SQ_W / 2}
+                    top={wireYs[g.wire] - SQ_H / 2}
+                    onRemoveGate={onRemoveGate}
+                  />
+                );
+              }
+              if (isMultiQubitGate(g) && "order" in g) {
+                const { width, height } = multiQubitGlyphDimensions(
+                  g.type,
+                  numberOfQubits,
+                  wireSpan
+                );
+                return (
+                  <SortablePlacedMultiQubitGate
+                    key={g.id}
+                    gate={g}
+                    left={PAD_X + g.column * COL_W - width / 2}
+                    top={wireTop - 12}
+                    width={width}
+                    height={height}
+                    onRemoveGate={onRemoveGate}
+                  />
+                );
+              }
+              return null;
+            })}
+          </div>
 
           <TrashDropZone visible={isDraggingPlacedGate} />
         </div>
@@ -261,6 +236,7 @@ export function CircuitCanvas({
         </div>
       </div>
 
+      {/* ── Gate control panel ──────────────────────────────────────────────── */}
       <div className="shrink-0 flex flex-col gap-3 pb-5">
       <div className="space-y-1.5">
         {gates.length === 0 && (

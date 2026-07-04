@@ -1,6 +1,5 @@
 import React, { useCallback, useRef } from "react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from "@dnd-kit/core";
 
 import { Gate, type PlacedSingleQubitGate } from "../types/global";
 import {
@@ -86,9 +85,9 @@ interface SortablePlacedGateProps {
 }
 
 export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePlacedGateProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: gate.id,
-    data: { type: "placed", wire: gate.wire },
+    data: { type: "placed", wire: gate.wire, multiQubit: false },
   });
 
   const handleDoubleTap = useDoubleTap(() => onRemoveGate(gate.id));
@@ -100,22 +99,16 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
   const thetaLabel =
     gate.theta !== undefined ? `${((gate.theta * 180) / Math.PI).toFixed(0)}°` : null;
 
-  // Combine dnd-kit's sortable transition (handles transform) with a left-position
-  // transition so chips animate smoothly when dragContainers reorders them.
-  const combinedTransition = [transition, "left 150ms ease"]
-    .filter(Boolean)
-    .join(", ");
-
   const style: React.CSSProperties = {
     position: "absolute",
     left,
     top,
     width: glyphW,
     height: sqH,
-    transform: CSS.Transform.toString(transform),
-    transition: combinedTransition,
-    opacity: isDragging ? 0.35 : 1,
-    zIndex: isDragging ? 20 : undefined,
+    // left-position transition is ready for Phase 2 speculative-preview rendering;
+    // during Phase 1 (committed positions only) it fires only when moveGate commits.
+    transition: "left 150ms ease, opacity 100ms ease",
+    opacity: isDragging ? 0.25 : 1,
     touchAction: "none",
   };
 

@@ -1,6 +1,5 @@
 import React from "react";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from "@dnd-kit/core";
 
 import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
 import {
@@ -83,7 +82,7 @@ export function SortablePlacedMultiQubitGate({
   height,
   onRemoveGate,
 }: SortablePlacedMultiQubitGateProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: gate.id,
     data: { type: "placed", wire: 0, multiQubit: true },
   });
@@ -96,10 +95,9 @@ export function SortablePlacedMultiQubitGate({
     top,
     width,
     height,
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.35 : 1,
-    zIndex: isDragging ? 25 : undefined,
+    // left-position transition ready for Phase 2 preview rendering.
+    transition: "left 150ms ease, opacity 100ms ease",
+    opacity: isDragging ? 0.25 : 1,
     touchAction: "none",
   };
 
