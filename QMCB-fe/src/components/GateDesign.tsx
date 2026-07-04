@@ -82,8 +82,8 @@ export function CNOTGlyph({
 }
 
 const CNOT_GLYPH_NATURAL = { width: 80, height: 60 } as const;
-/** Matches text-[13px] leading-tight in gateset tiles — keeps tile height unchanged. */
-const GATESET_CNOT_HEIGHT = 13;
+/** ~1.5× text cap height — SVG has vertical padding so 13px looked tiny vs text-[13px] labels. */
+const GATESET_CNOT_HEIGHT = 20;
 
 /** CNOT at gateset-tile scale: native 80×60 geometry, CSS-scaled to preserve proportions. */
 export function GatesetCNOTGlyph({
