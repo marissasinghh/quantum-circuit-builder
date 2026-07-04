@@ -103,7 +103,7 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
     position: "absolute",
     left,
     top,
-    width: glyphW,
+    width: sqW,
     height: sqH,
     // left-position transition is ready for Phase 2 speculative-preview rendering;
     // during Phase 1 (committed positions only) it fires only when moveGate commits.
