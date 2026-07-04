@@ -206,7 +206,7 @@ export function CircuitCanvas({
               if (isSingleQubitGate(g)) {
                 // Use speculative position for non-dragged gates when a preview is active;
                 // the dragged gate's own chip stays at its committed position (dimmed).
-                const spec = speculativeMap && g.id !== activeId ? speculativeMap.get(g.id) : undefined;
+                const spec = speculativeMap ? speculativeMap.get(g.id) : undefined;
                 const displayCol = spec !== undefined ? spec.column : g.column;
                 const displayWire = spec !== undefined && "wire" in spec
                   ? (spec as PlacedSingleQubitGate).wire
@@ -227,7 +227,7 @@ export function CircuitCanvas({
                   numberOfQubits,
                   wireSpan
                 );
-                const specMulti = speculativeMap && g.id !== activeId ? speculativeMap.get(g.id) : undefined;
+                const specMulti = speculativeMap ? speculativeMap.get(g.id) : undefined;
                 const displayColMulti = specMulti !== undefined ? specMulti.column : g.column;
                 return (
                   <SortablePlacedMultiQubitGate
