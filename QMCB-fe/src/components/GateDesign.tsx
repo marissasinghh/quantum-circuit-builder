@@ -82,27 +82,33 @@ export function CNOTGlyph({
 }
 
 const CNOT_GLYPH_NATURAL = { width: 80, height: 60 } as const;
-/** ~1.5× text cap height — SVG has vertical padding so 13px looked tiny vs text-[13px] labels. */
-const GATESET_CNOT_HEIGHT = 20;
+/** Matches gateset label line box: text-[13px] leading-tight → 13 × 1.25 */
+const GATESET_LABEL_LINE_HEIGHT = 13 * 1.25;
+/** Tight crop around control dot, wires, and ⊕ target (excludes SVG margin). */
+const GATESET_CNOT_CROP = { x: 8, y: 6, width: 64, height: 52 } as const;
+const GATESET_CNOT_INNER_PAD = 0.75;
 
-/** CNOT at gateset-tile scale: native 80×60 geometry, CSS-scaled to preserve proportions. */
+/** CNOT at gateset-tile scale: cropped + scaled to match text gate height. */
 export function GatesetCNOTGlyph({
   order = [0, 1],
 }: {
   order?: ControlTargetOrder;
 }) {
-  const scale = GATESET_CNOT_HEIGHT / CNOT_GLYPH_NATURAL.height;
-  const displayWidth = CNOT_GLYPH_NATURAL.width * scale;
+  const scale =
+    (GATESET_LABEL_LINE_HEIGHT - GATESET_CNOT_INNER_PAD * 2) / GATESET_CNOT_CROP.height;
+  const displayWidth = GATESET_CNOT_INNER_PAD * 2 + GATESET_CNOT_CROP.width * scale;
+  const offsetX = GATESET_CNOT_INNER_PAD - GATESET_CNOT_CROP.x * scale;
+  const offsetY = GATESET_CNOT_INNER_PAD - GATESET_CNOT_CROP.y * scale;
 
   return (
     <span
       className="inline-block shrink-0 overflow-hidden leading-none"
-      style={{ width: displayWidth, height: GATESET_CNOT_HEIGHT }}
+      style={{ width: displayWidth, height: GATESET_LABEL_LINE_HEIGHT }}
       aria-hidden
     >
       <span
         className="inline-block origin-top-left"
-        style={{ transform: `scale(${scale})` }}
+        style={{ transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})` }}
       >
         <CNOTGlyph
           order={order}
