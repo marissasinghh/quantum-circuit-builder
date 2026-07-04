@@ -82,8 +82,8 @@ function isMultiQubitPlacedGate(id: string, gates: PlacedGate[]): boolean {
 export function useDragAndDrop(
   gates: PlacedGate[],
   numberOfQubits: number,
-  addSingleQubitGate: (gate: SingleQubitGate, wire: SingleWire) => void,
-  addTwoQubitGate: (gate: TwoQubitGate) => void,
+  addSingleQubitGate: (gate: SingleQubitGate, wire: SingleWire, column?: number) => void,
+  addTwoQubitGate: (gate: TwoQubitGate, column?: number) => void,
   moveGate: (id: string, to: number, wire?: SingleWire) => void,
   removeGate: (id: string) => void
 ) {
@@ -196,9 +196,9 @@ export function useDragAndDrop(
       if (!gateType) return;
 
       if (TWO_QUBIT_GATES.has(gateType)) {
-        addTwoQubitGate(gateType as TwoQubitGate);
+        addTwoQubitGate(gateType as TwoQubitGate, col);
       } else if (isValidSingleWire(wire, numberOfQubits)) {
-        addSingleQubitGate(gateType as SingleQubitGate, wire);
+        addSingleQubitGate(gateType as SingleQubitGate, wire, col);
       }
     },
     [gates, numberOfQubits, moveGate, removeGate, addTwoQubitGate, addSingleQubitGate]

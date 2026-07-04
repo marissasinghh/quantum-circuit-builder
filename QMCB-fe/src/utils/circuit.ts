@@ -56,6 +56,17 @@ export function append(gates: PlacedGate[], gate: PlacedGate): PlacedGate[] {
   return renumberColumns([...gates, next]);
 }
 
+/**
+ * Insert a new gate at a specific position (0-indexed) in the global sequence.
+ * Existing gates at that position and beyond shift right; columns renumber.
+ */
+export function insertAt(gates: PlacedGate[], gate: PlacedGate, position: number): PlacedGate[] {
+  const list = sortByColumn(gates);
+  const pos = Math.max(0, Math.min(position, list.length));
+  list.splice(pos, 0, { ...gate, column: pos });
+  return renumberColumns(list);
+}
+
 /** Remove a gate by id and re-number columns */
 export function remove(gates: PlacedGate[], id: string): PlacedGate[] {
   return renumberColumns(gates.filter((g) => g.id !== id));
