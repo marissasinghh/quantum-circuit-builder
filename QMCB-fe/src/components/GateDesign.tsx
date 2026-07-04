@@ -54,23 +54,32 @@ export function CNOTGlyph({
   order = [0, 1],
   width = 80,
   height = 60,
+  viewBox,
 }: {
   order?: ControlTargetOrder;
   width?: number;
   height?: number;
+  viewBox?: string;
 }) {
+  const geomW = viewBox ? 80 : width;
+  const geomH = viewBox ? 60 : height;
   const pad = 10;
   const yTop = 12;
-  const yBot = height - 12;
-  const cx = width / 2;
+  const yBot = geomH - 12;
+  const cx = geomW / 2;
 
   const controlY = order[0] === 0 ? yTop : yBot;
   const targetY = order[1] === 1 ? yBot : yTop;
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="CNOT">
-      <Wire x1={pad} x2={width - pad} y={yTop} />
-      <Wire x1={pad} x2={width - pad} y={yBot} />
+    <svg
+      width={width}
+      height={height}
+      viewBox={viewBox ?? `0 0 ${geomW} ${geomH}`}
+      aria-label="CNOT"
+    >
+      <Wire x1={pad} x2={geomW - pad} y={yTop} />
+      <Wire x1={pad} x2={geomW - pad} y={yBot} />
 
       <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke={colors.cyan} strokeWidth={2} />
 
@@ -81,42 +90,27 @@ export function CNOTGlyph({
   );
 }
 
-const CNOT_GLYPH_NATURAL = { width: 80, height: 60 } as const;
-/** Matches gateset label line box: text-[13px] leading-tight → 13 × 1.25 */
 const GATESET_LABEL_LINE_HEIGHT = 13 * 1.25;
-/** Tight crop around control dot, wires, and ⊕ target (excludes SVG margin). */
-const GATESET_CNOT_CROP = { x: 8, y: 6, width: 64, height: 52 } as const;
-const GATESET_CNOT_INNER_PAD = 0.75;
+/** Crop to symbol bounds (not full 80×60 canvas) so the tile glyph fills the label line box. */
+const GATESET_CNOT_VIEWBOX = { x: 16, y: 6, width: 48, height: 50 } as const;
 
-/** CNOT at gateset-tile scale: cropped + scaled to match text gate height. */
+/** CNOT at gateset-tile scale: viewBox crop + height matched to text-[13px] leading-tight labels. */
 export function GatesetCNOTGlyph({
   order = [0, 1],
 }: {
   order?: ControlTargetOrder;
 }) {
-  const scale =
-    (GATESET_LABEL_LINE_HEIGHT - GATESET_CNOT_INNER_PAD * 2) / GATESET_CNOT_CROP.height;
-  const displayWidth = GATESET_CNOT_INNER_PAD * 2 + GATESET_CNOT_CROP.width * scale;
-  const offsetX = GATESET_CNOT_INNER_PAD - GATESET_CNOT_CROP.x * scale;
-  const offsetY = GATESET_CNOT_INNER_PAD - GATESET_CNOT_CROP.y * scale;
+  const height = GATESET_LABEL_LINE_HEIGHT;
+  const width = height * (GATESET_CNOT_VIEWBOX.width / GATESET_CNOT_VIEWBOX.height);
+  const viewBox = `${GATESET_CNOT_VIEWBOX.x} ${GATESET_CNOT_VIEWBOX.y} ${GATESET_CNOT_VIEWBOX.width} ${GATESET_CNOT_VIEWBOX.height}`;
 
   return (
-    <span
-      className="inline-block shrink-0 overflow-hidden leading-none"
-      style={{ width: displayWidth, height: GATESET_LABEL_LINE_HEIGHT }}
-      aria-hidden
-    >
-      <span
-        className="inline-block origin-top-left"
-        style={{ transform: `translate(${offsetX}px, ${offsetY}px) scale(${scale})` }}
-      >
-        <CNOTGlyph
-          order={order}
-          width={CNOT_GLYPH_NATURAL.width}
-          height={CNOT_GLYPH_NATURAL.height}
-        />
-      </span>
-    </span>
+    <CNOTGlyph
+      order={order}
+      width={width}
+      height={height}
+      viewBox={viewBox}
+    />
   );
 }
 
