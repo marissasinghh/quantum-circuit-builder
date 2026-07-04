@@ -190,12 +190,10 @@ export function CircuitCanvas({
                   className="absolute left-0 right-0 pointer-events-none"
                   style={{ top: wireYs[0] - 20, height: 40 }}
                 >
-                  {(wireContainers[0] ?? []).map((gateId, orderIdx) => {
+                  {(wireContainers[0] ?? []).map((gateId) => {
                     const g = gateById.get(gateId);
                     if (!g || !isSingleQubitGate(g)) return null;
-                    const left = dragContainers
-                      ? PAD_X + orderIdx * COL_W_CONST - SQ_W / 2
-                      : PAD_X + g.column * COL_W_CONST - SQ_W / 2;
+                    const left = PAD_X + g.column * COL_W_CONST - SQ_W / 2;
                     return (
                       <SortablePlacedGate
                         key={gateId}
@@ -207,13 +205,11 @@ export function CircuitCanvas({
                     );
                   })}
                 </div>
-                {(wireContainers[0] ?? []).map((gateId, orderIdx) => {
+                {(wireContainers[0] ?? []).map((gateId) => {
                   const g = gateById.get(gateId);
                   if (!g || !isMultiQubitGate(g) || !("order" in g)) return null;
                   const { width, height } = multiQubitGlyphDimensions(g.type, numberOfQubits, wireSpan);
-                  const left = dragContainers
-                    ? PAD_X + orderIdx * COL_W_CONST - width / 2
-                    : PAD_X + g.column * COL_W_CONST - width / 2;
+                  const left = PAD_X + g.column * COL_W_CONST - width / 2;
                   return (
                     <SortablePlacedMultiQubitGate
                       key={gateId}
@@ -240,12 +236,10 @@ export function CircuitCanvas({
                 style={{ top: y - 20, height: 40 }}
               >
                 <SortableContext items={wireIds} strategy={horizontalListSortingStrategy}>
-                  {wireIds.map((gateId, orderIdx) => {
+                  {wireIds.map((gateId) => {
                     const g = gateById.get(gateId);
                     if (!g || !isSingleQubitGate(g)) return null;
-                    const left = dragContainers
-                      ? PAD_X + orderIdx * COL_W_CONST - SQ_W / 2
-                      : PAD_X + g.column * COL_W_CONST - SQ_W / 2;
+                    const left = PAD_X + g.column * COL_W_CONST - SQ_W / 2;
                     return (
                       <SortablePlacedGate
                         key={gateId}
