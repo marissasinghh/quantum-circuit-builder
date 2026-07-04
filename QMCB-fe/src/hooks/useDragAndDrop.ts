@@ -147,7 +147,7 @@ export function useDragAndDrop(
         .sort((a, b) => a - b);
       let insertionIndex = sortedColumns.length;
       for (let i = 0; i < sortedColumns.length; i++) {
-        if (pointerCanvasX < CANVAS_PAD_X + sortedColumns[i] * CANVAS_COL_W) {
+        if (pointerCanvasX < CANVAS_PAD_X + (sortedColumns[i] - 0.5) * CANVAS_COL_W) {
           insertionIndex = i;
           break;
         }
