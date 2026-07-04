@@ -25,12 +25,15 @@ import { isSingleQubitGate, isMultiQubitGate } from "../utils/placedGateDrag";
 import { CANVAS_PAD_X, CANVAS_COL_W } from "../utils/canvasGeometry";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
+import { useCircuitPreview } from "../hooks/useCircuitPreview";
 
 interface CircuitCanvasProps {
   gates: PlacedGate[];
   numberOfQubits: number;
   /** Cell ID currently being hovered during a drag — drives the DroppableCell indicator. */
   hoveredCellId?: string | null;
+  /** Active drag ID — used to compute speculative preview positions for other chips. */
+  activeId?: string | null;
   isDraggingPlacedGate?: boolean;
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
@@ -80,6 +83,7 @@ export function CircuitCanvas({
   gates,
   numberOfQubits,
   hoveredCellId = null,
+  activeId = null,
   isDraggingPlacedGate = false,
   onRemoveGate,
   onSetGateOrder,
@@ -93,6 +97,10 @@ export function CircuitCanvas({
   showSkip = false,
 }: CircuitCanvasProps) {
   const orderedGates = gatesInColumnOrder(gates);
+
+  // Speculative gate positions for live drag preview (Phase 2).
+  // null when not dragging a placed gate or hovering a non-cell zone.
+  const speculativeMap = useCircuitPreview(gates, activeId, hoveredCellId, numberOfQubits);
 
   // One extra slot past the last gate allows "append after all" drops.
   const numSlots = orderedGates.length + 1;
@@ -196,12 +204,19 @@ export function CircuitCanvas({
           <div className="absolute inset-0 z-20 pointer-events-none">
             {orderedGates.map((g) => {
               if (isSingleQubitGate(g)) {
+                // Use speculative position for non-dragged gates when a preview is active;
+                // the dragged gate's own chip stays at its committed position (dimmed).
+                const spec = speculativeMap && g.id !== activeId ? speculativeMap.get(g.id) : undefined;
+                const displayCol = spec !== undefined ? spec.column : g.column;
+                const displayWire = spec !== undefined && "wire" in spec
+                  ? (spec as PlacedSingleQubitGate).wire
+                  : g.wire;
                 return (
                   <SortablePlacedGate
                     key={g.id}
                     gate={g as PlacedSingleQubitGate}
-                    left={PAD_X + g.column * COL_W - SQ_W / 2}
-                    top={wireYs[g.wire] - SQ_H / 2}
+                    left={PAD_X + displayCol * COL_W - SQ_W / 2}
+                    top={wireYs[displayWire] - SQ_H / 2}
                     onRemoveGate={onRemoveGate}
                   />
                 );
@@ -212,11 +227,13 @@ export function CircuitCanvas({
                   numberOfQubits,
                   wireSpan
                 );
+                const specMulti = speculativeMap && g.id !== activeId ? speculativeMap.get(g.id) : undefined;
+                const displayColMulti = specMulti !== undefined ? specMulti.column : g.column;
                 return (
                   <SortablePlacedMultiQubitGate
                     key={g.id}
                     gate={g}
-                    left={PAD_X + g.column * COL_W - width / 2}
+                    left={PAD_X + displayColMulti * COL_W - width / 2}
                     top={wireTop - 12}
                     width={width}
                     height={height}

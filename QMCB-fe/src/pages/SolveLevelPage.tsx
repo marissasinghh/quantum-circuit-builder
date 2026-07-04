@@ -363,6 +363,7 @@ function SolveLevelContent({
               gates={gates}
               numberOfQubits={currentLevel.number_of_qubits}
               hoveredCellId={hoveredCellId}
+              activeId={activeId}
               isDraggingPlacedGate={isDraggingPlacedGate}
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
