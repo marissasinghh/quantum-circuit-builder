@@ -15,7 +15,7 @@ import {
   type DragOverEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { wireFirstCollision } from "../utils/collisionDetection";
+import { cellFirstCollision } from "../utils/collisionDetection";
 
 import { CircuitCanvas } from "./CircuitCanvas";
 import { DragGateOverlay } from "./DragGateOverlay";
@@ -31,7 +31,6 @@ import {
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
 import { getNextLevel } from "../config/levels";
-import type { WireContainers } from "../utils/placedGateDrag";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
 import type { BlochState } from "../utils/blochMath";
@@ -95,9 +94,8 @@ interface MobileSolveLayoutProps {
 
   // Drag and drop
   activeId: string | null;
-  dragContainers: WireContainers | null;
+  hoveredCellId: string | null;
   isDraggingPlacedGate: boolean;
-  activeTargetWire: number | null;
   onDragStart: (event: DragStartEvent) => void;
   onDragOver: (event: DragOverEvent) => void;
   onDragMove: (event: DragMoveEvent) => void;
@@ -156,9 +154,8 @@ export function MobileSolveLayout({
   showSkip,
   showCompletionModal,
   activeId,
-  dragContainers,
+  hoveredCellId,
   isDraggingPlacedGate,
-  activeTargetWire,
   onDragStart,
   onDragOver,
   onDragMove,
@@ -181,7 +178,7 @@ export function MobileSolveLayout({
       <div className="flex flex-1 flex-col min-h-0 w-full h-full">
         <DndContext
           sensors={sensors}
-          collisionDetection={wireFirstCollision}
+          collisionDetection={cellFirstCollision}
           onDragStart={onDragStart}
           onDragMove={onDragMove}
           onDragOver={onDragOver}
@@ -250,9 +247,9 @@ export function MobileSolveLayout({
                 <CircuitCanvas
                   gates={gates}
                   numberOfQubits={currentLevel.number_of_qubits}
-                  dragContainers={dragContainers}
+                  hoveredCellId={hoveredCellId}
+                  activeId={activeId}
                   isDraggingPlacedGate={isDraggingPlacedGate}
-                  activeDropWire={activeTargetWire}
                   onRemoveGate={removeGate}
                   onSetGateOrder={setGateOrder}
                   onSetGateTheta={setGateTheta}

@@ -46,15 +46,15 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
       case "tool-h":
         return <HGlyph width={64} height={44} />;
       case "tool-t":
-        return <TGlyph width={76} height={44} />;
+        return <TGlyph width={64} height={44} />;
       case "tool-s":
-        return <SGlyph width={76} height={44} />;
+        return <SGlyph width={64} height={44} />;
       case "tool-rx":
-        return <RXGlyph width={76} height={44} />;
+        return <RXGlyph width={64} height={44} />;
       case "tool-ry":
-        return <RYGlyph width={76} height={44} />;
+        return <RYGlyph width={64} height={44} />;
       case "tool-rz":
-        return <RZGlyph width={76} height={44} />;
+        return <RZGlyph width={64} height={44} />;
       case "tool-u":
         return <UGlyph width={64} height={44} />;
       default:

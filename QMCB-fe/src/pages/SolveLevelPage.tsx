@@ -8,7 +8,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { wireFirstCollision } from "../utils/collisionDetection";
+import { cellFirstCollision } from "../utils/collisionDetection";
 
 import { useCircuit } from "../hooks/useCircuit";
 import { useLevelProgress } from "../hooks/useLevelProgress";
@@ -134,9 +134,8 @@ function SolveLevelContent({
 
   const {
     activeId,
-    dragContainers,
+    hoveredCellId,
     isDraggingPlacedGate,
-    activeTargetWire,
     onDragStart,
     onDragOver,
     onDragMove,
@@ -318,9 +317,8 @@ function SolveLevelContent({
         handleNextLevel={handleNextLevel}
         showCompletionModal={showCompletionModal}
         activeId={activeId}
-        dragContainers={dragContainers}
+        hoveredCellId={hoveredCellId}
         isDraggingPlacedGate={isDraggingPlacedGate}
-        activeTargetWire={activeTargetWire}
         onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDragMove={onDragMove}
@@ -346,7 +344,7 @@ function SolveLevelContent({
     <div className="flex flex-1 min-h-0 w-full h-full">
       <DndContext
         sensors={sensors}
-        collisionDetection={wireFirstCollision}
+        collisionDetection={cellFirstCollision}
         onDragStart={onDragStart}
         onDragMove={onDragMove}
         onDragOver={onDragOver}
@@ -364,9 +362,9 @@ function SolveLevelContent({
             <CircuitCanvas
               gates={gates}
               numberOfQubits={currentLevel.number_of_qubits}
-              dragContainers={dragContainers}
+              hoveredCellId={hoveredCellId}
+              activeId={activeId}
               isDraggingPlacedGate={isDraggingPlacedGate}
-              activeDropWire={activeTargetWire}
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
               onSetGateTheta={setGateTheta}

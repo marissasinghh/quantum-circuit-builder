@@ -64,6 +64,51 @@ export function DroppableStrip({
   );
 }
 
+/**
+ * An invisible absolutely-positioned droppable cell.
+ * One cell is rendered per (column-slot × wire) combination in CircuitCanvas.
+ * The cell's bounding rect is measured by dnd-kit for collision detection;
+ * it does not need or capture pointer events.
+ *
+ * isActiveTarget: set true when this cell is the current hover target so a
+ * dashed outline appears as a drop-position indicator.
+ */
+export function DroppableCell({
+  id,
+  left,
+  top,
+  width,
+  height,
+  isActiveTarget = false,
+}: {
+  id: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  isActiveTarget?: boolean;
+}) {
+  const { setNodeRef } = useDroppable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        position: "absolute",
+        left,
+        top,
+        width,
+        height,
+        boxSizing: "border-box",
+        pointerEvents: "none",
+        outline: isActiveTarget ? "2px dashed #7dc4e0" : "none",
+        outlineOffset: 3,
+        borderRadius: 4,
+        zIndex: 5,
+      }}
+    />
+  );
+}
+
 interface TrashDropZoneProps {
   visible: boolean;
 }

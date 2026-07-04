@@ -20,6 +20,7 @@ import {
   remove,
   setOrder as setOrderInCircuit,
   moveGate as moveGateInCircuit,
+  insertAt,
   clear as clearCircuit,
 } from "../utils/circuit";
 import { isValidSingleWire } from "../utils/wireValidation";
@@ -34,18 +35,18 @@ export function useCircuit(numberOfQubits: number) {
   /** Current circuit, always stored in column order (0..n-1). */
   const [gates, setGates] = useState<PlacedGate[]>([]);
 
-  const addTwoQubitGate = useCallback((gate: TwoQubitGate) => {
+  const addTwoQubitGate = useCallback((gate: TwoQubitGate, column?: number) => {
     const g: PlacedTwoQubitGate = {
       id: crypto.randomUUID(),
       type: gate,
       order: DEFAULT_QUBIT_ORDER,
       column: 0,
     };
-    setGates((prev) => append(prev, g));
+    setGates((prev) => column !== undefined ? insertAt(prev, g, column) : append(prev, g));
   }, []);
 
   const addSingleQubitGate = useCallback(
-    (type: SingleQubitGate, wire: SingleWire) => {
+    (type: SingleQubitGate, wire: SingleWire, column?: number) => {
       if (!isValidSingleWire(wire, numberOfQubits)) return;
 
       const g: PlacedSingleQubitGate = {
@@ -54,7 +55,7 @@ export function useCircuit(numberOfQubits: number) {
         wire,
         column: 0,
       };
-      setGates((prev) => append(prev, g));
+      setGates((prev) => column !== undefined ? insertAt(prev, g, column) : append(prev, g));
     },
     [numberOfQubits]
   );
