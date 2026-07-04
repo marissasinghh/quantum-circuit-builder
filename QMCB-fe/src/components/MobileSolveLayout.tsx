@@ -30,11 +30,18 @@ import {
 } from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
+import { CNOTGlyph } from "./GateDesign";
 import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
 import type { BlochState } from "../utils/blochMath";
 import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
+
+// SVG glyphs for gates that need a visual symbol instead of a text label.
+const MOBILE_GATE_GLYPHS: Partial<Record<Gate, React.ReactNode>> = {
+  [Gate.CNOT]: <CNOTGlyph order={[0, 1]} width={52} height={34} />,
+  [Gate.CNOT_FLIPPED]: <CNOTGlyph order={[1, 0]} width={52} height={34} />,
+};
 
 // Minimal label + toolId lookup for rendering the mobile gate row.
 // Labels and toolIds mirror GATE_CONFIG in Gateset.tsx (no internal logic changes).
@@ -222,12 +229,18 @@ export function MobileSolveLayout({
                         id={cfg.toolId}
                         className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px]"
                       >
-                        <span
-                          draggable={false}
-                          className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
-                        >
-                          {cfg.label}
-                        </span>
+                        {MOBILE_GATE_GLYPHS[gate] != null ? (
+                          <span draggable={false} className="pointer-events-none select-none">
+                            {MOBILE_GATE_GLYPHS[gate]}
+                          </span>
+                        ) : (
+                          <span
+                            draggable={false}
+                            className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
+                          >
+                            {cfg.label}
+                          </span>
+                        )}
                       </DraggableTool>
                     );
                   })}
