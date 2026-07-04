@@ -142,7 +142,7 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
           θ slot
         </div>
       )}
-      <div className="pointer-events-none" style={{ width: sqW, margin: "0 auto" }}>
+      <div className="pointer-events-none" style={{ width: sqW, display: "flex", justifyContent: "center", alignItems: "center", overflow: "visible" }}>
         <PlacedGateGlyph gate={gate} width={sqW} height={sqH} />
       </div>
     </div>
