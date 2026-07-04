@@ -4,7 +4,7 @@
 
 import type { ReactNode } from "react";
 import { Gate } from "../types/global";
-import { CNOTGlyph } from "./GateDesign";
+import { GatesetCNOTGlyph } from "./GateDesign";
 import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { DraggableTool } from "./DragAndDropWrappers";
@@ -96,8 +96,8 @@ const GATE_CONFIG = {
 } as const;
 
 const GATE_GLYPHS: Partial<Record<Gate, ReactNode>> = {
-  [Gate.CNOT]: <CNOTGlyph order={[0, 1]} width={52} height={34} />,
-  [Gate.CNOT_FLIPPED]: <CNOTGlyph order={[1, 0]} width={52} height={34} />,
+  [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
+  [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
 };
 
 const GATE_TOOLTIPS: Partial<Record<Gate, { content: ReactNode; gatedBy?: Gate }>> = {
@@ -267,7 +267,7 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
               className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px] sm:min-w-0 sm:w-full"
             >
               {GATE_GLYPHS[gate] != null ? (
-                <span draggable={false} className="pointer-events-none select-none">
+                <span draggable={false} className="pointer-events-none select-none pr-4">
                   {GATE_GLYPHS[gate]}
                 </span>
               ) : (

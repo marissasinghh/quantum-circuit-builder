@@ -81,6 +81,39 @@ export function CNOTGlyph({
   );
 }
 
+const CNOT_GLYPH_NATURAL = { width: 80, height: 60 } as const;
+/** Matches text-[13px] leading-tight in gateset tiles — keeps tile height unchanged. */
+const GATESET_CNOT_HEIGHT = 13;
+
+/** CNOT at gateset-tile scale: native 80×60 geometry, CSS-scaled to preserve proportions. */
+export function GatesetCNOTGlyph({
+  order = [0, 1],
+}: {
+  order?: ControlTargetOrder;
+}) {
+  const scale = GATESET_CNOT_HEIGHT / CNOT_GLYPH_NATURAL.height;
+  const displayWidth = CNOT_GLYPH_NATURAL.width * scale;
+
+  return (
+    <span
+      className="inline-block shrink-0 overflow-hidden leading-none"
+      style={{ width: displayWidth, height: GATESET_CNOT_HEIGHT }}
+      aria-hidden
+    >
+      <span
+        className="inline-block origin-top-left"
+        style={{ transform: `scale(${scale})` }}
+      >
+        <CNOTGlyph
+          order={order}
+          width={CNOT_GLYPH_NATURAL.width}
+          height={CNOT_GLYPH_NATURAL.height}
+        />
+      </span>
+    </span>
+  );
+}
+
 /** Controlled-Z glyph: control dot + boxed Z target */
 export function ControlledZGlyph({
   order = [0, 1],

@@ -30,7 +30,7 @@ import {
 } from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
-import { CNOTGlyph } from "./GateDesign";
+import { GatesetCNOTGlyph } from "./GateDesign";
 import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
@@ -39,8 +39,8 @@ import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global"
 
 // SVG glyphs for gates that need a visual symbol instead of a text label.
 const MOBILE_GATE_GLYPHS: Partial<Record<Gate, React.ReactNode>> = {
-  [Gate.CNOT]: <CNOTGlyph order={[0, 1]} width={52} height={34} />,
-  [Gate.CNOT_FLIPPED]: <CNOTGlyph order={[1, 0]} width={52} height={34} />,
+  [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
+  [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
 };
 
 // Minimal label + toolId lookup for rendering the mobile gate row.
