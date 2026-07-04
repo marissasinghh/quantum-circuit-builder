@@ -57,8 +57,6 @@ const THETA_PRESETS = [
 const LABEL_PAD = 36;
 const PAD_X = CANVAS_PAD_X;
 const COL_W = CANVAS_COL_W;
-/** Height of each droppable cell — must span the full gate chip height (40px). */
-const CELL_H = 44;
 const CANVAS_H = 200;
 const SQ_W = 44;
 const SQ_H = 40;
@@ -138,10 +136,10 @@ export function CircuitCanvas({
                 <DroppableCell
                   key={cellId}
                   id={cellId}
-                  left={PAD_X + col * COL_W - COL_W / 2}
-                  top={y - CELL_H / 2}
-                  width={COL_W}
-                  height={CELL_H}
+                  left={PAD_X + col * COL_W - SQ_W / 2}
+                  top={y - SQ_H / 2}
+                  width={SQ_W}
+                  height={SQ_H}
                   isActiveTarget={hoveredCellId === cellId}
                 />
               );

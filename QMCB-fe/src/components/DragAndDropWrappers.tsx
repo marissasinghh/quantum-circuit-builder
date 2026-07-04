@@ -101,7 +101,7 @@ export function DroppableCell({
         boxSizing: "border-box",
         pointerEvents: "none",
         outline: isActiveTarget ? "2px dashed #7dc4e0" : "none",
-        outlineOffset: -1,
+        outlineOffset: 3,
         borderRadius: 4,
         zIndex: 5,
       }}
