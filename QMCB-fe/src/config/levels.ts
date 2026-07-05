@@ -243,7 +243,7 @@ export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
   canonical: [
     { gate: Gate.H, order: Q0 },
     { gate: Gate.H, order: Q1 },
-    { gate: Gate.CNOT, order: C1_T0 },
+    { gate: Gate.CNOT, order: C0_T1 },
     { gate: Gate.H, order: Q0 },
     { gate: Gate.H, order: Q1 },
   ],

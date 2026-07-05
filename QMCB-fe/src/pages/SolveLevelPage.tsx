@@ -26,7 +26,7 @@ import { OutputTable, type GradingSummary } from "../components/OutputTable";
 import { LevelCompleteModal } from "../components/LevelCompleteModal";
 import { BlochSphere } from "../components/BlochSphere";
 
-import { LEVEL_ORDER, getNextLevel } from "../config/levels";
+import { LEVEL_ORDER, getNextLevel, isLevelCleared } from "../config/levels";
 import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState, amplitudesToBlochState, canonicalStepsToBlochState, type BlochState } from "../utils/blochMath";
 import { buildPreviewTruthRows } from "../utils/previewTruthTable";
@@ -75,6 +75,8 @@ function SolveLevelContent({
 
   const { completedLevels, skippedLevels, advancedPastLevels, markLevelComplete, advancePastLevel, unlockGateForLevel, skipLevel } =
     useLevelProgress();
+
+  const cnotFlipUnlocked = isLevelCleared(Gate.CNOT_FLIPPED, completedLevels, skippedLevels);
 
   const levelId = currentLevel.target_unitary;
 
@@ -299,6 +301,7 @@ function SolveLevelContent({
         gates={gates}
         removeGate={removeGate}
         setGateOrder={setGateOrder}
+        cnotFlipUnlocked={cnotFlipUnlocked}
         setGateTheta={setGateTheta}
         setParameterSlot={setParameterSlot}
         showParameterSlotControls={isRandomThetaLevel}
@@ -375,6 +378,7 @@ function SolveLevelContent({
               isChecking={mutation.isPending}
               onSkip={handleSkipLevel}
               showSkip={showSkip}
+              cnotFlipUnlocked={cnotFlipUnlocked}
             />
             <LevelCompleteModal
               isOpen={showCompletionModal}

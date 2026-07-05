@@ -54,23 +54,36 @@ export function CNOTGlyph({
   order = [0, 1],
   width = 80,
   height = 60,
+  viewBox,
+  className,
 }: {
   order?: ControlTargetOrder;
   width?: number;
   height?: number;
+  viewBox?: string;
+  className?: string;
 }) {
+  const geomW = viewBox ? 80 : width;
+  const geomH = viewBox ? 60 : height;
   const pad = 10;
   const yTop = 12;
-  const yBot = height - 12;
-  const cx = width / 2;
+  const yBot = geomH - 12;
+  const cx = geomW / 2;
 
   const controlY = order[0] === 0 ? yTop : yBot;
   const targetY = order[1] === 1 ? yBot : yTop;
 
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="CNOT">
-      <Wire x1={pad} x2={width - pad} y={yTop} />
-      <Wire x1={pad} x2={width - pad} y={yBot} />
+    <svg
+      width={width}
+      height={height}
+      viewBox={viewBox ?? `0 0 ${geomW} ${geomH}`}
+      preserveAspectRatio="xMidYMid meet"
+      className={className}
+      aria-label="CNOT"
+    >
+      <Wire x1={pad} x2={geomW - pad} y={yTop} />
+      <Wire x1={pad} x2={geomW - pad} y={yBot} />
 
       <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke={colors.cyan} strokeWidth={2} />
 
@@ -78,6 +91,63 @@ export function CNOTGlyph({
       <circle cx={cx} cy={targetY} r={9} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
       <Plus cx={cx} cy={targetY} r={5} />
     </svg>
+  );
+}
+
+const GATESET_LABEL_FONT_SIZE = 13;
+const GATESET_LABEL_LINE_HEIGHT = GATESET_LABEL_FONT_SIZE * 1.25;
+
+/** Uniform inset around drawn geometry; smaller = larger tile glyph. */
+const GATESET_CNOT_INSET = 0.75;
+const GATESET_CNOT_WIRE_STUB = 3;
+
+function gatesetCnotViewBox(order: ControlTargetOrder) {
+  const cx = 40;
+  const yTop = 12;
+  const yBot = 48;
+  const controlY = order[0] === 0 ? yTop : yBot;
+  const targetY = order[1] === 1 ? yBot : yTop;
+  const controlR = 5;
+  const targetR = 9;
+  const stroke = 2;
+
+  const contentMinY = Math.min(controlY - controlR, targetY - targetR - stroke / 2);
+  const contentMaxY = Math.max(controlY + controlR, targetY + targetR + stroke / 2);
+  const contentMinX = cx - targetR - stroke / 2 - GATESET_CNOT_WIRE_STUB;
+  const contentMaxX = cx + targetR + stroke / 2 + GATESET_CNOT_WIRE_STUB;
+
+  return {
+    x: contentMinX - GATESET_CNOT_INSET,
+    y: contentMinY - GATESET_CNOT_INSET,
+    width: contentMaxX - contentMinX + GATESET_CNOT_INSET * 2,
+    height: contentMaxY - contentMinY + GATESET_CNOT_INSET * 2,
+  };
+}
+
+/** CNOT at gateset-tile scale: fills label line height with equal padding on all sides. */
+export function GatesetCNOTGlyph({
+  order = [0, 1],
+}: {
+  order?: ControlTargetOrder;
+}) {
+  const crop = gatesetCnotViewBox(order);
+  const height = GATESET_LABEL_LINE_HEIGHT;
+  const width = height * (crop.width / crop.height);
+  const viewBox = `${crop.x} ${crop.y} ${crop.width} ${crop.height}`;
+
+  return (
+    <span
+      className="inline-flex shrink-0 items-center justify-center overflow-visible leading-none"
+      style={{ height, width, fontSize: GATESET_LABEL_FONT_SIZE }}
+    >
+      <CNOTGlyph
+        order={order}
+        width={width}
+        height={height}
+        viewBox={viewBox}
+        className="block h-full w-full shrink-0"
+      />
+    </span>
   );
 }
 

@@ -72,6 +72,9 @@ interface SortablePlacedMultiQubitGateProps {
   width: number;
   height: number;
   onRemoveGate: (id: string) => void;
+  /** Unlocked once the student clears CNOT_FLIPPED; enables the on-chip flip icon for CNOT gates. */
+  cnotFlipUnlocked?: boolean;
+  onSetGateOrder?: (id: string, order: ControlTargetOrder) => void;
 }
 
 export function SortablePlacedMultiQubitGate({
@@ -81,6 +84,8 @@ export function SortablePlacedMultiQubitGate({
   width,
   height,
   onRemoveGate,
+  cnotFlipUnlocked = false,
+  onSetGateOrder,
 }: SortablePlacedMultiQubitGateProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: gate.id,
@@ -101,11 +106,14 @@ export function SortablePlacedMultiQubitGate({
     touchAction: "none",
   };
 
+  const showFlipIcon =
+    gate.type === Gate.CNOT && cnotFlipUnlocked && onSetGateOrder != null;
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="cursor-grab active:cursor-grabbing select-none pointer-events-auto"
+      className="relative cursor-grab active:cursor-grabbing select-none pointer-events-auto"
       {...attributes}
       {...listeners}
       onDoubleClick={(e) => {
@@ -118,6 +126,23 @@ export function SortablePlacedMultiQubitGate({
       <div className="pointer-events-none">
         <MultiQubitGlyph gate={gate} width={width} height={height} />
       </div>
+      {showFlipIcon && (
+        <button
+          type="button"
+          className="absolute top-0 right-0 z-10 w-[18px] h-[18px] flex items-center justify-center rounded-sm bg-bg-panel/80 border border-tier2 font-mono text-[11px] text-tier2 hover:border-tier3 hover:text-tier3 cursor-pointer"
+          aria-label="Flip CNOT control/target"
+          onPointerDown={(e) => e.stopPropagation()}
+          onPointerUp={(e) => e.stopPropagation()}
+          onDoubleClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            const flipped: ControlTargetOrder = gate.order[0] === 0 ? [1, 0] : [0, 1];
+            onSetGateOrder!(gate.id, flipped);
+          }}
+        >
+          ⇄
+        </button>
+      )}
     </div>
   );
 }

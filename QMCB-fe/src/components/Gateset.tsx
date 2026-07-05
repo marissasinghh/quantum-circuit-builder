@@ -4,6 +4,7 @@
 
 import type { ReactNode } from "react";
 import { Gate } from "../types/global";
+import { GatesetCNOTGlyph } from "./GateDesign";
 import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { DraggableTool } from "./DragAndDropWrappers";
@@ -93,6 +94,11 @@ const GATE_CONFIG = {
     toolId: "tool-cu",
   },
 } as const;
+
+const GATE_GLYPHS: Partial<Record<Gate, ReactNode>> = {
+  [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
+  [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
+};
 
 const GATE_TOOLTIPS: Partial<Record<Gate, { content: ReactNode; gatedBy?: Gate }>> = {
   [Gate.SQRT_X]: {
@@ -260,12 +266,21 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
               id={config.toolId}
               className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px] sm:min-w-0 sm:w-full"
             >
-              <span
-                draggable={false}
-                className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
-              >
-                {config.label}
-              </span>
+              {GATE_GLYPHS[gate] != null ? (
+                <span
+                  draggable={false}
+                  className="inline-flex items-center pointer-events-none select-none pr-4"
+                >
+                  {GATE_GLYPHS[gate]}
+                </span>
+              ) : (
+                <span
+                  draggable={false}
+                  className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
+                >
+                  {config.label}
+                </span>
+              )}
               {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
                 <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
               )}

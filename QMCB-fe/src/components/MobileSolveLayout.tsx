@@ -30,11 +30,18 @@ import {
 } from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
+import { GatesetCNOTGlyph } from "./GateDesign";
 import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
 import type { BlochState } from "../utils/blochMath";
 import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
+
+// SVG glyphs for gates that need a visual symbol instead of a text label.
+const MOBILE_GATE_GLYPHS: Partial<Record<Gate, React.ReactNode>> = {
+  [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
+  [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
+};
 
 // Minimal label + toolId lookup for rendering the mobile gate row.
 // Labels and toolIds mirror GATE_CONFIG in Gateset.tsx (no internal logic changes).
@@ -69,6 +76,7 @@ interface MobileSolveLayoutProps {
   setGateTheta: (id: string, theta: number) => void;
   setParameterSlot?: (id: string) => void;
   showParameterSlotControls?: boolean;
+  cnotFlipUnlocked?: boolean;
 
   // Validation
   rows: TruthRow[] | null;
@@ -137,6 +145,7 @@ export function MobileSolveLayout({
   setGateTheta,
   setParameterSlot,
   showParameterSlotControls = false,
+  cnotFlipUnlocked = false,
   rows,
   allCorrect,
   outputTableMode,
@@ -222,12 +231,21 @@ export function MobileSolveLayout({
                         id={cfg.toolId}
                         className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px]"
                       >
-                        <span
-                          draggable={false}
-                          className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
-                        >
-                          {cfg.label}
-                        </span>
+                        {MOBILE_GATE_GLYPHS[gate] != null ? (
+                          <span
+                            draggable={false}
+                            className="inline-flex items-center pointer-events-none select-none"
+                          >
+                            {MOBILE_GATE_GLYPHS[gate]}
+                          </span>
+                        ) : (
+                          <span
+                            draggable={false}
+                            className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
+                          >
+                            {cfg.label}
+                          </span>
+                        )}
                       </DraggableTool>
                     );
                   })}
@@ -260,6 +278,7 @@ export function MobileSolveLayout({
                   isChecking={isMutationPending}
                   onSkip={handleSkipLevel}
                   showSkip={showSkip}
+                  cnotFlipUnlocked={cnotFlipUnlocked}
                 />
               </div>
 
