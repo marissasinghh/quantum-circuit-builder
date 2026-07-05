@@ -55,9 +55,10 @@ function LevelSidebar() {
             <div
               key={level.target_unitary}
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
-              className={rowClass}
+              className={`${rowClass} flex items-center`}
             >
-              {getLevelNumber(index)} {getLevelDisplayName(level)}
+              <span>{getLevelNumber(index)} {getLevelDisplayName(level)}</span>
+              {status === "skipped" && <span className="text-text-faint ml-auto pr-1">⏭</span>}
             </div>
           );
         })}
