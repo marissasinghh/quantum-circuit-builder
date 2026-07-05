@@ -78,6 +78,7 @@ export function CNOTGlyph({
       width={width}
       height={height}
       viewBox={viewBox ?? `0 0 ${geomW} ${geomH}`}
+      preserveAspectRatio="xMidYMid meet"
       className={className}
       aria-label="CNOT"
     >
@@ -93,9 +94,13 @@ export function CNOTGlyph({
   );
 }
 
-const GATESET_LABEL_LINE_HEIGHT = 13 * 1.25;
+const GATESET_LABEL_FONT_SIZE = 13;
+const GATESET_LABEL_LINE_HEIGHT = GATESET_LABEL_FONT_SIZE * 1.25;
 
-/** Tight crop with stroke + anti-alias margin; smaller stub = larger tile glyph. */
+/** Uniform inset around drawn geometry; smaller = larger tile glyph. */
+const GATESET_CNOT_INSET = 0.75;
+const GATESET_CNOT_WIRE_STUB = 3;
+
 function gatesetCnotViewBox(order: ControlTargetOrder) {
   const cx = 40;
   const yTop = 12;
@@ -105,24 +110,21 @@ function gatesetCnotViewBox(order: ControlTargetOrder) {
   const controlR = 5;
   const targetR = 9;
   const stroke = 2;
-  const wireStub = 5;
 
-  const minY =
-    Math.min(controlY - controlR, targetY - targetR - stroke / 2) - 0.5;
-  const maxY =
-    Math.max(controlY + controlR, targetY + targetR + stroke / 2) + 2;
-  const minX = cx - targetR - stroke / 2 - wireStub;
-  const maxX = cx + targetR + stroke / 2 + wireStub;
+  const contentMinY = Math.min(controlY - controlR, targetY - targetR - stroke / 2);
+  const contentMaxY = Math.max(controlY + controlR, targetY + targetR + stroke / 2);
+  const contentMinX = cx - targetR - stroke / 2 - GATESET_CNOT_WIRE_STUB;
+  const contentMaxX = cx + targetR + stroke / 2 + GATESET_CNOT_WIRE_STUB;
 
   return {
-    x: minX,
-    y: minY,
-    width: maxX - minX,
-    height: maxY - minY,
+    x: contentMinX - GATESET_CNOT_INSET,
+    y: contentMinY - GATESET_CNOT_INSET,
+    width: contentMaxX - contentMinX + GATESET_CNOT_INSET * 2,
+    height: contentMaxY - contentMinY + GATESET_CNOT_INSET * 2,
   };
 }
 
-/** CNOT at gateset-tile scale: viewBox crop + height matched to text-[13px] leading-tight labels. */
+/** CNOT at gateset-tile scale: fills label line height with equal padding on all sides. */
 export function GatesetCNOTGlyph({
   order = [0, 1],
 }: {
@@ -134,13 +136,16 @@ export function GatesetCNOTGlyph({
   const viewBox = `${crop.x} ${crop.y} ${crop.width} ${crop.height}`;
 
   return (
-    <span className="inline-flex shrink-0 items-center overflow-visible leading-none">
+    <span
+      className="inline-flex shrink-0 items-center justify-center overflow-visible leading-none"
+      style={{ height, width, fontSize: GATESET_LABEL_FONT_SIZE }}
+    >
       <CNOTGlyph
         order={order}
         width={width}
         height={height}
         viewBox={viewBox}
-        className="block shrink-0 overflow-visible"
+        className="block h-full w-full shrink-0"
       />
     </span>
   );

@@ -267,7 +267,10 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
               className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px] sm:min-w-0 sm:w-full"
             >
               {GATE_GLYPHS[gate] != null ? (
-                <span draggable={false} className="pointer-events-none select-none pr-4">
+                <span
+                  draggable={false}
+                  className="inline-flex items-center pointer-events-none select-none pr-4"
+                >
                   {GATE_GLYPHS[gate]}
                 </span>
               ) : (
