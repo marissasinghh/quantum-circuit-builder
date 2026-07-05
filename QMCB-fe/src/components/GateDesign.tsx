@@ -91,8 +91,15 @@ export function CNOTGlyph({
 }
 
 const GATESET_LABEL_LINE_HEIGHT = 13 * 1.25;
-/** Crop to symbol bounds (not full 80×60 canvas) so the tile glyph fills the label line box. */
-const GATESET_CNOT_VIEWBOX = { x: 16, y: 6, width: 48, height: 50 } as const;
+
+/** Minimal viewBox crop per wire order; height 52 includes target stroke (bottom at y=58). */
+function gatesetCnotViewBox(order: ControlTargetOrder) {
+  const width = 40;
+  const height = 52;
+  const x = 20;
+  const y = order[0] === 0 ? 6 : 2;
+  return { x, y, width, height };
+}
 
 /** CNOT at gateset-tile scale: viewBox crop + height matched to text-[13px] leading-tight labels. */
 export function GatesetCNOTGlyph({
@@ -100,9 +107,10 @@ export function GatesetCNOTGlyph({
 }: {
   order?: ControlTargetOrder;
 }) {
+  const crop = gatesetCnotViewBox(order);
   const height = GATESET_LABEL_LINE_HEIGHT;
-  const width = height * (GATESET_CNOT_VIEWBOX.width / GATESET_CNOT_VIEWBOX.height);
-  const viewBox = `${GATESET_CNOT_VIEWBOX.x} ${GATESET_CNOT_VIEWBOX.y} ${GATESET_CNOT_VIEWBOX.width} ${GATESET_CNOT_VIEWBOX.height}`;
+  const width = height * (crop.width / crop.height);
+  const viewBox = `${crop.x} ${crop.y} ${crop.width} ${crop.height}`;
 
   return (
     <CNOTGlyph
