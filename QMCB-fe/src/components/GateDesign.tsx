@@ -55,11 +55,13 @@ export function CNOTGlyph({
   width = 80,
   height = 60,
   viewBox,
+  className,
 }: {
   order?: ControlTargetOrder;
   width?: number;
   height?: number;
   viewBox?: string;
+  className?: string;
 }) {
   const geomW = viewBox ? 80 : width;
   const geomH = viewBox ? 60 : height;
@@ -76,6 +78,7 @@ export function CNOTGlyph({
       width={width}
       height={height}
       viewBox={viewBox ?? `0 0 ${geomW} ${geomH}`}
+      className={className}
       aria-label="CNOT"
     >
       <Wire x1={pad} x2={geomW - pad} y={yTop} />
@@ -92,13 +95,31 @@ export function CNOTGlyph({
 
 const GATESET_LABEL_LINE_HEIGHT = 13 * 1.25;
 
-/** Minimal viewBox crop per wire order; height 52 includes target stroke (bottom at y=58). */
+/** Tight crop with stroke + anti-alias margin; smaller stub = larger tile glyph. */
 function gatesetCnotViewBox(order: ControlTargetOrder) {
-  const width = 40;
-  const height = 52;
-  const x = 20;
-  const y = order[0] === 0 ? 6 : 2;
-  return { x, y, width, height };
+  const cx = 40;
+  const yTop = 12;
+  const yBot = 48;
+  const controlY = order[0] === 0 ? yTop : yBot;
+  const targetY = order[1] === 1 ? yBot : yTop;
+  const controlR = 5;
+  const targetR = 9;
+  const stroke = 2;
+  const wireStub = 5;
+
+  const minY =
+    Math.min(controlY - controlR, targetY - targetR - stroke / 2) - 0.5;
+  const maxY =
+    Math.max(controlY + controlR, targetY + targetR + stroke / 2) + 2;
+  const minX = cx - targetR - stroke / 2 - wireStub;
+  const maxX = cx + targetR + stroke / 2 + wireStub;
+
+  return {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
 }
 
 /** CNOT at gateset-tile scale: viewBox crop + height matched to text-[13px] leading-tight labels. */
@@ -113,12 +134,15 @@ export function GatesetCNOTGlyph({
   const viewBox = `${crop.x} ${crop.y} ${crop.width} ${crop.height}`;
 
   return (
-    <CNOTGlyph
-      order={order}
-      width={width}
-      height={height}
-      viewBox={viewBox}
-    />
+    <span className="inline-flex shrink-0 items-center overflow-visible leading-none">
+      <CNOTGlyph
+        order={order}
+        width={width}
+        height={height}
+        viewBox={viewBox}
+        className="block shrink-0 overflow-visible"
+      />
+    </span>
   );
 }
 
