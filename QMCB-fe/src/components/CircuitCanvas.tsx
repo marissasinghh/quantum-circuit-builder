@@ -45,6 +45,8 @@ interface CircuitCanvasProps {
   isChecking: boolean;
   onSkip?: () => void;
   showSkip?: boolean;
+  /** True once the student has cleared level CNOT_FLIPPED; unlocks CNOT qubit-order editing. */
+  cnotFlipUnlocked?: boolean;
 }
 
 const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTROLLED_Z, Gate.SWAP]);
@@ -95,6 +97,7 @@ export function CircuitCanvas({
   isChecking,
   onSkip,
   showSkip = false,
+  cnotFlipUnlocked = false,
 }: CircuitCanvasProps) {
   const orderedGates = gatesInColumnOrder(gates);
 
@@ -238,6 +241,8 @@ export function CircuitCanvas({
                     width={width}
                     height={height}
                     onRemoveGate={onRemoveGate}
+                    cnotFlipUnlocked={cnotFlipUnlocked}
+                    onSetGateOrder={onSetGateOrder}
                   />
                 );
               }
@@ -270,6 +275,7 @@ export function CircuitCanvas({
         {orderedGates.map((g) => {
           const isTwoQubit = TWO_QUBIT_GATES.has(g.type);
           const isParameterized = !isTwoQubit && PARAMETERIZED_GATES.has(g.type);
+          const isCnotOrderLocked = g.type === Gate.CNOT && !cnotFlipUnlocked;
           const orders = isTwoQubit ? allowedOrdersFor(g.type as Gate) : [];
 
           return (
@@ -293,7 +299,7 @@ export function CircuitCanvas({
               <div className="self-stretch w-px shrink-0 bg-tier1" aria-hidden="true" />
 
               <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
-                {isTwoQubit && "order" in g && (
+                {isTwoQubit && "order" in g && !isCnotOrderLocked && (
                   <>
                     <label className="font-sans text-[10px] text-tier2 shrink-0">Order:</label>
                     <select
@@ -313,6 +319,9 @@ export function CircuitCanvas({
                       ))}
                     </select>
                   </>
+                )}
+                {isCnotOrderLocked && (
+                  <span className="font-mono text-[10px] text-text-faint">order locked</span>
                 )}
 
                 {showParameterSlotControls && isParameterized && "wire" in g && onSetParameterSlot && (

@@ -76,6 +76,7 @@ interface MobileSolveLayoutProps {
   setGateTheta: (id: string, theta: number) => void;
   setParameterSlot?: (id: string) => void;
   showParameterSlotControls?: boolean;
+  cnotFlipUnlocked?: boolean;
 
   // Validation
   rows: TruthRow[] | null;
@@ -144,6 +145,7 @@ export function MobileSolveLayout({
   setGateTheta,
   setParameterSlot,
   showParameterSlotControls = false,
+  cnotFlipUnlocked = false,
   rows,
   allCorrect,
   outputTableMode,
@@ -276,6 +278,7 @@ export function MobileSolveLayout({
                   isChecking={isMutationPending}
                   onSkip={handleSkipLevel}
                   showSkip={showSkip}
+                  cnotFlipUnlocked={cnotFlipUnlocked}
                 />
               </div>
 
