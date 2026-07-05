@@ -125,7 +125,7 @@ export function CircuitCanvas({
 
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
-      <div className="relative flex-1 min-h-[180px] min-w-0 rounded-panel bg-[#090f1d]">
+      <div className="relative flex-1 min-w-0 rounded-panel bg-[#090f1d]" style={{ minHeight: canvasH }}>
         <Tooltip id="circuit-canvas">
           A qubit is the quantum version of a classical bit. Unlike a bit which is always 0 or 1, a
           qubit can exist in a superposition of both until it is measured.
