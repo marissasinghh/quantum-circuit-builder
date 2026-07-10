@@ -27,6 +27,7 @@ import { LevelCompleteModal } from "../components/LevelCompleteModal";
 import { BlochSphere } from "../components/BlochSphere";
 
 import { LEVEL_ORDER, getNextLevel, isLevelCleared } from "../config/levels";
+import { computeAvailableGates } from "../utils/computeToolbox";
 import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState, amplitudesToBlochState, canonicalStepsToBlochState, type BlochState } from "../utils/blochMath";
 import { buildPreviewTruthRows, buildParamPreviewRows, buildParamGradedRows } from "../utils/previewTruthTable";
@@ -89,6 +90,11 @@ function SolveLevelContent({
   const cnotFlipUnlocked = isLevelCleared(Gate.CNOT_FLIPPED, completedLevels, skippedLevels);
 
   const levelId = currentLevel.target_unitary;
+
+  const availableGates = useMemo(
+    () => computeAvailableGates(advancedPastLevels, currentLevel.number_of_qubits),
+    [advancedPastLevels, currentLevel.number_of_qubits],
+  );
 
   // True when the student has solved this level but hasn't yet clicked "Next level →".
   // This state is fully persisted (completedLevels / advancedPastLevels are in localStorage),
@@ -341,6 +347,7 @@ function SolveLevelContent({
     return (
       <MobileSolveLayout
         currentLevel={currentLevel}
+        availableGates={availableGates}
         isSeedDrivenLevel={isSeedDrivenLevel}
         dynamicTruth={isSeedDrivenLevel ? seedDrivenQuery.data?.truth_table : undefined}
         gates={gates}
@@ -444,7 +451,7 @@ function SolveLevelContent({
             className="w-full sm:w-auto sm:shrink sm:basis-[523px] sm:min-w-[200px] bg-bg-sidebar border-t sm:border-t-0 sm:border-l border-tier1 p-3 sm:overflow-y-auto panel-scroll flex flex-col gap-0 min-h-0 sm:h-full"
           >
             <div className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
-              <Gateset availableGates={currentLevel.toolbox} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
+              <Gateset availableGates={availableGates} activeId={activeId} numberOfQubits={currentLevel.number_of_qubits} />
             </div>
             {currentLevel.number_of_qubits === 1 && (
               <>

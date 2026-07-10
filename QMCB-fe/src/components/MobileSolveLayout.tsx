@@ -42,6 +42,7 @@ import {
   YDagGlyph,
 } from "./GateDesign";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
+import { GateDisplayLabel } from "./GateDisplayLabel";
 import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
@@ -65,6 +66,7 @@ const MOBILE_GATE_GLYPHS: Partial<Record<Gate, React.ReactNode>> = {
 interface MobileSolveLayoutProps {
   // Level
   currentLevel: LevelDefinition;
+  availableGates: readonly Gate[];
   isSeedDrivenLevel: boolean;
   dynamicTruth: TruthTableDTO | undefined;
 
@@ -138,6 +140,7 @@ function tabBtnClass(active: boolean): string {
 
 export function MobileSolveLayout({
   currentLevel,
+  availableGates,
   isSeedDrivenLevel,
   dynamicTruth,
   gates,
@@ -225,7 +228,7 @@ export function MobileSolveLayout({
                   GATESET
                 </p>
                 <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1">
-                  {currentLevel.toolbox.map((gate) => {
+                  {availableGates.map((gate) => {
                     const cfg = GATE_UI_CONFIG[gate];
                     if (!cfg) return null;
                     return (
@@ -242,12 +245,10 @@ export function MobileSolveLayout({
                             {MOBILE_GATE_GLYPHS[gate]}
                           </span>
                         ) : (
-                          <span
-                            draggable={false}
+                          <GateDisplayLabel
+                            gate={gate}
                             className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
-                          >
-                            {cfg.label}
-                          </span>
+                          />
                         )}
                       </DraggableTool>
                     );

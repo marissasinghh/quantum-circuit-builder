@@ -2,6 +2,7 @@ import React, { useCallback, useRef } from "react";
 import { useDraggable } from "@dnd-kit/core";
 
 import { Gate, type PlacedSingleQubitGate } from "../types/global";
+import { formatGateDisplayName } from "../utils/gateDisplayNames";
 import {
   HGlyph,
   TGlyph,
@@ -133,7 +134,7 @@ export function SortablePlacedGate({ gate, left, top, onRemoveGate }: SortablePl
         onRemoveGate(gate.id);
       }}
       onPointerUp={handleDoubleTap}
-      aria-label={`${gate.type} gate on wire ${gate.wire}`}
+      aria-label={`${formatGateDisplayName(gate.type)} gate on wire ${gate.wire}`}
     >
       {isParameterized && thetaLabel && (
         <div

@@ -21,6 +21,7 @@ import { DraggableTool } from "./DragAndDropWrappers";
 import { Tooltip, TooltipMath } from "./Tooltip";
 import SuperpositionTable from "./SuperpositionTable";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
+import { GateDisplayLabel } from "./GateDisplayLabel";
 
 interface GatesetProps {
   availableGates: readonly Gate[];
@@ -215,12 +216,10 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
                   {GATE_GLYPHS[gate]}
                 </span>
               ) : (
-                <span
-                  draggable={false}
-                  className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
-                >
-                  {config.label}
-                </span>
+                  <GateDisplayLabel
+                    gate={gate}
+                    className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
+                  />
               )}
               {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
                 <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>

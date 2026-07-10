@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import {
   LEVEL_ORDER,
-  getLevelDisplayName,
   getLevelStatus,
   getLevelNumber,
   type LevelStatus,
 } from "../config/levels";
+import { GateDisplayLabel } from "../components/GateDisplayLabel";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 
 function LockIcon({ className = "" }: { className?: string }) {
@@ -65,7 +65,9 @@ function LevelCard({
         {status === "locked" && <LockIcon className="text-text-faint shrink-0" />}
       </div>
 
-      <p className="nav-level-name">{getLevelDisplayName(level)}</p>
+      <p className="nav-level-name">
+        <GateDisplayLabel gate={level.target_unitary} />
+      </p>
     </div>
   );
 }

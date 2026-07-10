@@ -48,6 +48,7 @@ import {
   ParameterMode,
 } from "../utils/constants";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
+import { formatGateDisplayName } from "../utils/gateDisplayNames";
 
 /** Full Tier 2 toolbox — singles plus all two-qubit primitives unlocked by end of Tier 2. */
 const TIER3_TOOLBOX = [
@@ -89,6 +90,7 @@ export const X_LEVEL: LevelDefinition = {
 // ========================
 export const SQRT_X_DAG_LEVEL: LevelDefinition = {
   target_unitary: Gate.SQRT_X_DAG,
+  noGatesetUnlock: true,
   number_of_qubits: LEVEL1_QUBITS,
   toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X] as const,
 
@@ -836,7 +838,7 @@ export function getLevelNumber(index: number): string {
 
 /** Get the human-readable level title for UI display. */
 export function getLevelDisplayName(level: LevelDefinition): string {
-  return level.name ?? level.target_unitary;
+  return level.name ?? formatGateDisplayName(level.target_unitary);
 }
 
 /**

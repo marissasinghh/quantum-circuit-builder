@@ -7,7 +7,8 @@ import SolveLevelPage from "./pages/SolveLevelPage";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
 import { LevelProgressProvider, useLevelProgress } from "./hooks/useLevelProgress";
-import { LEVEL_ORDER, getLevelDisplayName, getLevelStatus, getLevelNumber } from "./config/levels";
+import { LEVEL_ORDER, getLevelStatus, getLevelNumber } from "./config/levels";
+import { GateDisplayLabel } from "./components/GateDisplayLabel";
 
 function LevelSidebar() {
   const { completedLevels, skippedLevels, advancedPastLevels } = useLevelProgress();
@@ -57,7 +58,14 @@ function LevelSidebar() {
               onClick={isLocked ? undefined : () => navigate("/level/" + level.target_unitary)}
               className={`${rowClass} flex items-center`}
             >
-              <span>{getLevelNumber(index)} {getLevelDisplayName(level)}</span>
+              <span>
+                {getLevelNumber(index)}{" "}
+                {level.name != null ? (
+                  <GateDisplayLabel label={level.name} />
+                ) : (
+                  <GateDisplayLabel gate={level.target_unitary} />
+                )}
+              </span>
               {status === "skipped" && <span className="text-text-faint ml-auto pr-1">⏭</span>}
             </div>
           );

@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO } from "../interfaces/truthTable";
 import { LEVEL_ORDER, getGateHeadingLabel, getLevelDisplayName, getLevelNumber } from "../config/levels";
+import { GateDisplayLabel } from "./GateDisplayLabel";
 import { MathText } from "./MathText";
 
 interface TaskCardProps {
@@ -48,7 +49,15 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
       <p className="level-label mb-0.5">
         {`// LEVEL ${levelLabel}`}
       </p>
-      <p className="gate-name-heading mb-1">{getGateHeadingLabel(level)}</p>
+      <p className="gate-name-heading mb-1">
+        {level.number_of_qubits === 1 ? (
+          <>
+            Gate <GateDisplayLabel gate={level.target_unitary} />
+          </>
+        ) : (
+          <GateDisplayLabel label={getGateHeadingLabel(level)} />
+        )}
+      </p>
       <MathText
         text={level.description ?? ""}
         className="task-description text-caption text-text-body leading-relaxed"
