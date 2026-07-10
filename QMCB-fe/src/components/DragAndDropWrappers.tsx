@@ -17,7 +17,7 @@ export function DraggableTool({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`cursor-grab active:cursor-grabbing select-none ${className}`}
+      className={`cursor-grab active:cursor-grabbing select-none [@media(pointer:coarse)]:touch-none ${className}`}
       style={{ userSelect: "none", WebkitUserSelect: "none" }}
       aria-label={`drag ${id}`}
     >

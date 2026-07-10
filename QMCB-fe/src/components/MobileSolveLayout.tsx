@@ -190,6 +190,21 @@ export function MobileSolveLayout({
 }: MobileSolveLayoutProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>("info");
   const { completedLevels } = useLevelProgress();
+  const playTabScrollRef = React.useRef<HTMLDivElement>(null);
+  const infoTabScrollRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const previousScrollRestoration = history.scrollRestoration;
+    history.scrollRestoration = "manual";
+
+    window.scrollTo(0, 0);
+    if (playTabScrollRef.current) playTabScrollRef.current.scrollTop = 0;
+    if (infoTabScrollRef.current) infoTabScrollRef.current.scrollTop = 0;
+
+    return () => {
+      history.scrollRestoration = previousScrollRestoration;
+    };
+  }, [currentLevel.target_unitary]);
 
   return (
     <TooltipProvider>
@@ -207,23 +222,26 @@ export function MobileSolveLayout({
           <div className="flex shrink-0 border-b border-tier1 bg-bg-sidebar">
             <button
               type="button"
-              onClick={() => setActiveTab("play")}
-              className={tabBtnClass(activeTab === "play")}
-            >
-              Play
-            </button>
-            <button
-              type="button"
               onClick={() => setActiveTab("info")}
               className={tabBtnClass(activeTab === "info")}
             >
               Info
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("play")}
+              className={tabBtnClass(activeTab === "play")}
+            >
+              Play
+            </button>
           </div>
 
           {/* ── Play tab ── */}
           {activeTab === "play" && (
-            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto panel-scroll">
+            <div
+              ref={playTabScrollRef}
+              className="flex-1 flex flex-col min-h-0 overflow-y-auto panel-scroll"
+            >
 
               {/* Horizontal gate row */}
               <div className="shrink-0 px-3 pt-3 pb-2 bg-bg-sidebar border-b border-tier1">
@@ -343,7 +361,10 @@ export function MobileSolveLayout({
 
           {/* ── Info tab ── */}
           {activeTab === "info" && (
-            <div className="flex-1 min-h-0 overflow-y-auto panel-scroll p-4 flex flex-col gap-4">
+            <div
+              ref={infoTabScrollRef}
+              className="flex-1 min-h-0 overflow-y-auto panel-scroll p-4 flex flex-col gap-4"
+            >
               <TaskCard
                 level={currentLevel}
                 dynamicTruth={isSeedDrivenLevel ? dynamicTruth : undefined}

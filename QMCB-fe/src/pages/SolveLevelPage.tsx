@@ -92,8 +92,13 @@ function SolveLevelContent({
   const levelId = currentLevel.target_unitary;
 
   const availableGates = useMemo(
-    () => computeAvailableGates(advancedPastLevels, currentLevel.number_of_qubits),
-    [advancedPastLevels, currentLevel.number_of_qubits],
+    () =>
+      computeAvailableGates(
+        advancedPastLevels,
+        skippedLevels,
+        currentLevel.number_of_qubits,
+      ),
+    [advancedPastLevels, skippedLevels, currentLevel.number_of_qubits],
   );
 
   // True when the student has solved this level but hasn't yet clicked "Next level →".
@@ -187,6 +192,13 @@ function SolveLevelContent({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
+  );
+
+  // Mobile: tighter touch tolerance so small finger movement during hold cancels
+  // activation instead of triggering native page/panel scroll.
+  const mobileSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   );
 
   const blochState = useMemo(
@@ -385,7 +397,7 @@ function SolveLevelContent({
         onDragMove={onDragMove}
         onDragCancel={onDragCancel}
         onDragEnd={onDragEnd}
-        sensors={sensors}
+        sensors={mobileSensors}
         blochState={blochState}
         targetBlochState={targetBlochState}
         initialState={initialState}
