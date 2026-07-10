@@ -88,6 +88,8 @@ interface MobileSolveLayoutProps {
   isMutationPending: boolean;
   mutationError: Error | null;
   gradingSummary: GradingSummary | undefined;
+  paramSlotGate?: { id: string; theta?: number };
+  onSetGateTheta?: (id: string, theta: number) => void;
 
   // Handlers
   handleClear: () => void;
@@ -155,6 +157,8 @@ export function MobileSolveLayout({
   isMutationPending,
   mutationError,
   gradingSummary,
+  paramSlotGate,
+  onSetGateTheta,
   handleClear,
   handleNewUnitary,
   handleRepeat,
@@ -347,6 +351,8 @@ export function MobileSolveLayout({
                   isChecking={isChecking}
                   onClearAndRetry={handleClear}
                   gradingSummary={gradingSummary}
+                  paramSlotGate={paramSlotGate}
+                  onSetGateTheta={onSetGateTheta}
                   levelInsight={
                     currentLevel.insight && allCorrect ? (
                       <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">

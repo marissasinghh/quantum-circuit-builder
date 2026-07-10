@@ -29,7 +29,7 @@ import { BlochSphere } from "../components/BlochSphere";
 import { LEVEL_ORDER, getNextLevel, isLevelCleared } from "../config/levels";
 import { ParameterMode } from "../utils/constants";
 import { gateSequenceToBlochState, amplitudesToBlochState, canonicalStepsToBlochState, type BlochState } from "../utils/blochMath";
-import { buildPreviewTruthRows } from "../utils/previewTruthTable";
+import { buildPreviewTruthRows, buildParamPreviewRows, buildParamGradedRows } from "../utils/previewTruthTable";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 import { useMobileView } from "../hooks/useMobileView";
@@ -72,6 +72,16 @@ function SolveLevelContent({
 
   const isRandomThetaLevel =
     currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
+
+  const paramSlotGate = useMemo(
+    () =>
+      gates.find(
+        (g): g is PlacedSingleQubitGate => "isParameterSlot" in g && g.isParameterSlot === true
+      ) ?? null,
+    [gates]
+  );
+
+  const [snapshotTheta, setSnapshotTheta] = React.useState<number | null>(null);
 
   const { completedLevels, skippedLevels, advancedPastLevels, markLevelComplete, advancePastLevel, unlockGateForLevel, skipLevel } =
     useLevelProgress();
@@ -125,14 +135,28 @@ function SolveLevelContent({
 
   const seedDrivenTruth = isSeedDrivenLevel ? seedDrivenQuery.data?.truth_table : undefined;
 
-  const isGraded = mutation.status === "success" && rows != null;
-  const previewRows = useMemo(
-    () => buildPreviewTruthRows(gates, currentLevel, seedDrivenTruth),
-    [gates, currentLevel, seedDrivenTruth]
-  );
-  const displayRows = isGraded ? rows : previewRows;
-  const outputTableMode = isGraded ? "graded" : "preview";
-  const displayIsCorrect = isGraded && allCorrect;
+  const previewRows = useMemo(() => {
+    if (isRandomThetaLevel) {
+      if (!paramSlotGate || paramSlotGate.theta === undefined) return null;
+      return buildParamPreviewRows(gates, currentLevel, paramSlotGate.theta);
+    }
+    return buildPreviewTruthRows(gates, currentLevel, seedDrivenTruth);
+  }, [gates, currentLevel, seedDrivenTruth, isRandomThetaLevel, paramSlotGate]);
+
+  const snapshotRows = useMemo(() => {
+    if (!isRandomThetaLevel || snapshotTheta === null || mutation.status !== "success") return null;
+    return buildParamGradedRows(gates, currentLevel, snapshotTheta);
+  }, [isRandomThetaLevel, snapshotTheta, mutation.status, gates, currentLevel]);
+
+  const isGradedDisplay = isRandomThetaLevel
+    ? mutation.status === "success" && snapshotTheta !== null
+    : mutation.status === "success" && rows != null;
+
+  const displayRows = isGradedDisplay
+    ? (isRandomThetaLevel ? snapshotRows : rows)
+    : previewRows;
+  const outputTableMode = isGradedDisplay ? "graded" : "preview";
+  const displayIsCorrect = isGradedDisplay && allCorrect;
 
   const {
     activeId,
@@ -245,7 +269,24 @@ function SolveLevelContent({
   const handleClear = () => {
     clearAll();
     mutation.reset();
+    setSnapshotTheta(null);
   };
+
+  const handleCheckWithSnapshot = () => {
+    if (isRandomThetaLevel && paramSlotGate?.theta !== undefined) {
+      setSnapshotTheta(paramSlotGate.theta);
+    }
+    handleCheck();
+  };
+
+  // Revert the graded-snapshot display to preview mode whenever gates change
+  // (covers both slider drags and gate add/remove on RANDOM_THETA levels).
+  React.useEffect(() => {
+    if (isRandomThetaLevel && snapshotTheta !== null) {
+      setSnapshotTheta(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gates]);
 
   const handleNewUnitary = () => {
     generateNewUnitary();
@@ -308,12 +349,18 @@ function SolveLevelContent({
         rows={displayRows}
         allCorrect={displayIsCorrect}
         outputTableMode={outputTableMode}
-        handleCheck={handleCheck}
+        handleCheck={handleCheckWithSnapshot}
         validationError={validationError}
         isChecking={isChecking}
         isMutationPending={isMutationPending}
         mutationError={mutationError}
         gradingSummary={gradingSummary}
+        paramSlotGate={
+          isRandomThetaLevel && paramSlotGate
+            ? { id: paramSlotGate.id, theta: paramSlotGate.theta }
+            : undefined
+        }
+        onSetGateTheta={isRandomThetaLevel ? setGateTheta : undefined}
         handleClear={handleClear}
         handleNewUnitary={isSeedDrivenLevel ? handleNewUnitary : undefined}
         handleRepeat={handleRepeat}
@@ -373,7 +420,7 @@ function SolveLevelContent({
               onSetGateTheta={setGateTheta}
               onSetParameterSlot={setParameterSlot}
               showParameterSlotControls={isRandomThetaLevel}
-              onCheck={handleCheck}
+              onCheck={handleCheckWithSnapshot}
               onClear={handleClear}
               isChecking={mutation.isPending}
               onSkip={handleSkipLevel}
@@ -464,6 +511,12 @@ function SolveLevelContent({
                     </div>
                   ) : undefined
                 }
+                paramSlotGate={
+                  isRandomThetaLevel && paramSlotGate
+                    ? { id: paramSlotGate.id, theta: paramSlotGate.theta }
+                    : undefined
+                }
+                onSetGateTheta={isRandomThetaLevel ? setGateTheta : undefined}
               />
             </div>
           </aside>
