@@ -25,7 +25,7 @@ export const GATE_TOOLTIPS: Partial<Record<Gate, GateTooltipConfig>> = {
     ),
   },
   [Gate.SQRT_X]: {
-    revealWhenCompleted: Gate.SQRT_X_DAG,
+    revealWhenCompleted: Gate.X,
     content: (
       <>
         Sends <TooltipMath>|0⟩</TooltipMath> to <TooltipMath>|−i⟩</TooltipMath> and{" "}

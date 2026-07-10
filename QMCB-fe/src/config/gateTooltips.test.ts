@@ -8,15 +8,15 @@ describe("shouldShowGateTooltip — reveal schedule", () => {
     expect(visibleTooltipGates([])).toEqual([]);
   });
 
-  it("after 1.0 complete (X): only X has an icon", () => {
+  it("after 1.0 complete (X): X and sqrt-X get icons", () => {
     const completed = [Gate.X];
     expect(shouldShowGateTooltip(Gate.X, completed)).toBe(true);
-    expect(shouldShowGateTooltip(Gate.SQRT_X, completed)).toBe(false);
+    expect(shouldShowGateTooltip(Gate.SQRT_X, completed)).toBe(true);
     expect(shouldShowGateTooltip(Gate.RZ, completed)).toBe(false);
-    expect(visibleTooltipGates(completed)).toEqual([Gate.X]);
+    expect(visibleTooltipGates(completed).sort()).toEqual([Gate.SQRT_X, Gate.X].sort());
   });
 
-  it("after 1.1 complete: X and retroactive sqrt-X; not Z, S, or Rz", () => {
+  it("after 1.1 complete: same insight icons as 1.0; not Z, S, or Rz", () => {
     const completed = [Gate.X, Gate.SQRT_X_DAG];
     expect(shouldShowGateTooltip(Gate.X, completed)).toBe(true);
     expect(shouldShowGateTooltip(Gate.SQRT_X, completed)).toBe(true);
