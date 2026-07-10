@@ -295,7 +295,9 @@ function SolveLevelContent({
 
   const handleRepeat = () => {
     advancePastLevel(currentLevel);
-    unlockGateForLevel(currentLevel);
+    if (!currentLevel.noGatesetUnlock) {
+      unlockGateForLevel(currentLevel);
+    }
     handleClear();
     setShowCompletionModal(false);
   };
@@ -304,7 +306,9 @@ function SolveLevelContent({
     const next = getNextLevel(currentLevel);
     if (next) {
       advancePastLevel(currentLevel);
-      unlockGateForLevel(currentLevel);
+      if (!currentLevel.noGatesetUnlock) {
+        unlockGateForLevel(currentLevel);
+      }
       setShowCompletionModal(false);
       navigate("/level/" + next.target_unitary);
     }

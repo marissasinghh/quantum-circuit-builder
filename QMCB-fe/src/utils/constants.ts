@@ -75,6 +75,18 @@ export const T_OUT_1  = "(0.707+0.707j)|1⟩" as const;
 export const H_OUT_0  = "0.707|0⟩ + 0.707|1⟩" as const;
 export const H_OUT_1  = "0.707|0⟩ - 0.707|1⟩" as const;
 
+// New Tier 1 gate outputs — full amplitude strings (not probability-only).
+// Z, S_DAG, T_DAG are pure phase gates: identical measurement probabilities to
+// the identity on basis inputs. Using amplitude strings is required so the
+// grader can distinguish them from doing nothing.
+export const SQRT_X_DAG_OUT_0 = "(0.5-0.5j)|0\u27e9 + (0.5+0.5j)|1\u27e9" as const;
+export const SQRT_X_DAG_OUT_1 = "(0.5+0.5j)|0\u27e9 + (0.5-0.5j)|1\u27e9" as const;
+export const Z_OUT_1           = "-1|1\u27e9" as const;
+export const S_DAG_OUT_1       = "-1j|1\u27e9" as const;
+export const T_DAG_OUT_1       = "(0.707-0.707j)|1\u27e9" as const;
+export const Y_OUT_0           = "1j|1\u27e9" as const;
+export const Y_OUT_1           = "-1j|0\u27e9" as const;
+
 // ========================
 // BASIS STATES - 2 QUBITS
 // ========================
@@ -121,7 +133,14 @@ export const THREE_QUBIT_INPUTS = [
 // GATE CONSTANTS
 // ===============
 
-export const SINGLE_QUBIT_GATES = [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY, Gate.U] as const;
+export const SINGLE_QUBIT_GATES = [
+  Gate.RZ, Gate.SQRT_X, Gate.X,
+  Gate.SQRT_X_DAG, Gate.Z, Gate.Y,
+  Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG,
+  Gate.H, Gate.H_DAG,
+  Gate.X_DAG, Gate.Z_DAG, Gate.Y_DAG,
+  Gate.RX, Gate.RY, Gate.U,
+] as const;
 
 /** Type helper: extract the union type from the array */
 export type SingleQubitGate = (typeof SINGLE_QUBIT_GATES)[number]; // Gate.S | Gate.T | ...

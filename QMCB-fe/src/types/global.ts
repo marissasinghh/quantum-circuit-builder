@@ -5,10 +5,19 @@
 export enum Gate {
   // 1-qubit gates
   X = "X",
+  X_DAG = "X_DAG",
   SQRT_X = "SQRT_X",
+  SQRT_X_DAG = "SQRT_X_DAG",
+  Y = "Y",
+  Y_DAG = "Y_DAG",
+  Z = "Z",
+  Z_DAG = "Z_DAG",
   S = "S",
+  S_DAG = "S_DAG",
   T = "T",
+  T_DAG = "T_DAG",
   H = "H",
+  H_DAG = "H_DAG",
   RX = "RX",
   RY = "RY",
   RZ = "RZ",
@@ -30,7 +39,15 @@ export enum Gate {
 }
 
 /** All single-qubit gates available in the toolbox */
-export type SingleQubitGate = Gate.X | Gate.SQRT_X | Gate.S | Gate.T | Gate.H | Gate.RX | Gate.RY | Gate.RZ | Gate.U;
+export type SingleQubitGate =
+  | Gate.X | Gate.X_DAG
+  | Gate.SQRT_X | Gate.SQRT_X_DAG
+  | Gate.Y | Gate.Y_DAG
+  | Gate.Z | Gate.Z_DAG
+  | Gate.S | Gate.S_DAG
+  | Gate.T | Gate.T_DAG
+  | Gate.H | Gate.H_DAG
+  | Gate.RX | Gate.RY | Gate.RZ | Gate.U;
 
 /** All two-qubit gates available in the toolbox */
 export type TwoQubitGate =
