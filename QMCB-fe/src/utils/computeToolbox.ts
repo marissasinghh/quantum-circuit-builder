@@ -1,6 +1,6 @@
 /**
  * Derives the visible toolbox from persisted progression.
- * Starting primitives + one gate per advanced-past level (unless noGatesetUnlock).
+ * Starting primitives + one gate per level advanced past or skipped (unless noGatesetUnlock).
  */
 
 import { LEVEL_ORDER } from "../config/levels";
@@ -40,17 +40,18 @@ function gateMaxQubits(gate: Gate): number {
 
 /**
  * Gates available on the solve page for the given qubit count and progression.
- * Source of truth: advancedPastLevels (updated on Next Level / Repeat, not on Check).
+ * A level grants its gate when the student advanced past it (Next/Repeat) or skipped it.
  */
 export function computeAvailableGates(
   advancedPastLevels: readonly string[],
+  skippedLevels: readonly string[],
   numberOfQubits: number,
 ): Gate[] {
   const unlocked = new Set<Gate>(STARTING_GATES);
-  const past = new Set(advancedPastLevels);
+  const grantingLevels = new Set([...advancedPastLevels, ...skippedLevels]);
 
   for (const level of LEVEL_ORDER) {
-    if (!past.has(level.target_unitary)) continue;
+    if (!grantingLevels.has(level.target_unitary)) continue;
     if (level.noGatesetUnlock) continue;
     if (level.target_unitary === Gate.RANDOM_U) continue;
     unlocked.add(level.target_unitary);

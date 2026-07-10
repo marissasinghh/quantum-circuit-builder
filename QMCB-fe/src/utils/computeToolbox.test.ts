@@ -53,7 +53,7 @@ describe("computeAvailableGates — Tier 1 progression", () => {
 
     for (let i = 0; i < TIER1_COUNT; i++) {
       const past = advancedPastAtStart(i);
-      const toolbox = computeAvailableGates(past, ONE_QUBIT);
+      const toolbox = computeAvailableGates(past, [], ONE_QUBIT);
       const level = LEVEL_ORDER[i];
 
       expect(toolbox, `level index ${i} (${level.target_unitary})`).toEqual(
@@ -64,7 +64,7 @@ describe("computeAvailableGates — Tier 1 progression", () => {
 
   it("never includes dagger config-only gates or RANDOM_U", () => {
     const fullPast = LEVEL_ORDER.slice(0, TIER1_COUNT).map((l) => l.target_unitary);
-    const toolbox = computeAvailableGates(fullPast, ONE_QUBIT);
+    const toolbox = computeAvailableGates(fullPast, [], ONE_QUBIT);
 
     expect(toolbox).not.toContain(Gate.SQRT_X_DAG);
     expect(toolbox).not.toContain(Gate.X_DAG);
@@ -77,9 +77,32 @@ describe("computeAvailableGates — Tier 1 progression", () => {
   it("dagger no-op levels do not grow toolbox vs previous level", () => {
     const noOpIndices = [2, 4, 10, 12]; // X_DAG, Z_DAG, H_DAG, Y_DAG
     for (const i of noOpIndices) {
-      const prev = computeAvailableGates(advancedPastAtStart(i), ONE_QUBIT);
-      const curr = computeAvailableGates(advancedPastAtStart(i + 1), ONE_QUBIT);
+      const prev = computeAvailableGates(advancedPastAtStart(i), [], ONE_QUBIT);
+      const curr = computeAvailableGates(advancedPastAtStart(i + 1), [], ONE_QUBIT);
       expect(curr, `start of level after index ${i - 1}`).toEqual(prev);
     }
+  });
+});
+
+describe("computeAvailableGates — skip level", () => {
+  it("grants a gate when its level is skipped (without advancing past)", () => {
+    expect(computeAvailableGates([], [Gate.X], ONE_QUBIT)).toEqual([
+      Gate.RZ,
+      Gate.SQRT_X,
+      Gate.X,
+    ]);
+  });
+
+  it("does not grant a chip for skipped noGatesetUnlock levels", () => {
+    expect(computeAvailableGates([], [Gate.X_DAG], ONE_QUBIT)).toEqual([
+      Gate.RZ,
+      Gate.SQRT_X,
+    ]);
+  });
+
+  it("combines skipped and advanced-past without duplicating gates", () => {
+    expect(
+      computeAvailableGates([Gate.X], [Gate.Z], ONE_QUBIT).sort(),
+    ).toEqual([Gate.RZ, Gate.SQRT_X, Gate.X, Gate.Z].sort());
   });
 });
