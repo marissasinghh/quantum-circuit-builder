@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder } from "../types/global";
 import { gatesInColumnOrder } from "../utils/circuit";
+import { CANVAS_COL_W, CANVAS_PAD_X } from "../utils/canvasGeometry";
 import { isSingleQubitGate } from "../utils/placedGateDrag";
 import {
   CNOTGlyph,
@@ -39,8 +40,13 @@ const CANONICAL_MULTI_W = 80;
 const CANONICAL_MULTI_H_2Q = 60;
 const CANONICAL_MULTI_H_3Q = 90;
 
-const PREVIEW_PAD = 6;
 const PREVIEW_COL_W = 34;
+/** Same horizontal scale as CircuitCanvas: PAD_X + column * COL_W − gateWidth/2. */
+const PREVIEW_CANVAS_SCALE = PREVIEW_COL_W / CANVAS_COL_W;
+const PREVIEW_PAD_X = CANVAS_PAD_X * PREVIEW_CANVAS_SCALE;
+/** Wire lines start inset (canvas uses 36px label column before the wire run). */
+const PREVIEW_WIRE_INSET = 36 * PREVIEW_CANVAS_SCALE;
+const PREVIEW_PAD_Y = 6;
 const PREVIEW_ROW_H = 28;
 
 type PlacedMultiQubitGate = Extract<PlacedGate, { order: ControlTargetOrder }>;
@@ -167,9 +173,8 @@ interface SolutionCircuitPreviewProps {
 export function SolutionCircuitPreview({ gates, numberOfQubits }: SolutionCircuitPreviewProps) {
   const ordered = gatesInColumnOrder(gates);
   const maxColumn = ordered.reduce((max, g) => Math.max(max, g.column), 0);
-  const numCols = maxColumn + 1;
-  const canvasW = PREVIEW_PAD * 2 + numCols * PREVIEW_COL_W;
-  const canvasH = PREVIEW_PAD * 2 + numberOfQubits * PREVIEW_ROW_H;
+  const canvasW = PREVIEW_PAD_X * 2 + maxColumn * PREVIEW_COL_W;
+  const canvasH = PREVIEW_PAD_Y * 2 + numberOfQubits * PREVIEW_ROW_H;
 
   const multiCanonicalH =
     numberOfQubits >= 3 ? CANONICAL_MULTI_H_3Q : CANONICAL_MULTI_H_2Q;
@@ -178,23 +183,27 @@ export function SolutionCircuitPreview({ gates, numberOfQubits }: SolutionCircui
 
   return (
     <div
-      className="relative overflow-x-auto overflow-y-visible rounded-gate bg-[#090f1d] border border-tier1"
+      className="relative overflow-hidden rounded-gate bg-[#090f1d] border border-tier1"
       style={{ width: canvasW, height: canvasH, maxWidth: "100%" }}
       aria-hidden
     >
       {Array.from({ length: numberOfQubits }, (_, wire) => (
         <div
           key={wire}
-          className="absolute left-0 right-0 border-t border-tier1"
-          style={{ top: PREVIEW_PAD + wire * PREVIEW_ROW_H + PREVIEW_ROW_H / 2 }}
+          className="absolute border-t border-tier1"
+          style={{
+            left: PREVIEW_WIRE_INSET,
+            right: PREVIEW_WIRE_INSET,
+            top: PREVIEW_PAD_Y + wire * PREVIEW_ROW_H + PREVIEW_ROW_H / 2,
+          }}
         />
       ))}
 
       {ordered.map((gate) => {
         if (isSingleQubitGate(gate)) {
-          const left = PREVIEW_PAD + gate.column * PREVIEW_COL_W - PREVIEW_SINGLE_W / 2;
+          const left = PREVIEW_PAD_X + gate.column * PREVIEW_COL_W - PREVIEW_SINGLE_W / 2;
           const top =
-            PREVIEW_PAD + gate.wire * PREVIEW_ROW_H + PREVIEW_ROW_H / 2 - PREVIEW_SINGLE_H / 2;
+            PREVIEW_PAD_Y + gate.wire * PREVIEW_ROW_H + PREVIEW_ROW_H / 2 - PREVIEW_SINGLE_H / 2;
 
           return (
             <div
@@ -214,8 +223,8 @@ export function SolutionCircuitPreview({ gates, numberOfQubits }: SolutionCircui
           );
         }
 
-        const multiLeft = PREVIEW_PAD + gate.column * PREVIEW_COL_W - multiDisplayW / 2;
-        const multiTop = PREVIEW_PAD;
+        const multiLeft = PREVIEW_PAD_X + gate.column * PREVIEW_COL_W - multiDisplayW / 2;
+        const multiTop = PREVIEW_PAD_Y;
 
         return (
           <div
