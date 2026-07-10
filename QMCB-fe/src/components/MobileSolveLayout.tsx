@@ -42,7 +42,9 @@ import {
   YDagGlyph,
 } from "./GateDesign";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
+import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
 import { GateDisplayLabel } from "./GateDisplayLabel";
+import { useLevelProgress } from "../hooks/useLevelProgress";
 import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
@@ -187,6 +189,7 @@ export function MobileSolveLayout({
   circuitOutputRef,
 }: MobileSolveLayoutProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>("info");
+  const { completedLevels } = useLevelProgress();
 
   return (
     <TooltipProvider>
@@ -231,6 +234,7 @@ export function MobileSolveLayout({
                   {availableGates.map((gate) => {
                     const cfg = GATE_UI_CONFIG[gate];
                     if (!cfg) return null;
+                    const tooltipCfg = GATE_TOOLTIPS[gate];
                     return (
                       <DraggableTool
                         key={gate}
@@ -240,15 +244,18 @@ export function MobileSolveLayout({
                         {MOBILE_GATE_GLYPHS[gate] != null ? (
                           <span
                             draggable={false}
-                            className="inline-flex items-center pointer-events-none select-none"
+                            className="inline-flex items-center pointer-events-none select-none pr-4"
                           >
                             {MOBILE_GATE_GLYPHS[gate]}
                           </span>
                         ) : (
                           <GateDisplayLabel
                             gate={gate}
-                            className="font-mono font-medium text-[13px] text-tier3 leading-tight pointer-events-none select-none"
+                            className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
                           />
+                        )}
+                        {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
+                          <Tooltip id={`gate-mobile-${gate}`}>{tooltipCfg.content}</Tooltip>
                         )}
                       </DraggableTool>
                     );

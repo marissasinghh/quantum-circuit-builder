@@ -22,6 +22,7 @@ import { Tooltip, TooltipMath } from "./Tooltip";
 import SuperpositionTable from "./SuperpositionTable";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
 import { GateDisplayLabel } from "./GateDisplayLabel";
+import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
 
 interface GatesetProps {
   availableGates: readonly Gate[];
@@ -42,94 +43,6 @@ const GATE_GLYPHS: Partial<Record<Gate, ReactNode>> = {
   [Gate.Y_DAG]: <YDagGlyph />,
 };
 
-const GATE_TOOLTIPS: Partial<Record<Gate, { content: ReactNode; gatedBy?: Gate }>> = {
-  [Gate.SQRT_X]: {
-    content: (
-      <>
-        Rotates the state vector around the X axis by 90°. This is your main tool for moving a
-        state off the Z axis and into superposition.
-      </>
-    ),
-    gatedBy: Gate.X,
-  },
-  [Gate.RZ]: {
-    content: (
-      <>
-        Rotates the state vector around the Z axis by angle <TooltipMath>θ</TooltipMath>. This
-        changes the phase of your qubit without moving it off the Z axis if you start at a pole.
-        Adjust <TooltipMath>θ</TooltipMath> using the slider after placing it on the wire.
-      </>
-    ),
-    gatedBy: Gate.S,
-  },
-  [Gate.H]: {
-    content: (
-      <>
-        Sends <TooltipMath>|0⟩</TooltipMath> to <TooltipMath>|+⟩</TooltipMath> and{" "}
-        <TooltipMath>|1⟩</TooltipMath> to <TooltipMath>|−⟩</TooltipMath>. It is a combination of
-        rotations that lands you exactly on the equator of the Bloch sphere.
-      </>
-    ),
-  },
-  [Gate.S]: {
-    content: (
-      <>
-        Rotates the state vector around the Z axis by 90° (<TooltipMath>π/2</TooltipMath>). A
-        quarter turn of phase — useful for fine-tuning where on the equator your state ends up.
-      </>
-    ),
-  },
-  [Gate.T]: {
-    content: (
-      <>
-        Rotates the state vector around the Z axis by 45° (<TooltipMath>π/4</TooltipMath>). Half of
-        what the S gate does — handy for precision phase adjustments.
-      </>
-    ),
-  },
-  [Gate.RX]: {
-    content: (
-      <>
-        Rotates the state vector around the X axis by angle <TooltipMath>θ</TooltipMath>. Adjust{" "}
-        <TooltipMath>θ</TooltipMath> using the slider after placing it on the wire.
-      </>
-    ),
-  },
-  [Gate.RY]: {
-    content: (
-      <>
-        Rotates the state vector around the Y axis by angle <TooltipMath>θ</TooltipMath>. Adjust{" "}
-        <TooltipMath>θ</TooltipMath> using the slider after placing it on the wire.
-      </>
-    ),
-  },
-  [Gate.CNOT]: {
-    content: (
-      <>
-        A two-qubit gate. If the control qubit is <TooltipMath>|1⟩</TooltipMath>, it flips the
-        target qubit. The Bloch sphere only visualizes single-qubit states, so watch the truth
-        table for this one.
-      </>
-    ),
-  },
-  [Gate.CONTROLLED_Z]: {
-    content: (
-      <>
-        A two-qubit gate. Applies a phase flip to the target qubit when both qubits are{" "}
-        <TooltipMath>|1⟩</TooltipMath>. Check the truth table to see its effect.
-      </>
-    ),
-  },
-  [Gate.SWAP]: {
-    content: (
-      <>
-        Exchanges the states of two qubits. Whatever qubit 0 was holding, qubit 1 now has, and vice
-        versa.
-      </>
-    ),
-  },
-};
-
 export const BLOCH_SPHERE_TOOLTIP = (
   <>
     Every possible state of a single qubit lives somewhere on this sphere. The north pole is{" "}
@@ -140,13 +53,6 @@ export const BLOCH_SPHERE_TOOLTIP = (
     <SuperpositionTable compact />
   </>
 );
-
-function shouldShowGateTooltip(gate: Gate, completed: string[]): boolean {
-  const cfg = GATE_TOOLTIPS[gate];
-  if (!cfg) return false;
-  if (cfg.gatedBy) return completed.includes(cfg.gatedBy);
-  return true;
-}
 
 const blochToggleBtn = (active: boolean) =>
   `font-mono text-[10px] px-2 py-0.5 rounded-gate border transition-colors ${
@@ -216,10 +122,10 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
                   {GATE_GLYPHS[gate]}
                 </span>
               ) : (
-                  <GateDisplayLabel
-                    gate={gate}
-                    className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
-                  />
+                <GateDisplayLabel
+                  gate={gate}
+                  className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
+                />
               )}
               {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
                 <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
