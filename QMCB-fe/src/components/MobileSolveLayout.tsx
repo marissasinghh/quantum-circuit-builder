@@ -27,20 +27,11 @@ import {
   BlochSphereHeader,
   BlochPreviewToggle,
   BLOCH_SPHERE_TOOLTIP,
+  TOOLBOX_CHIP_CLASS,
+  TOOLBOX_CHIP_LABEL_CLASS,
 } from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
-import {
-  GatesetCNOTGlyph,
-  SqrtXDagGlyph,
-  ZGlyph,
-  ZDagGlyph,
-  SDagGlyph,
-  TDagGlyph,
-  HDagGlyph,
-  YGlyph,
-  YDagGlyph,
-} from "./GateDesign";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
 import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
 import { GateDisplayLabel } from "./GateDisplayLabel";
@@ -50,20 +41,6 @@ import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
 import type { BlochState } from "../utils/blochMath";
 import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
-
-// SVG glyphs for gates that need a visual symbol instead of a text label.
-const MOBILE_GATE_GLYPHS: Partial<Record<Gate, React.ReactNode>> = {
-  [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
-  [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
-  [Gate.SQRT_X_DAG]: <SqrtXDagGlyph />,
-  [Gate.Z]: <ZGlyph />,
-  [Gate.Z_DAG]: <ZDagGlyph />,
-  [Gate.S_DAG]: <SDagGlyph />,
-  [Gate.T_DAG]: <TDagGlyph />,
-  [Gate.H_DAG]: <HDagGlyph />,
-  [Gate.Y]: <YGlyph />,
-  [Gate.Y_DAG]: <YDagGlyph />,
-};
 
 interface MobileSolveLayoutProps {
   // Level
@@ -254,24 +231,8 @@ export function MobileSolveLayout({
                     if (!cfg) return null;
                     const tooltipCfg = GATE_TOOLTIPS[gate];
                     return (
-                      <DraggableTool
-                        key={gate}
-                        id={cfg.toolId}
-                        className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px]"
-                      >
-                        {MOBILE_GATE_GLYPHS[gate] != null ? (
-                          <span
-                            draggable={false}
-                            className="inline-flex items-center pointer-events-none select-none pr-4"
-                          >
-                            {MOBILE_GATE_GLYPHS[gate]}
-                          </span>
-                        ) : (
-                          <GateDisplayLabel
-                            gate={gate}
-                            className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
-                          />
-                        )}
+                      <DraggableTool key={gate} id={cfg.toolId} className={TOOLBOX_CHIP_CLASS}>
+                        <GateDisplayLabel gate={gate} className={TOOLBOX_CHIP_LABEL_CLASS} />
                         {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
                           <Tooltip id={`gate-mobile-${gate}`}>{tooltipCfg.content}</Tooltip>
                         )}
