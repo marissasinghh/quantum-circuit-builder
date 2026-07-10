@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder } from "../types/global";
 import { gatesInColumnOrder } from "../utils/circuit";
 import { isSingleQubitGate } from "../utils/placedGateDrag";
@@ -26,91 +27,135 @@ import {
   YDagGlyph,
 } from "./GateDesign";
 
-const PREVIEW_PAD = 4;
-const PREVIEW_COL_W = 28;
-const PREVIEW_ROW_H = 22;
-const SINGLE_GLYPH_SIZE = 20;
-const MULTI_GLYPH_W = 36;
-const MULTI_GLYPH_H = 28;
+/** Canvas / placed-gate canonical size — glyphs lay out text for this coordinate space. */
+const CANONICAL_SINGLE_W = 44;
+const CANONICAL_SINGLE_H = 40;
+
+/** Mini preview display size (slightly larger than initial 20px for legibility). */
+const PREVIEW_SINGLE_H = 26;
+const PREVIEW_SINGLE_W = PREVIEW_SINGLE_H * (CANONICAL_SINGLE_W / CANONICAL_SINGLE_H);
+
+const CANONICAL_MULTI_W = 80;
+const CANONICAL_MULTI_H_2Q = 60;
+const CANONICAL_MULTI_H_3Q = 90;
+
+const PREVIEW_PAD = 6;
+const PREVIEW_COL_W = 34;
+const PREVIEW_ROW_H = 28;
 
 type PlacedMultiQubitGate = Extract<PlacedGate, { order: ControlTargetOrder }>;
 
-function SingleQubitPreviewGlyph({
-  gate,
-  width,
-  height,
+/**
+ * Renders a glyph at its canonical SVG size, then uniformly scales to the preview slot.
+ * Avoids passing shrunk width/height into GateDesign (which ties viewBox to props but keeps
+ * fixed fontSize values, causing overlap at small sizes).
+ */
+function ScaledPreviewGlyph({
+  canonicalWidth,
+  canonicalHeight,
+  displayWidth,
+  displayHeight,
+  children,
 }: {
-  gate: PlacedSingleQubitGate;
-  width: number;
-  height: number;
+  canonicalWidth: number;
+  canonicalHeight: number;
+  displayWidth: number;
+  displayHeight: number;
+  children: ReactNode;
 }) {
+  const scale = Math.min(displayWidth / canonicalWidth, displayHeight / canonicalHeight);
+
+  return (
+    <div
+      className="relative overflow-visible"
+      style={{ width: displayWidth, height: displayHeight }}
+    >
+      <div
+        className="origin-top-left"
+        style={{
+          width: canonicalWidth,
+          height: canonicalHeight,
+          transform: `scale(${scale})`,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function SingleQubitPreviewGlyph({ gate }: { gate: PlacedSingleQubitGate }) {
+  const w = CANONICAL_SINGLE_W;
+  const h = CANONICAL_SINGLE_H;
+
   switch (gate.type) {
     case Gate.X:
-      return <XGlyph width={width} height={height} />;
+      return <XGlyph width={w} height={h} />;
     case Gate.SQRT_X:
-      return <SqrtXGlyph width={width} height={height} />;
+      return <SqrtXGlyph width={w} height={h} />;
     case Gate.S:
-      return <SGlyph width={width} height={height} />;
+      return <SGlyph width={w} height={h} />;
     case Gate.T:
-      return <TGlyph width={width} height={height} />;
+      return <TGlyph width={w} height={h} />;
     case Gate.H:
-      return <HGlyph width={width} height={height} />;
+      return <HGlyph width={w} height={h} />;
     case Gate.RX:
-      return <RXGlyph width={width} height={height} />;
+      return <RXGlyph width={w} height={h} />;
     case Gate.RY:
-      return <RYGlyph width={width} height={height} />;
+      return <RYGlyph width={w} height={h} />;
     case Gate.RZ:
-      return <RZGlyph width={width} height={height} />;
+      return <RZGlyph width={w} height={h} />;
     case Gate.U:
-      return <UGlyph width={width} height={height} />;
+      return <UGlyph width={w} height={h} />;
     case Gate.SQRT_X_DAG:
-      return <SqrtXDagGlyph width={width} height={height} />;
+      return <SqrtXDagGlyph width={w} height={h} />;
     case Gate.Z:
-      return <ZGlyph width={width} height={height} />;
+      return <ZGlyph width={w} height={h} />;
     case Gate.Z_DAG:
-      return <ZDagGlyph width={width} height={height} />;
+      return <ZDagGlyph width={w} height={h} />;
     case Gate.S_DAG:
-      return <SDagGlyph width={width} height={height} />;
+      return <SDagGlyph width={w} height={h} />;
     case Gate.T_DAG:
-      return <TDagGlyph width={width} height={height} />;
+      return <TDagGlyph width={w} height={h} />;
     case Gate.H_DAG:
-      return <HDagGlyph width={width} height={height} />;
+      return <HDagGlyph width={w} height={h} />;
     case Gate.Y:
-      return <YGlyph width={width} height={height} />;
+      return <YGlyph width={w} height={h} />;
     case Gate.Y_DAG:
-      return <YDagGlyph width={width} height={height} />;
+      return <YDagGlyph width={w} height={h} />;
     default:
-      return <HGlyph width={width} height={height} />;
+      return <HGlyph width={w} height={h} />;
   }
 }
 
 function MultiQubitPreviewGlyph({
   gate,
-  width,
-  height,
+  canonicalHeight,
 }: {
   gate: PlacedMultiQubitGate;
-  width: number;
-  height: number;
+  canonicalHeight: number;
 }) {
+  const w = CANONICAL_MULTI_W;
+  const h = canonicalHeight;
   const order = gate.order;
+
   switch (gate.type as Gate) {
     case Gate.CONTROLLED_Z:
-      return <ControlledZGlyph order={order} width={width} height={height} />;
+      return <ControlledZGlyph order={order} width={w} height={h} />;
     case Gate.SWAP:
-      return <SwapGlyph width={width} height={height} />;
+      return <SwapGlyph width={w} height={h} />;
     case Gate.TOFFOLI:
-      return <ToffoliGlyph width={width} height={height} />;
+      return <ToffoliGlyph width={w} height={h} />;
     case Gate.FREDKIN:
-      return <FredkinGlyph width={width} height={height} />;
+      return <FredkinGlyph width={w} height={h} />;
     case Gate.CONTROLLED_H:
-      return <HGlyph width={width} height={height} />;
+      return <HGlyph width={CANONICAL_SINGLE_W} height={CANONICAL_SINGLE_H} />;
     case Gate.CONTROLLED_U:
-      return <CNOTGlyph order={order} width={width} height={height} />;
+      return <CNOTGlyph order={order} width={w} height={h} />;
     case Gate.CNOT:
     case Gate.CNOT_FLIPPED:
     default:
-      return <CNOTGlyph order={order} width={width} height={height} />;
+      return <CNOTGlyph order={order} width={w} height={h} />;
   }
 }
 
@@ -126,9 +171,14 @@ export function SolutionCircuitPreview({ gates, numberOfQubits }: SolutionCircui
   const canvasW = PREVIEW_PAD * 2 + numCols * PREVIEW_COL_W;
   const canvasH = PREVIEW_PAD * 2 + numberOfQubits * PREVIEW_ROW_H;
 
+  const multiCanonicalH =
+    numberOfQubits >= 3 ? CANONICAL_MULTI_H_3Q : CANONICAL_MULTI_H_2Q;
+  const multiDisplayH = numberOfQubits * PREVIEW_ROW_H;
+  const multiDisplayW = CANONICAL_MULTI_W * (multiDisplayH / multiCanonicalH);
+
   return (
     <div
-      className="relative overflow-hidden rounded-gate bg-[#090f1d] border border-tier1"
+      className="relative overflow-x-auto overflow-y-visible rounded-gate bg-[#090f1d] border border-tier1"
       style={{ width: canvasW, height: canvasH, maxWidth: "100%" }}
       aria-hidden
     >
@@ -141,45 +191,46 @@ export function SolutionCircuitPreview({ gates, numberOfQubits }: SolutionCircui
       ))}
 
       {ordered.map((gate) => {
-        const left = PREVIEW_PAD + gate.column * PREVIEW_COL_W - SINGLE_GLYPH_SIZE / 2;
-
         if (isSingleQubitGate(gate)) {
+          const left = PREVIEW_PAD + gate.column * PREVIEW_COL_W - PREVIEW_SINGLE_W / 2;
           const top =
-            PREVIEW_PAD + gate.wire * PREVIEW_ROW_H + PREVIEW_ROW_H / 2 - SINGLE_GLYPH_SIZE / 2;
+            PREVIEW_PAD + gate.wire * PREVIEW_ROW_H + PREVIEW_ROW_H / 2 - PREVIEW_SINGLE_H / 2;
+
           return (
             <div
               key={gate.id}
-              className="absolute flex items-center justify-center"
-              style={{ left, top, width: SINGLE_GLYPH_SIZE, height: SINGLE_GLYPH_SIZE }}
+              className="absolute overflow-visible"
+              style={{ left, top }}
             >
-              <SingleQubitPreviewGlyph
-                gate={gate}
-                width={SINGLE_GLYPH_SIZE}
-                height={SINGLE_GLYPH_SIZE}
-              />
+              <ScaledPreviewGlyph
+                canonicalWidth={CANONICAL_SINGLE_W}
+                canonicalHeight={CANONICAL_SINGLE_H}
+                displayWidth={PREVIEW_SINGLE_W}
+                displayHeight={PREVIEW_SINGLE_H}
+              >
+                <SingleQubitPreviewGlyph gate={gate} />
+              </ScaledPreviewGlyph>
             </div>
           );
         }
 
-        const multiLeft = PREVIEW_PAD + gate.column * PREVIEW_COL_W - MULTI_GLYPH_W / 2;
+        const multiLeft = PREVIEW_PAD + gate.column * PREVIEW_COL_W - multiDisplayW / 2;
         const multiTop = PREVIEW_PAD;
-        const multiHeight = numberOfQubits * PREVIEW_ROW_H;
+
         return (
           <div
             key={gate.id}
-            className="absolute flex items-center justify-center"
-            style={{
-              left: multiLeft,
-              top: multiTop,
-              width: MULTI_GLYPH_W,
-              height: multiHeight,
-            }}
+            className="absolute overflow-visible"
+            style={{ left: multiLeft, top: multiTop }}
           >
-            <MultiQubitPreviewGlyph
-              gate={gate}
-              width={MULTI_GLYPH_W}
-              height={MULTI_GLYPH_H * numberOfQubits}
-            />
+            <ScaledPreviewGlyph
+              canonicalWidth={CANONICAL_MULTI_W}
+              canonicalHeight={multiCanonicalH}
+              displayWidth={multiDisplayW}
+              displayHeight={multiDisplayH}
+            >
+              <MultiQubitPreviewGlyph gate={gate} canonicalHeight={multiCanonicalH} />
+            </ScaledPreviewGlyph>
           </div>
         );
       })}
