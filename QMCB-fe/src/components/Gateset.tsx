@@ -67,7 +67,7 @@ export function BlochPreviewToggle({
 }
 
 export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
-  const { completedLevels } = useLevelProgress();
+  const { completedLevels, skippedLevels } = useLevelProgress();
 
   return (
     <div className="relative shrink-0 min-w-0">
@@ -85,6 +85,7 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
               gate={gate}
               toolId={config.toolId}
               completedLevels={completedLevels}
+              skippedLevels={skippedLevels}
             />
           );
         })}

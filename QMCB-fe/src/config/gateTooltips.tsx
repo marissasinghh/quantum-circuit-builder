@@ -174,18 +174,30 @@ export const GATE_TOOLTIP_REVEAL: Partial<Record<Gate, Gate>> = Object.fromEntri
   Object.entries(GATE_TOOLTIPS).map(([gate, cfg]) => [gate, cfg.revealWhenCompleted]),
 ) as Partial<Record<Gate, Gate>>;
 
+function levelGrantsTooltipReveal(
+  levelId: Gate,
+  completedLevels: readonly string[],
+  skippedLevels: readonly string[],
+): boolean {
+  return completedLevels.includes(levelId) || skippedLevels.includes(levelId);
+}
+
 export function shouldShowGateTooltip(
   gate: Gate,
   completedLevels: readonly string[],
+  skippedLevels: readonly string[] = [],
 ): boolean {
   const cfg = GATE_TOOLTIPS[gate];
   if (!cfg) return false;
-  return completedLevels.includes(cfg.revealWhenCompleted);
+  return levelGrantsTooltipReveal(cfg.revealWhenCompleted, completedLevels, skippedLevels);
 }
 
 /** All gates whose "i" icon should be visible for the given completion state. */
-export function visibleTooltipGates(completedLevels: readonly string[]): Gate[] {
+export function visibleTooltipGates(
+  completedLevels: readonly string[],
+  skippedLevels: readonly string[] = [],
+): Gate[] {
   return (Object.keys(GATE_TOOLTIPS) as Gate[]).filter((gate) =>
-    shouldShowGateTooltip(gate, completedLevels),
+    shouldShowGateTooltip(gate, completedLevels, skippedLevels),
   );
 }

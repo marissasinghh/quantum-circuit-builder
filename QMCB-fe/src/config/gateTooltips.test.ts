@@ -96,3 +96,31 @@ describe("shouldShowGateTooltip — reveal schedule", () => {
     expect(shouldShowGateTooltip(Gate.U, [...beforeU, Gate.RANDOM_U])).toBe(true);
   });
 });
+
+describe("shouldShowGateTooltip — skip reveals same as complete", () => {
+  it("skip 1.0 (X): X and retroactive sqrt-X get icons", () => {
+    const skipped = [Gate.X];
+    expect(shouldShowGateTooltip(Gate.X, [], skipped)).toBe(true);
+    expect(shouldShowGateTooltip(Gate.SQRT_X, [], skipped)).toBe(true);
+    expect(shouldShowGateTooltip(Gate.RZ, [], skipped)).toBe(false);
+    expect(visibleTooltipGates([], skipped).sort()).toEqual([Gate.SQRT_X, Gate.X].sort());
+  });
+
+  it("skip 1.6 (S-dag): S-dag and retroactive Rz; not T", () => {
+    const skipped = [Gate.S_DAG];
+    expect(shouldShowGateTooltip(Gate.S_DAG, [], skipped)).toBe(true);
+    expect(shouldShowGateTooltip(Gate.RZ, [], skipped)).toBe(true);
+    expect(shouldShowGateTooltip(Gate.T, [], skipped)).toBe(false);
+  });
+
+  it("skip does not reveal gates whose milestone was not skipped or completed", () => {
+    expect(shouldShowGateTooltip(Gate.Z, [], [Gate.X])).toBe(false);
+    expect(shouldShowGateTooltip(Gate.H, [], [Gate.S])).toBe(false);
+  });
+
+  it("complete and skip are unioned for reveal", () => {
+    expect(shouldShowGateTooltip(Gate.X, [Gate.X], [])).toBe(true);
+    expect(shouldShowGateTooltip(Gate.Z, [], [Gate.Z])).toBe(true);
+    expect(shouldShowGateTooltip(Gate.Z, [Gate.X], [Gate.Z])).toBe(true);
+  });
+});

@@ -162,7 +162,7 @@ export function MobileSolveLayout({
   circuitOutputRef,
 }: MobileSolveLayoutProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>("info");
-  const { completedLevels } = useLevelProgress();
+  const { completedLevels, skippedLevels } = useLevelProgress();
   const playTabScrollRef = React.useRef<HTMLDivElement>(null);
   const infoTabScrollRef = React.useRef<HTMLDivElement>(null);
 
@@ -231,6 +231,7 @@ export function MobileSolveLayout({
                         gate={gate}
                         toolId={cfg.toolId}
                         completedLevels={completedLevels}
+                        skippedLevels={skippedLevels}
                         tooltipIdPrefix="gate-mobile"
                       />
                     );
