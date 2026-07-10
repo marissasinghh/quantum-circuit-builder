@@ -2,46 +2,19 @@
  * Gateset: contains draggable gate components.
  */
 
-import type { ReactNode } from "react";
 import { Gate } from "../types/global";
-import {
-  GatesetCNOTGlyph,
-  SqrtXDagGlyph,
-  ZGlyph,
-  ZDagGlyph,
-  SDagGlyph,
-  TDagGlyph,
-  HDagGlyph,
-  YGlyph,
-  YDagGlyph,
-} from "./GateDesign";
 import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { useLevelProgress } from "../hooks/useLevelProgress";
-import { DraggableTool } from "./DragAndDropWrappers";
-import { Tooltip, TooltipMath } from "./Tooltip";
+import { TooltipMath } from "./Tooltip";
 import SuperpositionTable from "./SuperpositionTable";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
-import { GateDisplayLabel } from "./GateDisplayLabel";
-import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
+import { ToolboxDraggableChip } from "./ToolboxDraggableChip";
 
 interface GatesetProps {
   availableGates: readonly Gate[];
   activeId: string | null;
   numberOfQubits: number;
 }
-
-const GATE_GLYPHS: Partial<Record<Gate, ReactNode>> = {
-  [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
-  [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
-  [Gate.SQRT_X_DAG]: <SqrtXDagGlyph />,
-  [Gate.Z]: <ZGlyph />,
-  [Gate.Z_DAG]: <ZDagGlyph />,
-  [Gate.S_DAG]: <SDagGlyph />,
-  [Gate.T_DAG]: <TDagGlyph />,
-  [Gate.H_DAG]: <HDagGlyph />,
-  [Gate.Y]: <YGlyph />,
-  [Gate.Y_DAG]: <YDagGlyph />,
-};
 
 export const BLOCH_SPHERE_TOOLTIP = (
   <>
@@ -94,43 +67,26 @@ export function BlochPreviewToggle({
 }
 
 export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
-  const { completedLevels } = useLevelProgress();
+  const { completedLevels, skippedLevels } = useLevelProgress();
 
   return (
     <div className="relative shrink-0 min-w-0">
       <h2 className="panel-heading mb-2">
         GATESET
       </h2>
-      <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:overflow-x-hidden sm:pb-0">
+      <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:pb-0">
         {availableGates.map((gate) => {
           const config = GATE_UI_CONFIG[gate];
           if (!config) return null;
 
-          const tooltipCfg = GATE_TOOLTIPS[gate];
-
           return (
-            <DraggableTool
+            <ToolboxDraggableChip
               key={gate}
-              id={config.toolId}
-              className="relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px] sm:min-w-0 sm:w-full"
-            >
-              {GATE_GLYPHS[gate] != null ? (
-                <span
-                  draggable={false}
-                  className="inline-flex items-center pointer-events-none select-none pr-4"
-                >
-                  {GATE_GLYPHS[gate]}
-                </span>
-              ) : (
-                <GateDisplayLabel
-                  gate={gate}
-                  className="font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none"
-                />
-              )}
-              {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
-                <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
-              )}
-            </DraggableTool>
+              gate={gate}
+              toolId={config.toolId}
+              completedLevels={completedLevels}
+              skippedLevels={skippedLevels}
+            />
           );
         })}
       </div>

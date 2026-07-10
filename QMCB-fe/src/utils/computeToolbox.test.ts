@@ -43,7 +43,7 @@ const TIER1_TOOLBOX_AT_START: Gate[][] = [
   [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.Z, Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG, Gate.H, Gate.Y],
   // 1.14 — + RX
   [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.Z, Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG, Gate.H, Gate.Y, Gate.RX],
-  // 1.15 — + RY (RANDOM_U does not add a chip)
+  // 1.15 — + RY (U unlocks after advancing past 1.15, not at its start)
   [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.Z, Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG, Gate.H, Gate.Y, Gate.RX, Gate.RY],
 ];
 
@@ -60,6 +60,14 @@ describe("computeAvailableGates — Tier 1 progression", () => {
         TIER1_TOOLBOX_AT_START[i],
       );
     }
+  });
+
+  it("grants U when level 1.15 (RANDOM_U) is advanced past or skipped", () => {
+    const fullTier1Past = LEVEL_ORDER.slice(0, TIER1_COUNT).map((l) => l.target_unitary);
+    expect(computeAvailableGates(fullTier1Past, [], ONE_QUBIT)).toContain(Gate.U);
+
+    expect(computeAvailableGates([Gate.RANDOM_U], [], ONE_QUBIT)).toContain(Gate.U);
+    expect(computeAvailableGates([], [Gate.RANDOM_U], ONE_QUBIT)).toContain(Gate.U);
   });
 
   it("never includes dagger config-only gates or RANDOM_U", () => {

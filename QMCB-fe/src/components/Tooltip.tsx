@@ -106,6 +106,7 @@ export function TooltipIcon({
       aria-expanded={open}
       onClick={onClick}
       onMouseDown={onMouseDown}
+      onPointerDown={(e) => e.stopPropagation()}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onKeyDown={onKeyDown}
@@ -125,6 +126,8 @@ interface TooltipProps {
   bottom?: number;
   right?: number;
   ariaLabel?: string;
+  /** "absolute" (default): corner-positioned trigger. "inline": normal-flow trigger for toolbox chips. */
+  variant?: "absolute" | "inline";
 }
 
 interface PopupPosition {
@@ -162,6 +165,7 @@ export function Tooltip({
   bottom = 6,
   right = 8,
   ariaLabel,
+  variant = "absolute",
 }: TooltipProps) {
   const autoId = useId();
   const id = idProp ?? autoId;
@@ -246,17 +250,23 @@ export function Tooltip({
       document.body
     );
 
+  const triggerStyle =
+    variant === "inline"
+      ? { display: "inline-flex" as const, alignItems: "center" as const }
+      : {
+          position: "absolute" as const,
+          bottom,
+          right,
+          zIndex: open ? 100 : 10,
+        };
+
   return (
     <>
       <span
         ref={triggerRef}
         data-tooltip-root
-        style={{
-          position: "absolute",
-          bottom,
-          right,
-          zIndex: open ? 100 : 1,
-        }}
+        className="pointer-events-auto"
+        style={triggerStyle}
       >
         <TooltipIcon
           open={open}
