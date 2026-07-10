@@ -132,6 +132,16 @@ body {
     @apply text-text-secondary;
   }
 
+  /* Small superscript dagger on nav labels and headings (√X†, Z†, etc.) */
+  .gate-dagger {
+    font-size: 0.62em;
+    line-height: 0;
+    position: relative;
+    top: -0.4em;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
   /* Sidebar level rows */
   .nav-level-row {
     font-family: "JetBrains Mono", monospace;

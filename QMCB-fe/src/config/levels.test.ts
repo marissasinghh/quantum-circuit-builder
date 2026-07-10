@@ -4,6 +4,8 @@ import {
   LEVEL_ORDER,
   TIER2_LEVELS,
   allTier2Complete,
+  getGateHeadingLabel,
+  getLevelDisplayName,
   getLevelStatus,
   isLevelUnlocked,
 } from "./levels";
@@ -54,5 +56,26 @@ describe("level skip status", () => {
     const firstTier3Index = LEVEL_ORDER.findIndex((l) => l.number_of_qubits === 3);
     const tier3Level = LEVEL_ORDER[firstTier3Index];
     expect(isLevelUnlocked(firstTier3Index, tier3Level, [], skippedTier2)).toBe(true);
+  });
+});
+
+describe("getLevelDisplayName", () => {
+  it("formats dagger target levels with † labels instead of enum strings", () => {
+    const daggerCases: Array<[Gate, string]> = [
+      [Gate.SQRT_X_DAG, "√X†"],
+      [Gate.X_DAG, "X†"],
+      [Gate.Z_DAG, "Z†"],
+      [Gate.S_DAG, "S†"],
+      [Gate.T_DAG, "T†"],
+      [Gate.H_DAG, "H†"],
+      [Gate.Y_DAG, "Y†"],
+    ];
+
+    for (const [gate, label] of daggerCases) {
+      const level = LEVEL_ORDER.find((l) => l.target_unitary === gate);
+      expect(level).toBeDefined();
+      expect(getLevelDisplayName(level!)).toBe(label);
+      expect(getGateHeadingLabel(level!)).toBe(`Gate ${label}`);
+    }
   });
 });

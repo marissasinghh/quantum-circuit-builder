@@ -7,6 +7,7 @@
 
 import { Gate, type ControlTargetOrder } from "../types/global";
 import { ALLOWED_QUBIT_ORDERS } from "../utils/constants";
+import { formatGateDisplayName } from "../utils/gateDisplayNames";
 
 /** Legal control–target orders for a given primitive gate (UI dropdown) */
 export function allowedOrdersFor(gate: Gate): readonly ControlTargetOrder[] {
@@ -18,9 +19,9 @@ export function allowedOrdersFor(gate: Gate): readonly ControlTargetOrder[] {
   }
 }
 
-/** Display label for a gate chip. Extend later (e.g., "Rz(θ)") */
+/** Display label for a gate chip. */
 export function labelFor(gate: Gate): string {
-  return gate;
+  return formatGateDisplayName(gate);
 }
 
 /**
