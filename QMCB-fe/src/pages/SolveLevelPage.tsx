@@ -35,6 +35,7 @@ import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 import { useMobileView } from "../hooks/useMobileView";
 import { MobileSolveLayout } from "../components/MobileSolveLayout";
+import { loadLevelSolutions, saveLevelSolution } from "../utils/levelSolutions";
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
   return gates.length > 0 && gates.every((g) => g.type === Gate.RZ);
@@ -68,8 +69,23 @@ function SolveLevelContent({
 }) {
   const navigate = useNavigate();
 
-  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setGateTheta, setParameterSlot, clearAll } =
+  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setGateTheta, setParameterSlot, clearAll, loadGates } =
     useCircuit(currentLevel.number_of_qubits);
+
+  const isHydratingRef = React.useRef(true);
+
+  const levelId = currentLevel.target_unitary;
+
+  React.useLayoutEffect(() => {
+    isHydratingRef.current = true;
+    loadGates(loadLevelSolutions()[levelId] ?? []);
+    isHydratingRef.current = false;
+  }, [levelId, loadGates]);
+
+  React.useEffect(() => {
+    if (isHydratingRef.current) return;
+    saveLevelSolution(levelId, gates);
+  }, [levelId, gates]);
 
   const isRandomThetaLevel =
     currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
@@ -88,8 +104,6 @@ function SolveLevelContent({
     useLevelProgress();
 
   const cnotFlipUnlocked = isLevelCleared(Gate.CNOT_FLIPPED, completedLevels, skippedLevels);
-
-  const levelId = currentLevel.target_unitary;
 
   const availableGates = useMemo(
     () =>
