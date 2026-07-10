@@ -20,6 +20,16 @@ export interface GradingSummary {
 
 export type OutputTableMode = "preview" | "graded";
 
+const THETA_PRESETS = [
+  { label: "π/4", value: Math.PI / 4 },
+  { label: "π/2", value: Math.PI / 2 },
+  { label: "π",   value: Math.PI },
+  { label: "2π",  value: 2 * Math.PI },
+] as const;
+
+const controlInputClass =
+  "bg-bg-elevated border border-tier1 rounded-gate px-1 py-0.5 text-[10px] font-mono text-tier2 focus:border-tier3 outline-none";
+
 interface OutputTableProps {
   rows: TruthRow[] | null;
   isCorrect: boolean;
@@ -31,6 +41,9 @@ interface OutputTableProps {
   gradingSummary?: GradingSummary;
   /** Preview: live client-side trial rows without match indicators. Graded: post-Check-Solution. */
   mode?: OutputTableMode;
+  /** When present (RANDOM_THETA levels), renders a theta slider inside the panel. */
+  paramSlotGate?: { id: string; theta?: number };
+  onSetGateTheta?: (id: string, theta: number) => void;
 }
 
 const CELL_CLASS = "px-3 py-1.5";
@@ -138,10 +151,13 @@ export function OutputTable({
   onClearAndRetry,
   gradingSummary,
   mode = "graded",
+  paramSlotGate,
+  onSetGateTheta,
 }: OutputTableProps) {
   const isPreview = mode === "preview";
+  const isRandomTheta = !!onSetGateTheta;
   const hasPartialMismatch =
-    !isPreview && rows && rows.length > 0 && !isCorrect && !error;
+    !isPreview && !isRandomTheta && rows && rows.length > 0 && !isCorrect && !error;
   const matchCount = hasPartialMismatch ? rows.filter((r) => r.ok).length : 0;
   const totalRows = rows?.length ?? 0;
 
@@ -153,7 +169,54 @@ export function OutputTable({
         </h2>
       </div>
 
-      {isCorrect && !isPreview && (
+      {paramSlotGate && onSetGateTheta && (
+        <div className="mb-3 flex items-center gap-1 flex-wrap min-w-0">
+          <label className="font-mono text-[9px] text-tier2">θ (Vary θ gate):</label>
+          <input
+            type="range"
+            min={-2 * Math.PI}
+            max={2 * Math.PI}
+            step={0.01}
+            className="w-24 accent-tier3"
+            value={paramSlotGate.theta ?? 0}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              if (!isNaN(val)) onSetGateTheta(paramSlotGate.id, val);
+            }}
+          />
+          <input
+            type="number"
+            step="0.000001"
+            placeholder="rad"
+            className={`${controlInputClass} w-16`}
+            value={paramSlotGate.theta !== undefined ? paramSlotGate.theta : ""}
+            onChange={(e) => {
+              const val = parseFloat(e.target.value);
+              if (!isNaN(val)) onSetGateTheta(paramSlotGate.id, val);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => onSetGateTheta(paramSlotGate.id, -(paramSlotGate.theta ?? 0))}
+            title="Negate angle"
+            className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-tier2 hover:bg-bg-hover"
+          >
+            ±
+          </button>
+          {THETA_PRESETS.map(({ label, value }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => onSetGateTheta(paramSlotGate.id, value)}
+              className="px-1.5 py-0.5 font-mono text-[9px] border border-tier1 rounded-gate text-tier2 hover:bg-bg-hover"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isCorrect && !isPreview && !isRandomTheta && (
         <div className="mb-3 bg-match-bg border border-tier1 rounded-md px-3 py-2 text-sm font-sans text-text-body">
           All rows match — circuit verified ✓
         </div>
@@ -176,7 +239,7 @@ export function OutputTable({
         </div>
       )}
 
-      {gradingSummary && !isCorrect && !error && (
+      {gradingSummary && !isCorrect && !error && !isPreview && (
         <div className="mb-3 bg-mismatch-bg border border-tier1 rounded-md px-3 py-2">
           <p className="text-sm font-sans text-mismatch-text font-medium">
             {gradingSummary.samplesPassed}/{gradingSummary.samplesChecked} angles passed
