@@ -331,17 +331,19 @@ export function SwapGlyph({
 function GateBlock({
   label,
   subLabel,
+  dagger,
   width = 44,
   height = 40,
 }: {
   label: string;
   subLabel?: string;
+  dagger?: boolean;
   width?: number;
   height?: number;
 }) {
   const rx = 5;
   return (
-    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label={label}>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label={dagger ? `${label}†` : label}>
       <rect
         x={0.75}
         y={0.75}
@@ -376,6 +378,20 @@ function GateBlock({
           fill={colors.cyan}
         >
           {subLabel}
+        </text>
+      )}
+      {dagger && (
+        <text
+          x={width - 4.5}
+          y={5.5}
+          dominantBaseline="hanging"
+          textAnchor="end"
+          fontFamily={fonts.mono}
+          fontSize={9}
+          fontWeight={700}
+          fill={colors.cyan}
+        >
+          †
         </text>
       )}
     </svg>
@@ -468,4 +484,100 @@ export function SqrtXGlyph({
       </text>
     </svg>
   );
+}
+
+export function SqrtXDagGlyph({
+  width = 44,
+  height = 40,
+}: {
+  width?: number;
+  height?: number;
+}) {
+  const rx = 5;
+
+  const xCenterX = width * 0.5;
+
+  const overlineY = height * 0.24;
+  const dipStartX = width * 0.22;
+  const dipStartY = height * 0.61;
+  const dipBotX = width * 0.30;
+  const dipBotY = height * 0.79;
+  const upStrokeTopX = width * 0.41;
+  const overlineEndX = width * 0.59;
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="√X†">
+      <rect
+        x={0.75}
+        y={0.75}
+        width={width - 1.5}
+        height={height - 1.5}
+        rx={rx}
+        ry={rx}
+        fill={colors.navy}
+        stroke={colors.cyan}
+        strokeWidth={1.5}
+      />
+      <polyline
+        points={`${dipStartX},${dipStartY} ${dipBotX},${dipBotY} ${upStrokeTopX},${overlineY} ${overlineEndX},${overlineY}`}
+        fill="none"
+        stroke={colors.cyan}
+        strokeWidth={1.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <text
+        x={xCenterX}
+        y="62%"
+        dominantBaseline="middle"
+        textAnchor="middle"
+        fontFamily={fonts.mono}
+        fontSize={13}
+        fontWeight={700}
+        fill={colors.cyanMuted}
+      >
+        X
+      </text>
+      <text
+        x={width - 4.5}
+        y={5.5}
+        dominantBaseline="hanging"
+        textAnchor="end"
+        fontFamily={fonts.mono}
+        fontSize={9}
+        fontWeight={700}
+        fill={colors.cyan}
+      >
+        †
+      </text>
+    </svg>
+  );
+}
+
+export function ZGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="Z" {...props} />;
+}
+
+export function YGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="Y" {...props} />;
+}
+
+export function ZDagGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="Z" dagger {...props} />;
+}
+
+export function YDagGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="Y" dagger {...props} />;
+}
+
+export function SDagGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="S" dagger {...props} />;
+}
+
+export function TDagGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="T" dagger {...props} />;
+}
+
+export function HDagGlyph(props: { width?: number; height?: number }) {
+  return <GateBlock label="H" dagger {...props} />;
 }

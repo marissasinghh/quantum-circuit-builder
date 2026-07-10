@@ -33,24 +33,7 @@ import {
 } from "../types/global";
 import { isToolboxDragId, isPlacedGateId } from "../utils/placedGateDrag";
 import { isValidSingleWire } from "../utils/wireValidation";
-
-// ── Tool-id → Gate enum ───────────────────────────────────────────────────────
-
-const TOOL_TO_GATE: Record<string, Gate> = {
-  "tool-x": Gate.X,
-  "tool-sqrt-x": Gate.SQRT_X,
-  "tool-cnot": Gate.CNOT,
-  "tool-cnot-flipped": Gate.CNOT_FLIPPED,
-  "tool-cz": Gate.CONTROLLED_Z,
-  "tool-swap": Gate.SWAP,
-  "tool-h": Gate.H,
-  "tool-t": Gate.T,
-  "tool-s": Gate.S,
-  "tool-rx": Gate.RX,
-  "tool-ry": Gate.RY,
-  "tool-rz": Gate.RZ,
-  "tool-u": Gate.U,
-};
+import { TOOL_TO_GATE } from "../config/gateUiConfig";
 
 const TWO_QUBIT_GATES = new Set<Gate>([
   Gate.CNOT,

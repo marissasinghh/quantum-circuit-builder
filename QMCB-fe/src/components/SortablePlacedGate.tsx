@@ -12,6 +12,14 @@ import {
   UGlyph,
   XGlyph,
   SqrtXGlyph,
+  SqrtXDagGlyph,
+  ZGlyph,
+  ZDagGlyph,
+  SDagGlyph,
+  TDagGlyph,
+  HDagGlyph,
+  YGlyph,
+  YDagGlyph,
 } from "./GateDesign";
 
 const PARAMETERIZED_GATES = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
@@ -36,6 +44,22 @@ function PlacedGateGlyph({ gate, width, height }: { gate: PlacedSingleQubitGate;
       return <RZGlyph width={width} height={height} />;
     case Gate.U:
       return <UGlyph width={width} height={height} />;
+    case Gate.SQRT_X_DAG:
+      return <SqrtXDagGlyph width={width} height={height} />;
+    case Gate.Z:
+      return <ZGlyph width={width} height={height} />;
+    case Gate.Z_DAG:
+      return <ZDagGlyph width={width} height={height} />;
+    case Gate.S_DAG:
+      return <SDagGlyph width={width} height={height} />;
+    case Gate.T_DAG:
+      return <TDagGlyph width={width} height={height} />;
+    case Gate.H_DAG:
+      return <HDagGlyph width={width} height={height} />;
+    case Gate.Y:
+      return <YGlyph width={width} height={height} />;
+    case Gate.Y_DAG:
+      return <YDagGlyph width={width} height={height} />;
     default:
       return <HGlyph width={width} height={height} />;
   }

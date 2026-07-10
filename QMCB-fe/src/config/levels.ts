@@ -22,6 +22,13 @@ import {
   T_OUT_1,
   H_OUT_0,
   H_OUT_1,
+  SQRT_X_DAG_OUT_0,
+  SQRT_X_DAG_OUT_1,
+  Z_OUT_1,
+  S_DAG_OUT_1,
+  T_DAG_OUT_1,
+  Y_OUT_0,
+  Y_OUT_1,
   TWO_QUBIT_INPUTS,
   BASIS_00,
   BASIS_01,
@@ -78,7 +85,244 @@ export const X_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 1.1: S GATE
+// LEVEL 1.1: SQRT(X-DAG) GATE
+// ========================
+export const SQRT_X_DAG_LEVEL: LevelDefinition = {
+  target_unitary: Gate.SQRT_X_DAG,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X] as const,
+
+  canonical: [
+    { gate: Gate.SQRT_X, order: Q0 },
+    { gate: Gate.X, order: Q0 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [SQRT_X_DAG_OUT_0, SQRT_X_DAG_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "$\\sqrt{X^\\dagger}$ is the inverse of the square-root-of-X gate — apply it twice and you undo a half-X rotation. Build it using only the gates you have so far.",
+  hint1: "$Rx(\\pi/2)$ is already a square root of X. What happens if you follow it with a full X flip?",
+  hint2: "Try $Rx(\\pi/2)$, then X, in that order.",
+} as const;
+
+// ========================
+// LEVEL 1.2: X-DAG (config only — X†= X)
+// ========================
+export const X_DAG_LEVEL: LevelDefinition = {
+  target_unitary: Gate.X_DAG,
+  backendTarget: Gate.X,
+  noGatesetUnlock: true,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG] as const,
+
+  canonical: [
+    { gate: Gate.X, order: Q0 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [BASIS_1, BASIS_0],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "X-dag is the inverse of the X gate. But X is its own inverse — applying it twice gets you back to where you started. So X-dag and X are the exact same operation.",
+  hint1: "What is the inverse of a bit-flip?",
+  hint2: "X flips $|0\\rangle \\leftrightarrow |1\\rangle$. Applying X again flips it back. So $X^{-1} = X$.",
+  insight:
+    "Notice that X-dag was not added to your toolbox. That's because X-dag is literally the same gate as X — Pauli gates are their own inverses ($X^2 = I$), so there is nothing new to add. Whenever you see a \"†\" on a Pauli gate (X, Y, Z), you already have it.",
+} as const;
+
+// ========================
+// LEVEL 1.3: Z GATE
+// ========================
+export const Z_LEVEL: LevelDefinition = {
+  target_unitary: Gate.Z,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG] as const,
+
+  canonical: [
+    { gate: Gate.RZ, order: Q0, theta: Math.PI },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [BASIS_0, Z_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "The Z gate flips the phase of $|1\\rangle$ and leaves $|0\\rangle$ untouched. You already have a general Z-axis rotation — dial it to the right angle.",
+  hint1: "Z doesn't change measurement probabilities on its own — it's a pure phase flip. Which of your gates rotates around the Z-axis?",
+  hint2: "$Rz(\\theta)$ at $\\theta = \\pi$ gives you a Z-axis half-turn.",
+} as const;
+
+// ========================
+// LEVEL 1.4: Z-DAG (config only — Z†= Z)
+// ========================
+export const Z_DAG_LEVEL: LevelDefinition = {
+  target_unitary: Gate.Z_DAG,
+  backendTarget: Gate.Z,
+  noGatesetUnlock: true,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG, Gate.Z, Gate.Z_DAG] as const,
+
+  canonical: [
+    { gate: Gate.Z_DAG, order: Q0 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [BASIS_0, Z_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "Z-dag is the inverse of Z. Since Z applies a phase of $-1$, applying it again cancels that phase — Z is its own inverse too.",
+  hint1: "Z multiplies $|1\\rangle$ by $-1$. What do you get if you apply $-1$ twice?",
+  hint2: "$Z^2 = I$, so $Z^{-1} = Z$.",
+} as const;
+
+// ========================
+// LEVEL 1.6: S-DAG GATE
+// ========================
+export const S_DAG_LEVEL: LevelDefinition = {
+  target_unitary: Gate.S_DAG,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG, Gate.Z, Gate.S] as const,
+
+  canonical: [
+    { gate: Gate.RZ, order: Q0, theta: -Math.PI / 2 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [BASIS_0, S_DAG_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "S-dag undoes an S gate — a quarter-turn phase rotation in the opposite direction. Use your general Z-rotation to dial in the exact angle.",
+  hint1: "S rotates by $+90°$ around the Z-axis. S-dag rotates the other way.",
+  hint2: "Set $Rz$ to $-\\pi/2$ ($-90°$).",
+} as const;
+
+// ========================
+// LEVEL 1.8: T-DAG GATE
+// ========================
+export const T_DAG_LEVEL: LevelDefinition = {
+  target_unitary: Gate.T_DAG,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG, Gate.Z, Gate.S, Gate.S_DAG, Gate.T] as const,
+
+  canonical: [
+    { gate: Gate.RZ, order: Q0, theta: -Math.PI / 4 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [BASIS_0, T_DAG_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "T-dag undoes a T gate — an eighth-turn phase rotation in reverse.",
+  hint1: "T rotates by $+45°$ around the Z-axis. T-dag is the reverse of that.",
+  hint2: "Set $Rz$ to $-\\pi/4$ ($-45°$).",
+} as const;
+
+// ========================
+// LEVEL 1.10: H-DAG (config only — H†= H)
+// ========================
+export const H_DAG_LEVEL: LevelDefinition = {
+  target_unitary: Gate.H_DAG,
+  backendTarget: Gate.H,
+  noGatesetUnlock: true,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG, Gate.Z, Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG, Gate.H, Gate.H_DAG] as const,
+
+  canonical: [
+    { gate: Gate.H_DAG, order: Q0 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [H_OUT_0, H_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "H-dag is the inverse of the Hadamard gate. H is its own inverse — apply it twice and you are back where you started.",
+  hint1: "H creates an even superposition. What happens if you apply H to that superposition again?",
+  hint2: "$H^2 = I$, so $H^{-1} = H$.",
+} as const;
+
+// ========================
+// LEVEL 1.11: Y GATE
+// ========================
+export const Y_LEVEL: LevelDefinition = {
+  target_unitary: Gate.Y,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG, Gate.Z, Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG, Gate.H] as const,
+
+  canonical: [
+    { gate: Gate.X, order: Q0 },
+    { gate: Gate.Z, order: Q0 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [Y_OUT_0, Y_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "Y is the third Pauli gate — a full-turn rotation around the Y-axis of the Bloch sphere. You can build it by combining two gates you already have.",
+  hint1: "Y is closely related to X and Z — think about what happens if you flip the bit, then flip the phase.",
+  hint2: "Try applying X, then Z, in that order.",
+} as const;
+
+// ========================
+// LEVEL 1.12: Y-DAG (config only — Y†= Y)
+// ========================
+export const Y_DAG_LEVEL: LevelDefinition = {
+  target_unitary: Gate.Y_DAG,
+  backendTarget: Gate.Y,
+  noGatesetUnlock: true,
+  number_of_qubits: LEVEL1_QUBITS,
+  toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.SQRT_X_DAG, Gate.Z, Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG, Gate.H, Gate.Y, Gate.Y_DAG] as const,
+
+  canonical: [
+    { gate: Gate.Y_DAG, order: Q0 },
+  ],
+
+  expectedTruth: {
+    input: ONE_QUBIT_INPUTS,
+    output: [Y_OUT_0, Y_OUT_1],
+  },
+
+  uiMaxGates: MAX_GATES,
+
+  description:
+    "Y-dag is the inverse of Y. Like the other Pauli gates, Y is its own inverse.",
+  hint1: "Pauli gates square to identity. What does that tell you about Y's inverse?",
+  hint2: "$Y^2 = I$, so $Y^{-1} = Y$.",
+} as const;
+
+// ========================
+// LEVEL 1.5: S GATE  (was 1.1 — renumbered by LEVEL_ORDER position)
 // ========================
 export const S_LEVEL: LevelDefinition = {
   target_unitary: Gate.S,
@@ -437,14 +681,23 @@ export const FREDKIN_LEVEL: LevelDefinition = {
 //---------------------------------------------------------------------------------------
 /** Ordered list of levels for progression */
 export const LEVEL_ORDER: readonly LevelDefinition[] = [
-  // Tier 1 — single-qubit gates
-  X_LEVEL,
-  S_LEVEL,
-  T_LEVEL,
-  H_LEVEL,
-  RX_LEVEL,
-  RY_LEVEL,
-  RANDOM_U_LEVEL,
+  // Tier 1 — single-qubit gates (1.0 – 1.15, 16 levels total)
+  X_LEVEL,           // 1.0
+  SQRT_X_DAG_LEVEL,  // 1.1  new build
+  X_DAG_LEVEL,       // 1.2  config-only (X† = X)
+  Z_LEVEL,           // 1.3  new build
+  Z_DAG_LEVEL,       // 1.4  config-only (Z† = Z)
+  S_LEVEL,           // 1.5  (was 1.1)
+  S_DAG_LEVEL,       // 1.6  new build
+  T_LEVEL,           // 1.7  (was 1.2)
+  T_DAG_LEVEL,       // 1.8  new build
+  H_LEVEL,           // 1.9  (was 1.3)
+  H_DAG_LEVEL,       // 1.10 config-only (H† = H)
+  Y_LEVEL,           // 1.11 new build
+  Y_DAG_LEVEL,       // 1.12 config-only (Y† = Y)
+  RX_LEVEL,          // 1.13 (was 1.4)
+  RY_LEVEL,          // 1.14 (was 1.5)
+  RANDOM_U_LEVEL,    // 1.15 (was 1.6)
   // Tier 2 — two-qubit gates
   CNOT_FLIPPED_LEVEL,
   CONTROLLED_Z_LEVEL,

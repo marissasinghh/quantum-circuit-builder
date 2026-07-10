@@ -16,18 +16,32 @@ import { Gate } from "../types/global";
 import type { UnitaryGateEntry } from "../interfaces/unitary";
 import { DEFAULT_QUBIT_ORDER } from "./constants";
 
+/**
+ * FE-only dagger aliases that have no backend CirqGateMapper entry.
+ * The backend receives the parent gate string instead.
+ * (X_DAG, Z_DAG, H_DAG, Y_DAG are pedagogical config-only levels whose
+ * target gate is physically identical to the parent — X†=X, etc.)
+ */
+const DAG_ALIAS_TO_PARENT: Partial<Record<Gate, Gate>> = {
+  [Gate.X_DAG]: Gate.X,
+  [Gate.Z_DAG]: Gate.Z,
+  [Gate.H_DAG]: Gate.H,
+  [Gate.Y_DAG]: Gate.Y,
+};
+
 /** When set on a placed RX/RY/RZ, the API expects `{"gate","theta"}` instead of a bare string. */
 function placedGateToUnitaryEntry(g: PlacedGate): UnitaryGateEntry {
   if ("order" in g) {
     return g.type;
   }
+  const effectiveType = DAG_ALIAS_TO_PARENT[g.type] ?? g.type;
   if (
-    (g.type === Gate.RX || g.type === Gate.RY || g.type === Gate.RZ) &&
+    (effectiveType === Gate.RX || effectiveType === Gate.RY || effectiveType === Gate.RZ) &&
     typeof g.theta === "number"
   ) {
-    return { gate: g.type, theta: g.theta };
+    return { gate: effectiveType, theta: g.theta };
   }
-  return g.type;
+  return effectiveType;
 }
 
 /** Return a new array sorted by column (ascending) */

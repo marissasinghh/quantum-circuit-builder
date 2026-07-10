@@ -9,33 +9,39 @@ import {
 } from "./levels";
 import { Gate } from "../types/global";
 
+// LEVEL_ORDER[0] = X_LEVEL        (target_unitary: Gate.X)
+// LEVEL_ORDER[1] = SQRT_X_DAG_LEVEL (target_unitary: Gate.SQRT_X_DAG)
+
 describe("level skip status", () => {
   it('getLevelStatus returns "skipped" when in skippedLevels but not completedLevels', () => {
     const level = LEVEL_ORDER[1];
-    expect(getLevelStatus(1, level, [], [Gate.S])).toBe("skipped");
+    expect(getLevelStatus(1, level, [], [Gate.SQRT_X_DAG])).toBe("skipped");
   });
 
   it("completed takes precedence over skipped", () => {
     const level = LEVEL_ORDER[1];
-    expect(getLevelStatus(1, level, [Gate.S], [Gate.S])).toBe("completed");
+    expect(getLevelStatus(1, level, [Gate.SQRT_X_DAG], [Gate.SQRT_X_DAG])).toBe("completed");
   });
 
   it("isLevelUnlocked opens the next level after a skip", () => {
+    // Skipping LEVEL_ORDER[0] (X) should unlock LEVEL_ORDER[1] (SQRT_X_DAG)
     const skippedX = [Gate.X];
-    const sLevel = LEVEL_ORDER[1];
-    expect(isLevelUnlocked(1, sLevel, [], skippedX)).toBe(true);
+    const sqrtXDagLevel = LEVEL_ORDER[1];
+    expect(isLevelUnlocked(1, sqrtXDagLevel, [], skippedX)).toBe(true);
   });
 
   it("does not unlock the next level when the previous is only completed", () => {
-    const sLevel = LEVEL_ORDER[1];
-    expect(isLevelUnlocked(1, sLevel, [Gate.X], [], [])).toBe(false);
-    expect(getLevelStatus(1, sLevel, [Gate.X], [], [])).toBe("locked");
+    // Completing X without advancing past it does not unlock SQRT_X_DAG
+    const sqrtXDagLevel = LEVEL_ORDER[1];
+    expect(isLevelUnlocked(1, sqrtXDagLevel, [Gate.X], [], [])).toBe(false);
+    expect(getLevelStatus(1, sqrtXDagLevel, [Gate.X], [], [])).toBe("locked");
   });
 
   it("unlocks the next level when the previous is in advancedPastLevels", () => {
-    const sLevel = LEVEL_ORDER[1];
-    expect(isLevelUnlocked(1, sLevel, [Gate.X], [], [Gate.X])).toBe(true);
-    expect(getLevelStatus(1, sLevel, [Gate.X], [], [Gate.X])).toBe("unlocked");
+    // Advancing past X unlocks SQRT_X_DAG
+    const sqrtXDagLevel = LEVEL_ORDER[1];
+    expect(isLevelUnlocked(1, sqrtXDagLevel, [Gate.X], [], [Gate.X])).toBe(true);
+    expect(getLevelStatus(1, sqrtXDagLevel, [Gate.X], [], [Gate.X])).toBe("unlocked");
   });
 
   it("allTier2Complete returns true when Tier 2 levels are skipped", () => {

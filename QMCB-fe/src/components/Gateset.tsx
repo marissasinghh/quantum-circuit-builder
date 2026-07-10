@@ -4,12 +4,23 @@
 
 import type { ReactNode } from "react";
 import { Gate } from "../types/global";
-import { GatesetCNOTGlyph } from "./GateDesign";
+import {
+  GatesetCNOTGlyph,
+  SqrtXDagGlyph,
+  ZGlyph,
+  ZDagGlyph,
+  SDagGlyph,
+  TDagGlyph,
+  HDagGlyph,
+  YGlyph,
+  YDagGlyph,
+} from "./GateDesign";
 import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { DraggableTool } from "./DragAndDropWrappers";
 import { Tooltip, TooltipMath } from "./Tooltip";
 import SuperpositionTable from "./SuperpositionTable";
+import { GATE_UI_CONFIG } from "../config/gateUiConfig";
 
 interface GatesetProps {
   availableGates: readonly Gate[];
@@ -17,87 +28,17 @@ interface GatesetProps {
   numberOfQubits: number;
 }
 
-const GATE_CONFIG = {
-  [Gate.X]: {
-    label: "X",
-    description: "Pauli bit flip",
-    toolId: "tool-x",
-  },
-  [Gate.SQRT_X]: {
-    label: "√X",
-    description: "Sqrt_X gate",
-    toolId: "tool-sqrt-x",
-  },
-  [Gate.CNOT]: {
-    label: "CNOT",
-    description: "Controlled NOT gate",
-    toolId: "tool-cnot",
-  },
-  [Gate.CNOT_FLIPPED]: {
-    label: "CNOT↕",
-    description: "Flipped control & target",
-    toolId: "tool-cnot-flipped",
-  },
-  [Gate.CONTROLLED_Z]: {
-    label: "CZ",
-    description: "Controlled phase on |11⟩",
-    toolId: "tool-cz",
-  },
-  [Gate.SWAP]: {
-    label: "SWAP",
-    description: "Exchange two qubits",
-    toolId: "tool-swap",
-  },
-  [Gate.S]: {
-    label: "S",
-    description: "π/2 phase on |1⟩",
-    toolId: "tool-s",
-  },
-  [Gate.T]: {
-    label: "T",
-    description: "π/4 phase on |1⟩",
-    toolId: "tool-t",
-  },
-  [Gate.H]: {
-    label: "H",
-    description: "Hadamard superposition",
-    toolId: "tool-h",
-  },
-  [Gate.RX]: {
-    label: "Rx(θ)",
-    description: "Rotate around X axis",
-    toolId: "tool-rx",
-  },
-  [Gate.RY]: {
-    label: "Ry(θ)",
-    description: "Rotate around Y axis",
-    toolId: "tool-ry",
-  },
-  [Gate.RZ]: {
-    label: "Rz(θ)",
-    description: "Rotate around Z axis",
-    toolId: "tool-rz",
-  },
-  [Gate.U]: {
-    label: "U",
-    description: "General single-qubit unitary",
-    toolId: "tool-u",
-  },
-  [Gate.CONTROLLED_H]: {
-    label: "CH",
-    description: "Controlled Hadamard",
-    toolId: "tool-ch",
-  },
-  [Gate.CONTROLLED_U]: {
-    label: "CU",
-    description: "Controlled unitary",
-    toolId: "tool-cu",
-  },
-} as const;
-
 const GATE_GLYPHS: Partial<Record<Gate, ReactNode>> = {
   [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
   [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
+  [Gate.SQRT_X_DAG]: <SqrtXDagGlyph />,
+  [Gate.Z]: <ZGlyph />,
+  [Gate.Z_DAG]: <ZDagGlyph />,
+  [Gate.S_DAG]: <SDagGlyph />,
+  [Gate.T_DAG]: <TDagGlyph />,
+  [Gate.H_DAG]: <HDagGlyph />,
+  [Gate.Y]: <YGlyph />,
+  [Gate.Y_DAG]: <YDagGlyph />,
 };
 
 const GATE_TOOLTIPS: Partial<Record<Gate, { content: ReactNode; gatedBy?: Gate }>> = {
@@ -255,7 +196,7 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
       </h2>
       <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:overflow-x-hidden sm:pb-0">
         {availableGates.map((gate) => {
-          const config = GATE_CONFIG[gate as keyof typeof GATE_CONFIG];
+          const config = GATE_UI_CONFIG[gate];
           if (!config) return null;
 
           const tooltipCfg = GATE_TOOLTIPS[gate];

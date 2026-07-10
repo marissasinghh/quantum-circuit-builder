@@ -30,7 +30,18 @@ import {
 } from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
 import { DraggableTool } from "./DragAndDropWrappers";
-import { GatesetCNOTGlyph } from "./GateDesign";
+import {
+  GatesetCNOTGlyph,
+  SqrtXDagGlyph,
+  ZGlyph,
+  ZDagGlyph,
+  SDagGlyph,
+  TDagGlyph,
+  HDagGlyph,
+  YGlyph,
+  YDagGlyph,
+} from "./GateDesign";
+import { GATE_UI_CONFIG } from "../config/gateUiConfig";
 import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
@@ -41,26 +52,14 @@ import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global"
 const MOBILE_GATE_GLYPHS: Partial<Record<Gate, React.ReactNode>> = {
   [Gate.CNOT]: <GatesetCNOTGlyph order={[0, 1]} />,
   [Gate.CNOT_FLIPPED]: <GatesetCNOTGlyph order={[1, 0]} />,
-};
-
-// Minimal label + toolId lookup for rendering the mobile gate row.
-// Labels and toolIds mirror GATE_CONFIG in Gateset.tsx (no internal logic changes).
-const MOBILE_GATE_CONFIG: Partial<Record<Gate, { label: string; toolId: string }>> = {
-  [Gate.X]: { label: "X", toolId: "tool-x" },
-  [Gate.SQRT_X]: { label: "√X", toolId: "tool-sqrt-x" },
-  [Gate.CNOT]: { label: "CNOT", toolId: "tool-cnot" },
-  [Gate.CNOT_FLIPPED]: { label: "CNOT↕", toolId: "tool-cnot-flipped" },
-  [Gate.CONTROLLED_Z]: { label: "CZ", toolId: "tool-cz" },
-  [Gate.SWAP]: { label: "SWAP", toolId: "tool-swap" },
-  [Gate.S]: { label: "S", toolId: "tool-s" },
-  [Gate.T]: { label: "T", toolId: "tool-t" },
-  [Gate.H]: { label: "H", toolId: "tool-h" },
-  [Gate.RX]: { label: "Rx(θ)", toolId: "tool-rx" },
-  [Gate.RY]: { label: "Ry(θ)", toolId: "tool-ry" },
-  [Gate.RZ]: { label: "Rz(θ)", toolId: "tool-rz" },
-  [Gate.U]: { label: "U", toolId: "tool-u" },
-  [Gate.CONTROLLED_H]: { label: "CH", toolId: "tool-ch" },
-  [Gate.CONTROLLED_U]: { label: "CU", toolId: "tool-cu" },
+  [Gate.SQRT_X_DAG]: <SqrtXDagGlyph />,
+  [Gate.Z]: <ZGlyph />,
+  [Gate.Z_DAG]: <ZDagGlyph />,
+  [Gate.S_DAG]: <SDagGlyph />,
+  [Gate.T_DAG]: <TDagGlyph />,
+  [Gate.H_DAG]: <HDagGlyph />,
+  [Gate.Y]: <YGlyph />,
+  [Gate.Y_DAG]: <YDagGlyph />,
 };
 
 interface MobileSolveLayoutProps {
@@ -227,7 +226,7 @@ export function MobileSolveLayout({
                 </p>
                 <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1">
                   {currentLevel.toolbox.map((gate) => {
-                    const cfg = MOBILE_GATE_CONFIG[gate];
+                    const cfg = GATE_UI_CONFIG[gate];
                     if (!cfg) return null;
                     return (
                       <DraggableTool

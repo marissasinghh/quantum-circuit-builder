@@ -72,7 +72,7 @@ export function buildRequestFromLevel(
   }
 
   return {
-    target_unitary: level.target_unitary,
+    target_unitary: level.backendTarget ?? level.target_unitary,
     number_of_qubits: level.number_of_qubits,
     gates: serializeUnitaryGateEntries(gates),
     qubit_order: serializeOrders(gates),

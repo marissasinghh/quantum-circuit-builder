@@ -31,4 +31,18 @@ export interface LevelDefinition {
   insight?: string;
   /** When true, level appears on the picker but is not openable from the grid (stub / deferred). */
   locked?: boolean;
+  /**
+   * When true, completing or skipping this level does NOT add its gate to
+   * the student's unlockedGates. Used by config-only dagger levels whose
+   * target gate is identical to a gate the student already has (X†=X, Z†=Z,
+   * H†=H, Y†=Y).
+   */
+  noGatesetUnlock?: boolean;
+  /**
+   * Backend target_unitary key to send in the simulate request.
+   * When set, overrides target_unitary in buildRequestFromLevel().
+   * Used by config-only dagger levels that point at a parent target entry
+   * (e.g. X_DAG level sends "X" to the backend, which has no "X_DAG" entry).
+   */
+  backendTarget?: Gate;
 }
