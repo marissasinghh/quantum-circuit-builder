@@ -106,6 +106,7 @@ export function TooltipIcon({
       aria-expanded={open}
       onClick={onClick}
       onMouseDown={onMouseDown}
+      onPointerDown={(e) => e.stopPropagation()}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onKeyDown={onKeyDown}
@@ -251,11 +252,12 @@ export function Tooltip({
       <span
         ref={triggerRef}
         data-tooltip-root
+        className="pointer-events-auto"
         style={{
           position: "absolute",
           bottom,
           right,
-          zIndex: open ? 100 : 1,
+          zIndex: open ? 100 : 10,
         }}
       >
         <TooltipIcon

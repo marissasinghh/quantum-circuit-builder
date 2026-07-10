@@ -5,25 +5,16 @@
 import { Gate } from "../types/global";
 import { BASIS_0, BASIS_1 } from "../utils/constants";
 import { useLevelProgress } from "../hooks/useLevelProgress";
-import { DraggableTool } from "./DragAndDropWrappers";
-import { Tooltip, TooltipMath } from "./Tooltip";
+import { TooltipMath } from "./Tooltip";
 import SuperpositionTable from "./SuperpositionTable";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
-import { GateDisplayLabel } from "./GateDisplayLabel";
-import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
+import { ToolboxDraggableChip } from "./ToolboxDraggableChip";
 
 interface GatesetProps {
   availableGates: readonly Gate[];
   activeId: string | null;
   numberOfQubits: number;
 }
-
-/** Shared toolbox chip chrome — one label style for every gate (matches Rz / √X / X). */
-export const TOOLBOX_CHIP_CLASS =
-  "relative flex items-center bg-bg-elevated border border-tier1 rounded px-2 py-1.5 hover:border-tier2 shrink-0 min-w-[72px] min-h-[36px] sm:min-w-0 sm:w-full";
-
-export const TOOLBOX_CHIP_LABEL_CLASS =
-  "font-mono font-medium text-[13px] text-tier3 leading-tight pr-4 pointer-events-none select-none";
 
 export const BLOCH_SPHERE_TOOLTIP = (
   <>
@@ -83,23 +74,18 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
       <h2 className="panel-heading mb-2">
         GATESET
       </h2>
-      <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:overflow-x-hidden sm:pb-0">
+      <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:pb-0">
         {availableGates.map((gate) => {
           const config = GATE_UI_CONFIG[gate];
           if (!config) return null;
 
-          const tooltipCfg = GATE_TOOLTIPS[gate];
-
           return (
-            <DraggableTool key={gate} id={config.toolId} className={TOOLBOX_CHIP_CLASS}>
-              <GateDisplayLabel
-                gate={gate}
-                className={TOOLBOX_CHIP_LABEL_CLASS}
-              />
-              {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
-                <Tooltip id={`gate-${gate}`}>{tooltipCfg.content}</Tooltip>
-              )}
-            </DraggableTool>
+            <ToolboxDraggableChip
+              key={gate}
+              gate={gate}
+              toolId={config.toolId}
+              completedLevels={completedLevels}
+            />
           );
         })}
       </div>

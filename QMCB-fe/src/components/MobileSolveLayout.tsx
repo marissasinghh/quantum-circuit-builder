@@ -27,14 +27,10 @@ import {
   BlochSphereHeader,
   BlochPreviewToggle,
   BLOCH_SPHERE_TOOLTIP,
-  TOOLBOX_CHIP_CLASS,
-  TOOLBOX_CHIP_LABEL_CLASS,
 } from "./Gateset";
 import { Tooltip, TooltipProvider } from "./Tooltip";
-import { DraggableTool } from "./DragAndDropWrappers";
 import { GATE_UI_CONFIG } from "../config/gateUiConfig";
-import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
-import { GateDisplayLabel } from "./GateDisplayLabel";
+import { ToolboxDraggableChip } from "./ToolboxDraggableChip";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
@@ -229,14 +225,14 @@ export function MobileSolveLayout({
                   {availableGates.map((gate) => {
                     const cfg = GATE_UI_CONFIG[gate];
                     if (!cfg) return null;
-                    const tooltipCfg = GATE_TOOLTIPS[gate];
                     return (
-                      <DraggableTool key={gate} id={cfg.toolId} className={TOOLBOX_CHIP_CLASS}>
-                        <GateDisplayLabel gate={gate} className={TOOLBOX_CHIP_LABEL_CLASS} />
-                        {tooltipCfg && shouldShowGateTooltip(gate, completedLevels) && (
-                          <Tooltip id={`gate-mobile-${gate}`}>{tooltipCfg.content}</Tooltip>
-                        )}
-                      </DraggableTool>
+                      <ToolboxDraggableChip
+                        key={gate}
+                        gate={gate}
+                        toolId={cfg.toolId}
+                        completedLevels={completedLevels}
+                        tooltipIdPrefix="gate-mobile"
+                      />
                     );
                   })}
                 </div>

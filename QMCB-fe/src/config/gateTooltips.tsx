@@ -130,6 +130,15 @@ export const GATE_TOOLTIPS: Partial<Record<Gate, GateTooltipConfig>> = {
       </>
     ),
   },
+  [Gate.U]: {
+    revealWhenCompleted: Gate.RANDOM_U,
+    content: (
+      <>
+        The most general single-qubit gate — any combination of rotations around the Bloch sphere
+        can be expressed as a U gate with the right parameters.
+      </>
+    ),
+  },
   [Gate.CNOT]: {
     revealWhenCompleted: Gate.CNOT_FLIPPED,
     content: (

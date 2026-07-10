@@ -23,6 +23,7 @@ export const TOOLBOX_GATE_ORDER: readonly Gate[] = [
   Gate.Y,
   Gate.RX,
   Gate.RY,
+  Gate.U,
   Gate.CNOT,
   Gate.CNOT_FLIPPED,
   Gate.CONTROLLED_Z,
@@ -53,7 +54,10 @@ export function computeAvailableGates(
   for (const level of LEVEL_ORDER) {
     if (!grantingLevels.has(level.target_unitary)) continue;
     if (level.noGatesetUnlock) continue;
-    if (level.target_unitary === Gate.RANDOM_U) continue;
+    if (level.target_unitary === Gate.RANDOM_U) {
+      unlocked.add(Gate.U);
+      continue;
+    }
     unlocked.add(level.target_unitary);
   }
 
