@@ -7,6 +7,7 @@ import {
   type LevelStatus,
 } from "../config/levels";
 import { GateDisplayLabel } from "../components/GateDisplayLabel";
+import { LevelTierSection } from "../components/LevelTierSection";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 
 function LockIcon({ className = "" }: { className?: string }) {
@@ -103,20 +104,19 @@ function TierSection({
   onNavigate: (id: string) => void;
 }) {
   return (
-    <section className="space-y-4">
-      <h2 className="tier-section-title">{title}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {items.map(({ level, index, status }) => (
-          <LevelCard
-            key={level.target_unitary}
-            level={level}
-            status={status}
-            levelNum={getLevelNumber(index)}
-            onClick={() => onNavigate(level.target_unitary)}
-          />
-        ))}
-      </div>
-    </section>
+    <LevelTierSection
+      title={title}
+      items={items}
+      getKey={(item) => item.level.target_unitary}
+      renderCard={({ level, index, status }) => (
+        <LevelCard
+          level={level}
+          status={status}
+          levelNum={getLevelNumber(index)}
+          onClick={() => onNavigate(level.target_unitary)}
+        />
+      )}
+    />
   );
 }
 

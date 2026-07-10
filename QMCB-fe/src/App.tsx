@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { FirstRunOnboarding, isOnboardingComplete } from "./components/FirstRunOnboarding";
 import { AppHeader } from "./components/AppHeader";
 import LevelsPage from "./pages/LevelsPage";
+import MySolutionsPage from "./pages/MySolutionsPage";
 import SolveLevelPage from "./pages/SolveLevelPage";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
@@ -87,7 +88,8 @@ function LevelSidebar() {
 
 function AppShell() {
   const location = useLocation();
-  const showSidebar = location.pathname !== "/levels";
+  const fullWidthRoutes = ["/levels", "/solutions"];
+  const showSidebar = !fullWidthRoutes.includes(location.pathname);
 
   return (
     <div className="h-screen flex flex-col bg-bg-app text-text-body">
@@ -107,6 +109,7 @@ function AppShell() {
               }
             />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/solutions" element={<MySolutionsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </div>

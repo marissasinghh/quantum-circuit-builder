@@ -95,6 +95,9 @@ export function useCircuit(numberOfQubits: number) {
   /** Clear the circuit. */
   const clearAll = useCallback(() => setGates(clearCircuit()), []);
 
+  /** Replace the full gate array (e.g. restore from localStorage). */
+  const loadGates = useCallback((next: PlacedGate[]) => setGates(next), []);
+
   return {
     gates,
     addTwoQubitGate,
@@ -105,5 +108,6 @@ export function useCircuit(numberOfQubits: number) {
     setParameterSlot,
     removeGate,
     clearAll,
+    loadGates,
   };
 }

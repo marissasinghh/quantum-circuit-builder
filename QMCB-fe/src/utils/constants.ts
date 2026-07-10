@@ -54,6 +54,9 @@ export const CONTROLLED_UNITARY_SEED_KEY = "qmcb-controlled-unitary-seed";
 /** localStorage key for gate-unlock progression. */
 export const LEVEL_PROGRESS_KEY = "cnot_progress";
 
+/** localStorage key for per-level saved circuit solutions. */
+export const LEVEL_SOLUTIONS_KEY = "cnot_level_solutions";
+
 /** localStorage key for first-run onboarding dismissal. */
 export const ONBOARDING_COMPLETE_KEY = "cnot_onboarding_complete";
 

@@ -28,6 +28,12 @@ export function AppHeader() {
             About
           </Link>
           <Link
+            to="/solutions"
+            className="font-sans text-[13px] text-tier2 hover:text-tier3 transition-colors"
+          >
+            My Solutions
+          </Link>
+          <Link
             to="/settings"
             className="font-sans text-[13px] text-tier2 hover:text-tier3 transition-colors"
           >
