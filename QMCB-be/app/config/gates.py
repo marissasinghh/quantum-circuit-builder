@@ -61,6 +61,21 @@ class CirqGateMapper:
         elif gate == Gate.SQRT_X.value:
             return cirq.X(selected_qubits[0])**0.5
 
+        elif gate == Gate.SQRT_X_DAG.value:
+            return cirq.XPowGate(exponent=-0.5)(selected_qubits[0])
+
+        elif gate == Gate.Y.value:
+            return cirq.Y(selected_qubits[0])
+
+        elif gate == Gate.Z.value:
+            return cirq.Z(selected_qubits[0])
+
+        elif gate == Gate.S_DAG.value:
+            return cirq.ZPowGate(exponent=-0.5)(selected_qubits[0])
+
+        elif gate == Gate.T_DAG.value:
+            return cirq.ZPowGate(exponent=-0.25)(selected_qubits[0])
+
         elif gate == Gate.H.value:
             return cirq.H(selected_qubits[0])
 

@@ -54,6 +54,46 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         [Basis.STATE_0.value, "(0.707+0.707j)|1⟩"],
     ),
     # ========================
+    # LEVEL 1.3: SQRT-X-DAG GATE
+    # ========================
+    Gate.SQRT_X_DAG.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.SQRT_X_DAG.value, TargetLibraryField.ORDER.value: Q0}],
+        ["(0.5-0.5j)|0\u27e9 + (0.5+0.5j)|1\u27e9", "(0.5+0.5j)|0\u27e9 + (0.5-0.5j)|1\u27e9"],
+    ),
+    # ========================
+    # LEVEL 1.3: Y GATE
+    # ========================
+    Gate.Y.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.Y.value, TargetLibraryField.ORDER.value: Q0}],
+        ["1j|1\u27e9", "-1j|0\u27e9"],
+    ),
+    # ========================
+    # LEVEL 1.3: Z GATE
+    # ========================
+    Gate.Z.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.Z.value, TargetLibraryField.ORDER.value: Q0}],
+        [Basis.STATE_0.value, "-1|1\u27e9"],
+    ),
+    # ========================
+    # LEVEL 1.3: S-DAG GATE
+    # ========================
+    Gate.S_DAG.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.S_DAG.value, TargetLibraryField.ORDER.value: Q0}],
+        [Basis.STATE_0.value, "-1j|1\u27e9"],
+    ),
+    # ========================
+    # LEVEL 1.3: T-DAG GATE
+    # ========================
+    Gate.T_DAG.value: _fixed_level(
+        LEVEL1_QUBITS,
+        [{TargetLibraryField.GATE.value: Gate.T_DAG.value, TargetLibraryField.ORDER.value: Q0}],
+        [Basis.STATE_0.value, "(0.707-0.707j)|1\u27e9"],
+    ),
+    # ========================
     # LEVEL 1.3: H GATE
     # ========================
     Gate.H.value: _fixed_level(
