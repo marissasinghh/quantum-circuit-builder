@@ -85,6 +85,53 @@ export function singleQubitGateMatrix(gate: Gate, theta?: number): Mat2 | null {
       ];
     }
 
+    // ── New Tier 1 gates ──────────────────────────────────────────────────────
+
+    case Gate.SQRT_X_DAG: {
+      // Conjugate transpose of SQRT_X: [[0.5+0.5i, 0.5-0.5i],[0.5-0.5i, 0.5+0.5i]]
+      const a: C = c(0.5, 0.5);
+      const b: C = c(0.5, -0.5);
+      return [
+        [a, b],
+        [b, a],
+      ];
+    }
+
+    case Gate.Z:
+      return [
+        [ONE, ZERO],
+        [ZERO, c(-1)],
+      ];
+
+    case Gate.S_DAG:
+      return [
+        [ONE, ZERO],
+        [ZERO, c(0, -1)],
+      ];
+
+    case Gate.T_DAG: {
+      const t = c(Math.cos(Math.PI / 4), -Math.sin(Math.PI / 4));
+      return [
+        [ONE, ZERO],
+        [ZERO, t],
+      ];
+    }
+
+    case Gate.Y:
+      return [
+        [ZERO, c(0, -1)],
+        [c(0, 1), ZERO],
+      ];
+
+    // Dagger aliases — physically identical to parent gate.
+    // Delegates here mirror DAG_ALIAS_TO_PARENT in circuit.ts.
+    case Gate.Z_DAG:
+      return singleQubitGateMatrix(Gate.Z);
+    case Gate.H_DAG:
+      return singleQubitGateMatrix(Gate.H);
+    case Gate.Y_DAG:
+      return singleQubitGateMatrix(Gate.Y);
+
     default:
       return null;
   }

@@ -135,6 +135,8 @@ export const X_DAG_LEVEL: LevelDefinition = {
     "X-dag is the inverse of the X gate. But X is its own inverse — applying it twice gets you back to where you started. So X-dag and X are the exact same operation.",
   hint1: "What is the inverse of a bit-flip?",
   hint2: "X flips $|0\\rangle \\leftrightarrow |1\\rangle$. Applying X again flips it back. So $X^{-1} = X$.",
+  insight:
+    "Notice that X-dag was not added to your toolbox. That's because X-dag is literally the same gate as X — Pauli gates are their own inverses ($X^2 = I$), so there is nothing new to add. Whenever you see a \"†\" on a Pauli gate (X, Y, Z), you already have it.",
 } as const;
 
 // ========================

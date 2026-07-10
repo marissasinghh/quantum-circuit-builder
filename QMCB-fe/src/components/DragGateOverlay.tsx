@@ -13,6 +13,14 @@ import {
   RZGlyph,
   XGlyph,
   SqrtXGlyph,
+  SqrtXDagGlyph,
+  ZGlyph,
+  ZDagGlyph,
+  SDagGlyph,
+  TDagGlyph,
+  HDagGlyph,
+  YGlyph,
+  YDagGlyph,
 } from "./GateDesign";
 import { PlacedGateOverlayContent } from "./SortablePlacedGate";
 import {
@@ -57,6 +65,22 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
         return <RZGlyph width={64} height={44} />;
       case "tool-u":
         return <UGlyph width={64} height={44} />;
+      case "tool-sqrt-x-dag":
+        return <SqrtXDagGlyph width={64} height={44} />;
+      case "tool-z":
+        return <ZGlyph width={64} height={44} />;
+      case "tool-z-dag":
+        return <ZDagGlyph width={64} height={44} />;
+      case "tool-s-dag":
+        return <SDagGlyph width={64} height={44} />;
+      case "tool-t-dag":
+        return <TDagGlyph width={64} height={44} />;
+      case "tool-h-dag":
+        return <HDagGlyph width={64} height={44} />;
+      case "tool-y":
+        return <YGlyph width={64} height={44} />;
+      case "tool-y-dag":
+        return <YDagGlyph width={64} height={44} />;
       default:
         return null;
     }
