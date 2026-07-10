@@ -155,8 +155,9 @@ export function OutputTable({
   onSetGateTheta,
 }: OutputTableProps) {
   const isPreview = mode === "preview";
+  const isRandomTheta = !!onSetGateTheta;
   const hasPartialMismatch =
-    !isPreview && rows && rows.length > 0 && !isCorrect && !error;
+    !isPreview && !isRandomTheta && rows && rows.length > 0 && !isCorrect && !error;
   const matchCount = hasPartialMismatch ? rows.filter((r) => r.ok).length : 0;
   const totalRows = rows?.length ?? 0;
 
@@ -215,7 +216,7 @@ export function OutputTable({
         </div>
       )}
 
-      {isCorrect && !isPreview && (
+      {isCorrect && !isPreview && !isRandomTheta && (
         <div className="mb-3 bg-match-bg border border-tier1 rounded-md px-3 py-2 text-sm font-sans text-text-body">
           All rows match — circuit verified ✓
         </div>
@@ -238,7 +239,7 @@ export function OutputTable({
         </div>
       )}
 
-      {gradingSummary && !isCorrect && !error && (
+      {gradingSummary && !isCorrect && !error && !isPreview && (
         <div className="mb-3 bg-mismatch-bg border border-tier1 rounded-md px-3 py-2">
           <p className="text-sm font-sans text-mismatch-text font-medium">
             {gradingSummary.samplesPassed}/{gradingSummary.samplesChecked} angles passed
