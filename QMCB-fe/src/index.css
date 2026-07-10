@@ -176,3 +176,12 @@ body {
     background: #8ab4c8;
   }
 }
+
+/* Prevent page/panel scroll while a touch drag is active (coarse pointer only). */
+@media (pointer: coarse) {
+  html.touch-dnd-active,
+  html.touch-dnd-active body {
+    overflow: hidden;
+    touch-action: none;
+  }
+}

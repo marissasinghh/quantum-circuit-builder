@@ -42,6 +42,22 @@ const TWO_QUBIT_GATES = new Set<Gate>([
   Gate.SWAP,
 ]);
 
+const TOUCH_DND_ACTIVE_CLASS = "touch-dnd-active";
+
+function isCoarseTouch(): boolean {
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+function lockTouchScroll(): void {
+  if (isCoarseTouch()) {
+    document.documentElement.classList.add(TOUCH_DND_ACTIVE_CLASS);
+  }
+}
+
+function unlockTouchScroll(): void {
+  document.documentElement.classList.remove(TOUCH_DND_ACTIVE_CLASS);
+}
+
 // ── Cell ID parsing ───────────────────────────────────────────────────────────
 
 /**
@@ -90,6 +106,7 @@ export function useDragAndDrop(
   // ── drag start ─────────────────────────────────────────────────────────────
 
   const onDragStart = useCallback((event: DragStartEvent) => {
+    lockTouchScroll();
     setActiveId(String(event.active.id));
     hoveredCellRef.current = null;
     setHoveredCellId(null);
@@ -119,6 +136,7 @@ export function useDragAndDrop(
   // ── drag cancel ───────────────────────────────────────────────────────────
 
   const onDragCancel = useCallback(() => {
+    unlockTouchScroll();
     setActiveId(null);
     setHoveredCellId(null);
     hoveredCellRef.current = null;
@@ -133,6 +151,7 @@ export function useDragAndDrop(
       // the pointer lifted before the last onDragMove state flush.
       const overId = hoveredCellRef.current ?? (event.over?.id ? String(event.over.id) : null);
 
+      unlockTouchScroll();
       setActiveId(null);
       setHoveredCellId(null);
       hoveredCellRef.current = null;
