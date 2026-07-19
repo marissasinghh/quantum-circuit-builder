@@ -35,6 +35,14 @@ function useDoubleTap(onDoubleTap: () => void) {
 
 type PlacedMultiQubitGate = Extract<PlacedGate, { order: ControlTargetOrder }>;
 
+/** Two-qubit gates whose order is editable via the on-chip flip icon. */
+const ORDER_BEARING_GATES = new Set<Gate>([
+  Gate.CNOT,
+  Gate.CNOT_FLIPPED,
+  Gate.CONTROLLED_Z,
+  Gate.SWAP,
+]);
+
 function MultiQubitGlyph({
   gate,
   width,
@@ -49,7 +57,7 @@ function MultiQubitGlyph({
     case Gate.CONTROLLED_Z:
       return <ControlledZGlyph order={order} width={width} height={height} />;
     case Gate.SWAP:
-      return <SwapGlyph width={width} height={height} />;
+      return <SwapGlyph order={order} width={width} height={height} />;
     case Gate.TOFFOLI:
       return <ToffoliGlyph width={width} height={height} />;
     case Gate.FREDKIN:
@@ -72,7 +80,7 @@ interface SortablePlacedMultiQubitGateProps {
   width: number;
   height: number;
   onRemoveGate: (id: string) => void;
-  /** Unlocked once the student clears CNOT_FLIPPED; enables the on-chip flip icon for CNOT gates. */
+  /** Unlocked once the student clears CNOT_FLIPPED; enables the on-chip flip icon. */
   cnotFlipUnlocked?: boolean;
   onSetGateOrder?: (id: string, order: ControlTargetOrder) => void;
 }
@@ -107,7 +115,7 @@ export function SortablePlacedMultiQubitGate({
   };
 
   const showFlipIcon =
-    gate.type === Gate.CNOT && cnotFlipUnlocked && onSetGateOrder != null;
+    ORDER_BEARING_GATES.has(gate.type) && cnotFlipUnlocked && onSetGateOrder != null;
 
   return (
     <div
@@ -130,7 +138,7 @@ export function SortablePlacedMultiQubitGate({
         <button
           type="button"
           className="absolute top-0 right-0 z-10 w-[18px] h-[18px] flex items-center justify-center rounded-sm bg-bg-panel/80 border border-tier2 font-mono text-[11px] text-tier2 hover:border-tier3 hover:text-tier3 cursor-pointer"
-          aria-label="Flip CNOT control/target"
+          aria-label="Flip control/target order"
           onPointerDown={(e) => e.stopPropagation()}
           onPointerUp={(e) => e.stopPropagation()}
           onDoubleClick={(e) => e.stopPropagation()}

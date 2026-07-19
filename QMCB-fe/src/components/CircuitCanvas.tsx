@@ -19,7 +19,6 @@ import {
   SortablePlacedMultiQubitGate,
   multiQubitGlyphDimensions,
 } from "./SortablePlacedMultiQubitGate";
-import { allowedOrdersFor } from "../config/gates";
 import { gatesInColumnOrder } from "../utils/circuit";
 import { isSingleQubitGate, isMultiQubitGate } from "../utils/placedGateDrag";
 import { CANVAS_PAD_X, CANVAS_COL_W } from "../utils/canvasGeometry";
@@ -45,11 +44,10 @@ interface CircuitCanvasProps {
   isChecking: boolean;
   onSkip?: () => void;
   showSkip?: boolean;
-  /** True once the student has cleared level CNOT_FLIPPED; unlocks CNOT qubit-order editing. */
+  /** True once the student has cleared level CNOT_FLIPPED; unlocks on-chip order flip for two-qubit gates. */
   cnotFlipUnlocked?: boolean;
 }
 
-const TWO_QUBIT_GATES = new Set<Gate>([Gate.CNOT, Gate.CNOT_FLIPPED, Gate.CONTROLLED_Z, Gate.SWAP]);
 const PARAMETERIZED_GATES = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
 
 const THETA_PRESETS = [
@@ -272,75 +270,49 @@ export function CircuitCanvas({
           </div>
         )}
 
-        {orderedGates.map((g) => {
-          const isTwoQubit = TWO_QUBIT_GATES.has(g.type);
-          const isParameterized = !isTwoQubit && PARAMETERIZED_GATES.has(g.type);
-          const isCnotOrderLocked = g.type === Gate.CNOT && !cnotFlipUnlocked;
-          const orders = isTwoQubit ? allowedOrdersFor(g.type as Gate) : [];
+        {orderedGates
+          .filter((g) => PARAMETERIZED_GATES.has(g.type))
+          .map((g) => {
+            // Panel only lists RX/RY/RZ; two-qubit order controls live on-chip.
+            if (!("wire" in g)) return null;
 
-          return (
-            <div
-              key={g.id}
-              className="flex flex-wrap items-center gap-2 border-[1.5px] border-tier3 rounded-gate px-2 py-1.5 bg-bg-elevated"
-            >
-              <div className="flex items-center gap-2 shrink-0 w-24">
-                <div className="font-mono font-medium text-[10px] text-tier3 shrink-0">{g.type}</div>
+            return (
+              <div
+                key={g.id}
+                className="flex flex-wrap items-center gap-2 border-[1.5px] border-tier3 rounded-gate px-2 py-1.5 bg-bg-elevated"
+              >
+                <div className="flex items-center gap-2 shrink-0 w-24">
+                  <div className="font-mono font-medium text-[10px] text-tier3 shrink-0">{g.type}</div>
 
-                {!isTwoQubit && "wire" in g && numberOfQubits > 1 ? (
-                  <div className="flex flex-col font-mono text-[10px] text-tier2 leading-tight shrink-0">
-                    <span>wire {g.wire}</span>
-                    <span>order {g.column}</span>
-                  </div>
-                ) : (
-                  <span className="font-mono text-[10px] text-tier2 shrink-0">order {g.column}</span>
-                )}
-              </div>
+                  {numberOfQubits > 1 ? (
+                    <div className="flex flex-col font-mono text-[10px] text-tier2 leading-tight shrink-0">
+                      <span>wire {g.wire}</span>
+                      <span>order {g.column}</span>
+                    </div>
+                  ) : (
+                    <span className="font-mono text-[10px] text-tier2 shrink-0">order {g.column}</span>
+                  )}
+                </div>
 
-              <div className="self-stretch w-px shrink-0 bg-tier1" aria-hidden="true" />
+                <div className="self-stretch w-px shrink-0 bg-tier1" aria-hidden="true" />
 
-              <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
-                {isTwoQubit && "order" in g && !isCnotOrderLocked && (
-                  <>
-                    <label className="font-sans text-[10px] text-tier2 shrink-0">Order:</label>
-                    <select
-                      className={controlInputClass}
-                      value={`${g.order[0]}-${g.order[1]}`}
-                      onChange={(e) => {
-                        const [a, b] = e.target.value
-                          .split("-")
-                          .map(Number) as unknown as ControlTargetOrder;
-                        onSetGateOrder(g.id, [a, b] as ControlTargetOrder);
-                      }}
+                <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+                  {showParameterSlotControls && onSetParameterSlot && (
+                    <button
+                      type="button"
+                      onClick={() => onSetParameterSlot(g.id)}
+                      aria-pressed={g.isParameterSlot === true}
+                      className={[
+                        "shrink-0 px-2 py-0.5 rounded-full font-sans text-[10px] font-medium border transition-colors",
+                      g.isParameterSlot
+                        ? "border-tier3 bg-bg-hover text-tier3"
+                        : "border-tier1 bg-bg-panel text-text-muted hover:border-tier2 hover:text-tier2",
+                      ].join(" ")}
                     >
-                      {orders.map((o) => (
-                        <option key={`${o[0]}-${o[1]}`} value={`${o[0]}-${o[1]}`}>
-                          [{o[0]},{o[1]}]
-                        </option>
-                      ))}
-                    </select>
-                  </>
-                )}
-                {isCnotOrderLocked && (
-                  <span className="font-mono text-[10px] text-text-faint">order locked</span>
-                )}
+                      Vary θ
+                    </button>
+                  )}
 
-                {showParameterSlotControls && isParameterized && "wire" in g && onSetParameterSlot && (
-                  <button
-                    type="button"
-                    onClick={() => onSetParameterSlot(g.id)}
-                    aria-pressed={g.isParameterSlot === true}
-                    className={[
-                      "shrink-0 px-2 py-0.5 rounded-full font-sans text-[10px] font-medium border transition-colors",
-                    g.isParameterSlot
-                      ? "border-tier3 bg-bg-hover text-tier3"
-                      : "border-tier1 bg-bg-panel text-text-muted hover:border-tier2 hover:text-tier2",
-                    ].join(" ")}
-                  >
-                    Vary θ
-                  </button>
-                )}
-
-                {isParameterized && "wire" in g && (
                   <div className="flex items-center gap-1 flex-wrap min-w-0">
                     <label className="font-mono text-[9px] text-tier2">θ:</label>
                     <input
@@ -383,18 +355,17 @@ export function CircuitCanvas({
                       </button>
                     ))}
                   </div>
-                )}
 
-                <button
-                  onClick={() => onRemoveGate(g.id)}
-                  className="ml-auto shrink-0 font-sans text-xs text-error-action hover:text-error-action/80"
-                >
-                  Remove
-                </button>
+                  <button
+                    onClick={() => onRemoveGate(g.id)}
+                    className="ml-auto shrink-0 font-sans text-xs text-error-action hover:text-error-action/80"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
 
       <div className="flex flex-col gap-2 bg-bg-panel rounded-panel p-2">

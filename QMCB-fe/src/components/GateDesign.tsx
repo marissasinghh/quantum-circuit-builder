@@ -285,11 +285,13 @@ export function FredkinGlyph({
   );
 }
 
-/** SWAP glyph: × on both wires */
+/** SWAP glyph: × on both wires; crossing lean reflects control–target order. */
 export function SwapGlyph({
+  order = [0, 1],
   width = 80,
   height = 60,
 }: {
+  order?: ControlTargetOrder;
   width?: number;
   height?: number;
 }) {
@@ -297,27 +299,32 @@ export function SwapGlyph({
   const yTop = 12;
   const yBot = height - 12;
   const cx = width / 2;
+  // Shift the crossing so [0,1] vs [1,0] is visibly distinct when flipped.
+  const cxCross = order[0] === 0 ? cx - 5 : cx + 5;
   const bridgeHalf = (yBot - yTop) * 0.38;
+  const primaryY = order[0] === 0 ? yTop : yBot;
+  const secondaryY = order[1] === 1 ? yBot : yTop;
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="SWAP">
       <Wire x1={pad} x2={width - pad} y={yTop} />
       <Wire x1={pad} x2={width - pad} y={yBot} />
-      <XMark cx={cx} cy={yTop} />
-      <XMark cx={cx} cy={yBot} />
+      {/* Secondary mark first so the primary wire's × paints on top. */}
+      <XMark cx={cxCross} cy={secondaryY} size={6} />
+      <XMark cx={cxCross} cy={primaryY} size={8} />
       <line
-        x1={cx - bridgeHalf}
+        x1={cxCross - bridgeHalf}
         y1={yTop}
-        x2={cx + bridgeHalf}
+        x2={cxCross + bridgeHalf}
         y2={yBot}
         stroke={colors.cyan}
         strokeWidth={1.5}
         strokeLinecap="round"
       />
       <line
-        x1={cx + bridgeHalf}
+        x1={cxCross + bridgeHalf}
         y1={yTop}
-        x2={cx - bridgeHalf}
+        x2={cxCross - bridgeHalf}
         y2={yBot}
         stroke={colors.cyan}
         strokeWidth={1.5}
