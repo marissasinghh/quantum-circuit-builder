@@ -99,6 +99,18 @@ def _extract_theta_from_trial_heuristic(
     return None
 
 
+def remap_order(local_order: list[int], placement_order: list[int]) -> list[int]:
+    """
+    Map a composite gate's local step wire indices through the student's
+    placement order.
+
+    TARGET_LIBRARY steps assume the composite occupies the canonical subspace
+    indexed 0..n-1 (e.g. C1_T0 = [1, 0]). A placed chip carries its own order
+    P (e.g. [0, 1] or [1, 0] from the flip icon); each local index i becomes P[i].
+    """
+    return [placement_order[i] for i in local_order]
+
+
 def get_target_gates(target_name: str) -> list[str]:
     """
     Retrieves list of quantum gates needed to construct a target unitary.

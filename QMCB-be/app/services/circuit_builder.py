@@ -1,8 +1,19 @@
 import cirq
 from app.config.gates import CirqGateMapper
-from app.utils.helpers import index_to_letter
+from app.config.target_library import TARGET_LIBRARY
+from app.utils.helpers import index_to_letter, remap_order
 from app.utils.types import Qubit, Circuit, UnitaryGateEntry
-from app.utils.constants import Gate
+from app.utils.constants import Gate, TargetLibraryField
+
+
+# Unlockable toolbox chips with no CirqGateMapper branch — expand from
+# TARGET_LIBRARY.steps before applying primitives.
+_COMPOSITE_STUDENT_GATES = frozenset(
+    {
+        Gate.CNOT_FLIPPED.value,
+        Gate.CONTROLLED_H.value,
+    }
+)
 
 
 class CircuitBuilder:
@@ -33,6 +44,36 @@ class CircuitBuilder:
         return cirq.Circuit(operations)
 
     @staticmethod
+    def _expand_composite_ops(
+        gate_name: str,
+        placement_order: list[int],
+        qubits: list[Qubit],
+    ) -> list:
+        """
+        Expand a composite student-gate name into Cirq operations via
+        TARGET_LIBRARY.steps, remapping each step's local order through
+        the placed chip's qubit_order.
+        """
+        level_def = TARGET_LIBRARY[gate_name]
+        steps = level_def[TargetLibraryField.STEPS.value]
+        operations = []
+        for step in steps:
+            step_gate = step[TargetLibraryField.GATE.value]
+            local_order = step[TargetLibraryField.ORDER.value]
+            remapped = remap_order(local_order, placement_order)
+            step_theta = step.get("theta")
+            print(
+                f"  Expanding {gate_name} → {step_gate} "
+                f"(theta={step_theta!r}) for remapped order {remapped}"
+            )
+            operations.append(
+                CirqGateMapper.apply(
+                    step_gate, remapped, *qubits, theta=step_theta
+                )
+            )
+        return operations
+
+    @staticmethod
     def build_circuit_base(
         gates: list[UnitaryGateEntry],
         qubit_order: list[list[int]],
@@ -45,6 +86,9 @@ class CircuitBuilder:
         Each `gates[i]` is either a gate name string or `{"gate": "…", "theta": …}`.
         Wiring for step `i` is always `qubit_order[i]`. For plain strings,
         `theta` is omitted so `CirqGateMapper` uses `None` (non-rotation gates).
+
+        Composite unlockable chips (CNOT_FLIPPED, CONTROLLED_H) are expanded from
+        TARGET_LIBRARY.steps with placement-order remapping before the mapper.
         """
         if len(gates) != len(qubit_order):
             raise ValueError(
@@ -72,11 +116,23 @@ class CircuitBuilder:
                 f"Applying {gate_name} (theta={theta!r}, angles={angles_tuple!r}) "
                 f"for order {qubit_order[i]}"
             )
-            operations.append(
-                CirqGateMapper.apply(
-                    gate_name, qubit_order[i], *qubits, theta=theta, angles=angles_tuple
+
+            if gate_name in _COMPOSITE_STUDENT_GATES:
+                operations.extend(
+                    CircuitBuilder._expand_composite_ops(
+                        gate_name, qubit_order[i], qubits
+                    )
                 )
-            )
+            else:
+                operations.append(
+                    CirqGateMapper.apply(
+                        gate_name,
+                        qubit_order[i],
+                        *qubits,
+                        theta=theta,
+                        angles=angles_tuple,
+                    )
+                )
 
         return cirq.Circuit(operations)
 

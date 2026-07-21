@@ -34,7 +34,7 @@ function assertAllRowProbs(
   }
 }
 
-/** Cirq goldens: H,H,CNOT[C1→T0],H,H (CNOT_FLIPPED canonical). */
+/** Cirq goldens: H,H,CNOT[C1→T0],H,H (CNOT_FLIPPED canonical / library steps). */
 const CNOT_FLIPPED_GATES: PlacedGate[] = [
   { id: "h0a", type: Gate.H, wire: 0, column: 0 },
   { id: "h1a", type: Gate.H, wire: 1, column: 1 },
@@ -43,11 +43,51 @@ const CNOT_FLIPPED_GATES: PlacedGate[] = [
   { id: "h1b", type: Gate.H, wire: 1, column: 4 },
 ];
 
+/** Same unitary as the expanded recipe with placement [0,1] (= CNOT 0→1). */
 const CNOT_FLIPPED_GOLDEN: Record<string, number[]> = {
   "|00⟩": [1, 0, 0, 0],
   "|01⟩": [0, 1, 0, 0],
   "|10⟩": [0, 0, 0, 1],
   "|11⟩": [0, 0, 1, 0],
+};
+
+/** Single unlocked CNOT_FLIPPED chip — must match backend expansion + Cirq. */
+const CNOT_FLIPPED_CHIP: PlacedGate[] = [
+  { id: "cf", type: Gate.CNOT_FLIPPED, order: [0, 1], column: 0 },
+];
+
+const CNOT_FLIPPED_CHIP_FLIPPED: PlacedGate[] = [
+  { id: "cf", type: Gate.CNOT_FLIPPED, order: [1, 0], column: 0 },
+];
+
+const CNOT_FLIPPED_FLIPPED_GOLDEN: Record<string, number[]> = {
+  "|00⟩": [1, 0, 0, 0],
+  "|01⟩": [0, 0, 0, 1],
+  "|10⟩": [0, 0, 1, 0],
+  "|11⟩": [0, 1, 0, 0],
+};
+
+/** Single CONTROLLED_H chip — matches cirq.H.controlled() / library Ry sandwich. */
+const CONTROLLED_H_CHIP: PlacedGate[] = [
+  { id: "ch", type: Gate.CONTROLLED_H, order: [0, 1], column: 0 },
+];
+
+const CONTROLLED_H_GOLDEN: Record<string, number[]> = {
+  "|00⟩": [1, 0, 0, 0],
+  "|01⟩": [0, 1, 0, 0],
+  "|10⟩": [0, 0, 0.5, 0.5],
+  "|11⟩": [0, 0, 0.5, 0.5],
+};
+
+const CONTROLLED_H_CHIP_FLIPPED: PlacedGate[] = [
+  { id: "ch", type: Gate.CONTROLLED_H, order: [1, 0], column: 0 },
+];
+
+const CONTROLLED_H_FLIPPED_GOLDEN: Record<string, number[]> = {
+  "|00⟩": [1, 0, 0, 0],
+  "|01⟩": [0, 0.5, 0, 0.5],
+  "|10⟩": [0, 0, 1, 0],
+  "|11⟩": [0, 0.5, 0, 0.5],
 };
 
 /** Cirq goldens: single CONTROLLED_Z with order [0,1]. */
@@ -97,6 +137,22 @@ describe("computeTrialUnitary", () => {
 
   it("matches Cirq spot-check |10⟩ for CNOT_FLIPPED", () => {
     assertColumnProbs(CNOT_FLIPPED_GATES, 2, 2, CNOT_FLIPPED_GOLDEN["|10⟩"]);
+  });
+
+  it("single CNOT_FLIPPED chip (order [0,1]) matches expanded recipe / Cirq CNOT", () => {
+    assertAllRowProbs(CNOT_FLIPPED_CHIP, 2, CNOT_FLIPPED_GOLDEN);
+  });
+
+  it("single CNOT_FLIPPED chip (order [1,0]) matches remapped expansion / Cirq", () => {
+    assertAllRowProbs(CNOT_FLIPPED_CHIP_FLIPPED, 2, CNOT_FLIPPED_FLIPPED_GOLDEN);
+  });
+
+  it("single CONTROLLED_H chip (order [0,1]) matches Cirq controlled-H probs", () => {
+    assertAllRowProbs(CONTROLLED_H_CHIP, 2, CONTROLLED_H_GOLDEN);
+  });
+
+  it("single CONTROLLED_H chip (order [1,0]) matches remapped Cirq controlled-H", () => {
+    assertAllRowProbs(CONTROLLED_H_CHIP_FLIPPED, 2, CONTROLLED_H_FLIPPED_GOLDEN);
   });
 
   it("matches Cirq for single CONTROLLED_Z gate", () => {
