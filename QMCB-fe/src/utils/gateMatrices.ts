@@ -219,7 +219,16 @@ function controlledHMatrix(control: 0 | 1, target: 0 | 1): ComplexMatrix {
   return m;
 }
 
-/** 4×4 unitary for a two-qubit gate on wires 0 and 1 only. */
+/**
+ * 4×4 unitary for a two-qubit gate on wires 0 and 1 only.
+ *
+ * CNOT_FLIPPED: backend expands TARGET_LIBRARY's H⊗H·CNOT(C1_T0)·H⊗H recipe
+ * remapped through placement order P. That equals CNOT(P[0]→P[1]), so the
+ * cnotMatrix shortcut matches the graded unitary for both [0,1] and [1,0].
+ *
+ * CONTROLLED_H: matches cirq.H.controlled() / the Ry(π/4)·CNOT·Ry(-π/4)
+ * library expansion (up to global phase; probabilities agree).
+ */
 export function twoQubitGateMatrix(
   gate: Gate,
   order: ControlTargetOrder

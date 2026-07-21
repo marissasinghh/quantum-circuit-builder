@@ -12,6 +12,7 @@ import {
   formatAmplitudeOneLine,
   parseAmplitudeTerms,
 } from "../utils/amplitudeDisplay";
+import { basisInputLabel } from "../utils/trialUnitary";
 
 export interface GradingSummary {
   samplesChecked: number;
@@ -114,14 +115,23 @@ function AmplitudeCell({ value }: { value: string }) {
 
 function ProbabilityCell({ probs }: { probs: readonly number[] | undefined }) {
   if (!probs?.length) return <>—</>;
+  const qubitCount = Math.log2(probs.length);
   return (
-    <>
-      {probs.map((p, i) => (
-        <span key={i} className="block">
-          {p.toFixed(3)}
-        </span>
-      ))}
-    </>
+    <table className="border-collapse">
+      <tbody>
+        {probs.map((p, i) => (
+          <tr
+            key={i}
+            className={i < probs.length - 1 ? "border-b border-tier1" : undefined}
+          >
+            <td className="border-r border-tier1 px-1 py-0.5 whitespace-nowrap">
+              {basisInputLabel(qubitCount, i)}
+            </td>
+            <td className="px-1 py-0.5 whitespace-nowrap">{p.toFixed(3)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
