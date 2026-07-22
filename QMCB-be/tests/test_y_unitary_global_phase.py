@@ -26,7 +26,12 @@ def test_y_library_sets_unitary_global_phase_mode() -> None:
         == GradingMode.UNITARY_GLOBAL_PHASE.value
     }
     assert Gate.Y.value in with_mode
-    assert with_mode == {Gate.Y.value, Gate.H.value, Gate.SQRT_X_DAG.value}
+    assert with_mode == {
+        Gate.Y.value,
+        Gate.H.value,
+        Gate.SQRT_X_DAG.value,
+        Gate.CONTROLLED_H.value,
+    }
 
 def test_x_then_z_passes_y() -> None:
     trial = UnitaryDTO(

@@ -713,6 +713,10 @@ phase. Frontend and backend are consistent — clean reference level.
 
 **Canonical circuit:** `Ry(π/4)[Q1]  →  CNOT[ctrl=Q0, tgt=Q1]  →  Ry(-π/4)[Q1]`
 
+**Backend grading:** `grading_mode: unitary_global_phase` — full 4×4 unitary comparison up to
+global phase (same path as Y / H / √X†). Rejects Born-probability-only matches such as swapped
+Ry angles or canonical CH followed by CZ (relative phase on the control=1 subspace).
+
 **Decomposition proof (for |10⟩ → H|0⟩ on target):**
 1. `Ry(π/4)|0⟩ = cos(π/8)|0⟩ + sin(π/8)|1⟩`  →  state `cos(π/8)|10⟩ + sin(π/8)|11⟩`
 2. CNOT (ctrl=Q0=1) flips Q1: `cos(π/8)|11⟩ + sin(π/8)|10⟩`
@@ -722,10 +726,10 @@ phase. Frontend and backend are consistent — clean reference level.
 
 | Input | Target output                   | Canonical output                | Match |
 |-------|---------------------------------|---------------------------------|-------|
-| \|00⟩ | \|00⟩                          | \|00⟩                          | Exact |
-| \|01⟩ | \|01⟩                          | \|01⟩                          | Exact |
-| \|10⟩ | 0.707\|10⟩ + 0.707\|11⟩        | 0.707\|10⟩ + 0.707\|11⟩        | Exact |
-| \|11⟩ | 0.707\|10⟩ - 0.707\|11⟩        | 0.707\|10⟩ - 0.707\|11⟩        | Exact |
+| \|00⟩ | \|00⟩                          | \|00⟩                          | Exact (canonical) |
+| \|01⟩ | \|01⟩                          | \|01⟩                          | Exact (canonical) |
+| \|10⟩ | 0.707\|10⟩ + 0.707\|11⟩        | 0.707\|10⟩ + 0.707\|11⟩        | Exact (canonical); pass/fail via unitary GP |
+| \|11⟩ | 0.707\|10⟩ - 0.707\|11⟩        | 0.707\|10⟩ - 0.707\|11⟩        | Exact (canonical); pass/fail via unitary GP |
 
 **Frontend `expectedTruth`:** `[|00⟩, |01⟩, 0.707|10⟩+0.707|11⟩, 0.707|10⟩−0.707|11⟩]` — matches backend `expected_outputs`.
 
@@ -734,8 +738,8 @@ phase. Frontend and backend are consistent — clean reference level.
 **Hint 2:** Ry(π/4) · CNOT · Ry(-π/4) on the target qubit — verify the math for |10⟩ and |11⟩.
 
 **Learning goal:** Introduces controlled rotation gates. The Ry-CNOT-Ry decomposition is the
-standard textbook CH decomposition. Exact match (no global phase). Backend tests confirmed by
-`test_tier2_targets.py` and auto-picked up by `test_target_library.py`.
+standard textbook CH decomposition. Canonical matches Cirq CH exactly; grading allows only a
+true global phase on the full two-qubit unitary.
 
 ---
 
@@ -917,7 +921,7 @@ the matching Pauli / H backend target; they are not separate `TARGET_LIBRARY` ke
 | 2.1   | CNOT Flipped  | 2      | None               | Display mismatch (OK) — FE shows flipped-CNOT map, BE grades standard CNOT unitary |
 | 2.2   | Controlled-Z  | 2      | None               | Display simplification (OK) — FE omits −1 on \|11⟩; grading requires exact `-1\|11⟩` |
 | 2.3   | SWAP          | 2      | None               | —                                   |
-| 2.4   | Controlled-H  | 2      | None               | —                                   |
+| 2.4   | Controlled-H  | 2      | unitary_global_phase (swapped Ry / CH+CZ rejected) | — |
 | 2.5   | Controlled-U  | 2      | None (fallback off)| Shipped; `seed_zxz`; exact Dirac match |
 | 3.1   | Toffoli (CCX) | 3      | None               | Shipped in UI (`LEVEL_ORDER`)       |
 | 3.2   | Fredkin (CSWAP)| 3     | None               | Shipped in UI (`LEVEL_ORDER`)       |

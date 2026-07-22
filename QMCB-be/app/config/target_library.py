@@ -226,6 +226,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
             "0.707|10⟩ + 0.707|11⟩",
             "0.707|10⟩ - 0.707|11⟩",
         ],
+        grading_mode=GradingMode.UNITARY_GLOBAL_PHASE.value,
     ),
     # ========================
     # LEVEL 3.1: TOFFOLI (CCX)

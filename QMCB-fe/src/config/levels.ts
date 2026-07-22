@@ -587,7 +587,7 @@ export const CONTROLLED_H_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is $|1\\rangle$, and passes through unchanged otherwise. Synthesize a circuit whose unitary matches CH exactly.",
+    "The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is $|1\\rangle$, and passes through unchanged otherwise. Synthesize a circuit whose unitary matches CH up to global phase.",
   hint1: "Controlled gates can often be decomposed using rotation gates sandwiched around a CNOT.",
   hint2: "Ry(π/4) · CNOT · Ry(-π/4) on the target qubit — verify the math for |10⟩ and |11⟩.",
 } as const;

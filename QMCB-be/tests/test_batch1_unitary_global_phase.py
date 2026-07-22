@@ -15,7 +15,12 @@ from app.utils.constants import Gate, GradingMode, TargetLibraryField
 from tests.simulate_helpers import run_simulate
 
 UNITARY_GP_LEVELS = frozenset(
-    {Gate.Y.value, Gate.H.value, Gate.SQRT_X_DAG.value}
+    {
+        Gate.Y.value,
+        Gate.H.value,
+        Gate.SQRT_X_DAG.value,
+        Gate.CONTROLLED_H.value,
+    }
 )
 
 
@@ -167,11 +172,8 @@ def test_bucket_a_z_s_t_still_exact() -> None:
         assert response["all_match"] is False, target
 
 
-def test_controlled_h_grading_mode_untouched() -> None:
-    """Batch 2: CH must not pick up unitary_global_phase from this change."""
-    assert (
-        TARGET_LIBRARY[Gate.CONTROLLED_H.value].get(
-            TargetLibraryField.GRADING_MODE.value
-        )
-        is None
-    )
+def test_controlled_h_grading_mode_is_unitary_global_phase() -> None:
+    """Batch 2: CH opted into unitary GP (no longer unset)."""
+    assert TARGET_LIBRARY[Gate.CONTROLLED_H.value].get(
+        TargetLibraryField.GRADING_MODE.value
+    ) == GradingMode.UNITARY_GLOBAL_PHASE.value
