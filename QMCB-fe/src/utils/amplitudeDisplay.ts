@@ -61,9 +61,3 @@ export function formatAmplitudeMultiLine(terms: AmplitudeTerm[]): string[] {
   if (terms.length === 0) return [];
   return terms.map((term, i) => (i === 0 ? term.value : `${term.sign} ${term.value}`));
 }
-
-/** Horizontal padding inside amplitude cells (px-3 = 12px each side). */
-export const AMPLITUDE_CELL_PADDING_X = 24;
-
-/** Minimum gap between columns (px); reserved for layout heuristics. */
-export const MIN_COL_GAP = 12;

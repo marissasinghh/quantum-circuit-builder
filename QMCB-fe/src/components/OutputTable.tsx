@@ -2,7 +2,7 @@
  * Output Table: displays the circuit output truth table and validation results.
  */
 
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import type { ReactNode } from "react";
 import type { TruthRow } from "../interfaces/truthTable";
 import { Tooltip, TooltipMath } from "./Tooltip";
@@ -13,6 +13,9 @@ import {
   parseAmplitudeTerms,
 } from "../utils/amplitudeDisplay";
 import { basisInputLabel } from "../utils/trialUnitary";
+
+/** Pixel floor so nested P(t)/P(e) mini-tables fit; forces outer table scroll when aside is narrow. */
+const P_COL_MIN_WIDTH_PX = 80;
 
 export interface GradingSummary {
   samplesChecked: number;
@@ -52,58 +55,17 @@ const CELL_CLASS = "px-3 py-1.5";
 const EXPECTED_P_TOOLTIP_ID = "expected-p-probability";
 
 function AmplitudeCell({ value }: { value: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const measureRef = useRef<HTMLSpanElement>(null);
-  const [useMultiLine, setUseMultiLine] = useState(false);
-
   const terms = useMemo(() => parseAmplitudeTerms(value), [value]);
-  const oneLine = useMemo(() => formatAmplitudeOneLine(terms), [terms]);
-  const multiLines = useMemo(() => formatAmplitudeMultiLine(terms), [terms]);
-
-  useLayoutEffect(() => {
-    const container = containerRef.current;
-    const measure = measureRef.current;
-    if (!container || !measure) return;
-
-    const updateLayout = () => {
-      const availableWidth = container.clientWidth;
-      const measuredWidth = measure.getBoundingClientRect().width;
-
-      if (availableWidth <= 0) {
-        setUseMultiLine(false);
-        return;
-      }
-
-      if (terms.length <= 1) {
-        setUseMultiLine(false);
-        return;
-      }
-
-      setUseMultiLine(measuredWidth > availableWidth);
-    };
-
-    updateLayout();
-
-    const observer = new ResizeObserver(updateLayout);
-    observer.observe(container);
-
-    return () => observer.disconnect();
-  }, [oneLine, terms.length]);
-
-  const lines = useMultiLine ? multiLines : [oneLine];
+  const lines = useMemo(
+    () =>
+      terms.length <= 1
+        ? [formatAmplitudeOneLine(terms)]
+        : formatAmplitudeMultiLine(terms),
+    [terms],
+  );
 
   return (
-    <div
-      ref={containerRef}
-      className="relative whitespace-normal overflow-hidden break-words min-w-0 max-w-full"
-    >
-      <span
-        ref={measureRef}
-        aria-hidden
-        className="invisible absolute font-mono text-[10px] whitespace-nowrap pointer-events-none"
-      >
-        {oneLine}
-      </span>
+    <div className="whitespace-normal overflow-hidden break-words min-w-0 max-w-full">
       {lines.map((line, i) => (
         <div key={i} className="block whitespace-normal break-words min-w-0">
           {line}
@@ -117,7 +79,7 @@ function ProbabilityCell({ probs }: { probs: readonly number[] | undefined }) {
   if (!probs?.length) return <>—</>;
   const qubitCount = Math.log2(probs.length);
   return (
-    <div className="min-w-0 max-w-full overflow-x-auto">
+    <div className="min-w-0 max-w-full">
       <table className="border-collapse">
         <tbody>
           {probs.map((p, i) => (
@@ -319,12 +281,24 @@ export function OutputTable({
                 style={{ tableLayout: "fixed" }}
               >
                 <colgroup>
-                  <col className="w-[12%]" />
-                  <col className="w-[28%]" />
-                  <col className="w-[14%]" />
-                  <col className="w-[28%]" />
-                  <col className="w-[14%]" />
-                  {showRowMatch && <col className="w-[8%]" />}
+                  {showRowMatch ? (
+                    <>
+                      <col className="w-[10%]" />
+                      <col className="w-[18%]" />
+                      <col className="w-[22%]" style={{ minWidth: P_COL_MIN_WIDTH_PX }} />
+                      <col className="w-[18%]" />
+                      <col className="w-[22%]" style={{ minWidth: P_COL_MIN_WIDTH_PX }} />
+                      <col className="w-[10%]" />
+                    </>
+                  ) : (
+                    <>
+                      <col className="w-[10%]" />
+                      <col className="w-[23%]" />
+                      <col className="w-[22%]" style={{ minWidth: P_COL_MIN_WIDTH_PX }} />
+                      <col className="w-[23%]" />
+                      <col className="w-[22%]" style={{ minWidth: P_COL_MIN_WIDTH_PX }} />
+                    </>
+                  )}
                 </colgroup>
                 <thead>
                   <tr className="text-text-muted border-b border-tier1">
