@@ -115,8 +115,9 @@ export function buildParamPreviewRows(
 }
 
 /**
- * Build graded truth-table rows for a RANDOM_THETA level at the snapshotted slotTheta.
- * ok is computed by comparing probability vectors within ε = 0.001.
+ * Build graded-mode truth-table rows for a RANDOM_THETA level at the snapshotted slotTheta.
+ * Pass/fail is the API's N/10 unitary sample grade (shown as the angles badge) —
+ * ok is always false so OutputTable never paints a contradictory Match column.
  * Returns null if canonical is missing or no student gates are placed.
  */
 export function buildParamGradedRows(
@@ -139,15 +140,12 @@ export function buildParamGradedRows(
     const targetCol = columnFromUnitary(targetUnitary, i);
     const trialProbabilities = probabilitiesFromColumn(columnFromUnitary(rawTrial, i));
     const targetProbabilities = probabilitiesFromColumn(columnFromUnitary(rawTarget, i));
-    const ok = trialProbabilities.every(
-      (p, j) => Math.abs(p - (targetProbabilities[j] ?? 0)) < 0.001
-    );
 
     return {
       input,
       trial: formatStateVectorAsDirac(trialCol, qubitCount),
       target: formatStateVectorAsDirac(targetCol, qubitCount),
-      ok,
+      ok: false,
       trialProbabilities,
       targetProbabilities,
     };
