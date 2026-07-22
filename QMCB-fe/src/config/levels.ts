@@ -467,6 +467,9 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
 
   parameterMode: ParameterMode.SEED_ZYZ,
 
+  /** Finer θ grid so a later unitary-GP atol can separate rounding from FPs. */
+  thetaSliderStep: 0.001,
+
   uiMaxGates: MAX_GATES,
 
   description:

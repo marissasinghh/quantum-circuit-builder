@@ -511,24 +511,27 @@ whose truth table matches it exactly. Use any combination of your unlocked gates
 
 **Toolbox:** `Rz`, `√X`, `X`, `S`, `T`, `H`, `Rx`, `Ry`
 
-**Canonical circuit:** `Rz(α)  →  Rx(β)  →  Rz(γ)`   (angles derived from session seed)
+**Canonical circuit:** `Rz(δ)  →  Ry(γ)  →  Rz(β)`   (angles derived from session seed via ZYZ)
 
-**Backend:** `TARGET_LIBRARY["RANDOM_U"]` with `parameter_mode: seed_zxz`, `allow_global_phase: false`.
-Target built via `TargetParameterResolver` → `TargetUnitaryBuilder` (same path as grading).
-POST `/api/simulate` uses `SimulateRequestDTO.target_params.seed`.
+**Backend grading:** `grading_mode: unitary_global_phase` with `grading_atol: 1e-3` —
+full unitary comparison up to global phase (same path as Y / H / √X† / CH). Closes
+Born-probability holes (negated middle Ry, Rx-middle, Ry-only, outer sign/order errors).
+FE CircuitCanvas slider step is `0.001` for this level only so rounded-correct ZYZ
+stays inside the clean atol band.
 
-**Truth table:** Varies per session seed — no fixed outputs. Angles come from
-`angles_from_seed(seed)` in `app/utils/euler_angles.py`. Display table from
+**Backend:** `TARGET_LIBRARY["RANDOM_U"]` with `parameter_mode: seed_zyz`.
+Target built via `TargetParameterResolver` → `TargetUnitaryBuilder`.
+POST `/api/simulate` uses `SimulateRequestDTO.target_params.seed` (and optional angle round-trip).
+
+**Truth table:** Varies per session seed — no fixed outputs. Angles from
+`angles_from_seed_zyz(seed)` in `app/utils/euler_angles.py`. Display table from
 `GET /api/levels/random-unitary` uses the same resolver/builder path as grading.
 
-> **Note:** Global-phase fallback does NOT apply to `RANDOM_U` (by design) — the target is
-> seeded per session and compared exactly.
+**Hint 1:** Any single-qubit unitary can be decomposed into at most three rotation gates (ZYZ decomposition).
 
-**Hint 1:** Any single-qubit unitary can be decomposed into at most three rotation gates (ZXZ decomposition).
+**Hint 2:** Try Rz(δ) · Ry(γ) · Rz(β) — adjust the three angles until the outputs match.
 
-**Hint 2:** Try Rz(α) · Rx(β) · Rz(γ) — adjust the three angles until the outputs match.
-
-**Learning goal:** Any single-qubit unitary is fully described by three real angles (Euler ZXZ
+**Learning goal:** Any single-qubit unitary is fully described by three real angles (Euler ZYZ
 decomposition). This is the universal single-qubit synthesis challenge.
 
 ---
@@ -917,7 +920,7 @@ the matching Pauli / H backend target; they are not separate `TARGET_LIBRARY` ke
 | 1.12  | Y†            | 1      | Same as Y          | Config-only; grades as Y; no gateset unlock |
 | 1.13  | Rx            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |
 | 1.14  | Ry            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |
-| 1.15  | Random U      | 1      | n/a (exact / seeded)| `parameter_mode: seed_zyz` / seed path in library + FE |
+| 1.15  | Random U      | 1      | unitary_global_phase (`grading_atol: 1e-3`; FE θ step 0.001) | `parameter_mode: seed_zyz` |
 | 2.1   | CNOT Flipped  | 2      | None               | Display mismatch (OK) — FE shows flipped-CNOT map, BE grades standard CNOT unitary |
 | 2.2   | Controlled-Z  | 2      | None               | Display simplification (OK) — FE omits −1 on \|11⟩; grading requires exact `-1\|11⟩` |
 | 2.3   | SWAP          | 2      | None               | —                                   |

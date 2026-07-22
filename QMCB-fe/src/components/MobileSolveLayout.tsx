@@ -261,6 +261,7 @@ export function MobileSolveLayout({
                   onSetGateTheta={setGateTheta}
                   onSetParameterSlot={setParameterSlot}
                   showParameterSlotControls={showParameterSlotControls}
+                  thetaSliderStep={currentLevel.thetaSliderStep}
                   onCheck={handleCheck}
                   onClear={handleClear}
                   isChecking={isMutationPending}

@@ -139,7 +139,9 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         TargetLibraryField.PARAMETERIZED.value: True,
         TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.SEED_ZYZ.value,
         TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
-        TargetLibraryField.GRADING_ATOL.value: 5e-3,
+        # Unitary GP with FE slider step 0.001: clean band is 1e-3–2e-3 (calibration).
+        TargetLibraryField.GRADING_MODE.value: GradingMode.UNITARY_GLOBAL_PHASE.value,
+        TargetLibraryField.GRADING_ATOL.value: 1e-3,
         TargetLibraryField.STEPS.value: [
             {TargetLibraryField.GATE.value: Gate.RZ.value, TargetLibraryField.ORDER.value: Q0},
             {TargetLibraryField.GATE.value: Gate.RY.value, TargetLibraryField.ORDER.value: Q0},

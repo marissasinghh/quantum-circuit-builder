@@ -40,18 +40,24 @@ def _unitaries_match_up_to_global_phase(
     target_name: str,
     qubits: list,
     resolved: ResolvedTargetParams,
+    atol: float | None = None,
 ) -> bool:
     """
     Compare trial and target as full unitaries (cirq.allclose_up_to_global_phase).
 
-    Used only when a level sets grading_mode=unitary_global_phase (currently Y).
+    Used when a level sets grading_mode=unitary_global_phase.
     Rejects same-Born / not-phase-equivalent pairs (e.g. bare X vs Y).
+
+    atol: when None, Cirq's default (1e-8) is used — Y / H / √X† / CH.
+    When set (e.g. RANDOM_U grading_atol=1e-3), that absolute tolerance is used.
     """
     trial_base = CircuitBuilder.build_circuit_base(trial_gates, trial_qubit_order, qubits)
     target_base = TargetUnitaryBuilder.build(target_name, qubits, resolved)
     trial_U = cirq.unitary(trial_base)
     target_U = cirq.unitary(target_base)
-    return bool(cirq.allclose_up_to_global_phase(trial_U, target_U))
+    if atol is None:
+        return bool(cirq.allclose_up_to_global_phase(trial_U, target_U))
+    return bool(cirq.allclose_up_to_global_phase(trial_U, target_U, atol=atol))
 
 
 def _row_probabilities_match(
@@ -100,9 +106,9 @@ def _compute_all_match(
     comparison using atol. Definite-state rows (e.g. S/T on |1⟩) still require
     matching strings so phase-distinct gates are not treated as equivalent.
 
-    atol is sourced from ResolvedTargetParams.grading_atol (1e-6 for all levels,
-    1e-3 for RANDOM_U where global-phase variance from Cirq's Rz/Rx convention
-    makes exact amplitude matching incorrect).
+    atol is sourced from ResolvedTargetParams.grading_atol (1e-6 for most levels;
+    RANDOM_U's grading_atol is used on the unitary-GP path instead — see
+    _unitaries_match_up_to_global_phase).
     """
     trial_outputs = trial_dict["output"]
     target_outputs = target_dict["output"]
@@ -372,12 +378,21 @@ def simulate_unitaries(
     if grading_mode == GradingMode.UNITARY_GLOBAL_PHASE.value:
         # Additive path: does not enter _compute_all_match. Truth tables are still
         # computed above for the FE; pass/fail uses full unitary comparison.
+        # Only pass grading_atol when the library entry sets it explicitly so
+        # Y/H/√X†/CH keep Cirq's default atol=1e-8.
+        level_cfg = TARGET_LIBRARY.get(target_name) or {}
+        ugp_atol = (
+            float(level_cfg[TargetLibraryField.GRADING_ATOL.value])
+            if TargetLibraryField.GRADING_ATOL.value in level_cfg
+            else None
+        )
         all_match = _unitaries_match_up_to_global_phase(
             trial_dto.gates,
             trial_dto.qubit_order,
             target_name,
             qubits,
             target_resolved,
+            atol=ugp_atol,
         )
     else:
         all_match = _compute_all_match(
