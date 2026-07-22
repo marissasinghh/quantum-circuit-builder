@@ -64,22 +64,24 @@ a half-X rotation. Build it from the gates unlocked so far.
 
 **Canonical circuit:** `√X[Q0]  →  X[Q0]`
 
+**Backend grading:** `grading_mode: unitary_global_phase` — full unitary comparison up to
+global phase (same path as Y / H). Bare `√X` alone fails (same Born probs, not phase-equivalent).
+
 **Other accepted solutions:**
 - `X[Q0]  →  √X[Q0]` — same net unitary (both equal √X³ = √X† in Cirq).
 - Placing a single `√X†` chip once it is available as the target also passes (identity
   solution against the library reference).
 
-**Sign / angle note:** Not a parameterized level. There is no ±θ trap here; wrong gate choice
-(e.g. bare `√X` alone) fails.
+**Sign / angle note:** Not a parameterized level. Bare `√X` alone fails under unitary GP.
 
-**Truth table (backend-verified):**
+**Truth table (backend-verified display strings):**
 
 | Input | Target output                                      | Match |
 |-------|----------------------------------------------------|-------|
-| \|0⟩  | (0.5-0.5j)\|0⟩ + (0.5+0.5j)\|1⟩                   | Exact |
-| \|1⟩  | (0.5+0.5j)\|0⟩ + (0.5-0.5j)\|1⟩                   | Exact |
+| \|0⟩  | (0.5-0.5j)\|0⟩ + (0.5+0.5j)\|1⟩                   | Unitary GP |
+| \|1⟩  | (0.5+0.5j)\|0⟩ + (0.5-0.5j)\|1⟩                   | Unitary GP |
 
-**Global phase:** None required for the canonical circuit (exact Dirac match).
+**Global phase:** Canonical `√X → X` matches exactly; unitary GP still applies for equivalent forms.
 
 **Hint 1:** Rx(π/2) is already a square root of X. What happens if you follow it with a full X flip?
 
@@ -305,11 +307,14 @@ phase rotation around the Z-axis. Synthesize a circuit whose unitary matches T e
 ### Level 1.9 · H Gate  ⚠ FIRST GLOBAL PHASE ENCOUNTER
 
 **Description:** The Hadamard gate creates equal superposition: |0⟩ maps to (|0⟩+|1⟩)/√2 and |1⟩
-maps to (|0⟩−|1⟩)/√2. Synthesize a circuit whose unitary matches H exactly.
+maps to (|0⟩−|1⟩)/√2. Synthesize a circuit whose unitary matches H up to global phase.
 
 **Toolbox:** `Rz`, `√X`, `X`, `S`, `T`
 
 **Canonical circuit:** `Rz(π/2)[Q0]  →  √X[Q0]  →  Rz(π/2)[Q0]`
+
+**Backend grading:** `grading_mode: unitary_global_phase` — `cirq.allclose_up_to_global_phase`
+on full trial vs target unitaries. Closes the Born-probability hole where S→H previously passed.
 
 **Truth table:**
 
@@ -320,8 +325,8 @@ maps to (|0⟩−|1⟩)/√2. Synthesize a circuit whose unitary matches H exact
 
 > **Global phase:** `e^(iπ/4)`. Every amplitude is scaled by `(0.5+0.5j)` instead of `0.707`
 > because `0.707 × e^(iπ/4) = 0.707 × (0.707+0.707j) = 0.5+0.5j`. The backend accepts the
-> canonical circuit via `_match_up_to_global_phase` — a single global factor `φ` such that
-> `canonical[i] = φ × target[i]` for every row.
+> canonical circuit via unitary global-phase comparison (not Born-probability fallback).
+> S→H matches probabilities but is not phase-equivalent and is rejected.
 
 **Hint 1:** H requires both rotation axes — combine Rz and √X in sequence.
 
@@ -894,7 +899,7 @@ the matching Pauli / H backend target; they are not separate `TARGET_LIBRARY` ke
 | Level | Gate          | Qubits | Global phase       | Frontend/backend flag               |
 |-------|---------------|--------|--------------------|-------------------------------------|
 | 1.0   | X             | 1      | None               | —                                   |
-| 1.1   | √X†           | 1      | None               | —                                   |
+| 1.1   | √X†           | 1      | unitary_global_phase (bare √X rejected) | —                    |
 | 1.2   | X†            | 1      | None               | Config-only; grades as X; no gateset unlock |
 | 1.3   | Z             | 1      | None               | Phase −1 on \|1⟩ required; probs match identity |
 | 1.4   | Z†            | 1      | None               | Config-only; grades as Z; no gateset unlock |
@@ -902,7 +907,7 @@ the matching Pauli / H backend target; they are not separate `TARGET_LIBRARY` ke
 | 1.6   | S†            | 1      | None               | Rz(−π/2) OK; Rz(+π/2) rejected |
 | 1.7   | T             | 1      | None               | —                                   |
 | 1.8   | T†            | 1      | None               | Rz(−π/4) OK; Rz(+π/4) rejected |
-| 1.9   | H             | 1      | e^(iπ/4)           | —                                   |
+| 1.9   | H             | 1      | unitary_global_phase (ZXZ OK; S→H rejected) | —              |
 | 1.10  | H†            | 1      | Same as H          | Config-only; grades as H; no gateset unlock |
 | 1.11  | Y             | 1      | unitary_global_phase (X→Z / Z→X OK) | Complex basis amplitudes |
 | 1.12  | Y†            | 1      | Same as Y          | Config-only; grades as Y; no gateset unlock |

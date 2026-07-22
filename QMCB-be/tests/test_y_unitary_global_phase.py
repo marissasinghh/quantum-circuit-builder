@@ -18,16 +18,15 @@ def test_y_library_sets_unitary_global_phase_mode() -> None:
     assert level.get(TargetLibraryField.GRADING_MODE.value) == (
         GradingMode.UNITARY_GLOBAL_PHASE.value
     )
-    # No other library key should carry this mode in this scoped fix.
-    others = [
+    # Y shares this mode with Batch 1 levels (H, √X†); all must be opted in explicitly.
+    with_mode = {
         name
         for name, entry in TARGET_LIBRARY.items()
-        if name != Gate.Y.value
-        and entry.get(TargetLibraryField.GRADING_MODE.value)
+        if entry.get(TargetLibraryField.GRADING_MODE.value)
         == GradingMode.UNITARY_GLOBAL_PHASE.value
-    ]
-    assert others == []
-
+    }
+    assert Gate.Y.value in with_mode
+    assert with_mode == {Gate.Y.value, Gate.H.value, Gate.SQRT_X_DAG.value}
 
 def test_x_then_z_passes_y() -> None:
     trial = UnitaryDTO(

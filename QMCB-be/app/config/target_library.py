@@ -65,6 +65,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         LEVEL1_QUBITS,
         [{TargetLibraryField.GATE.value: Gate.SQRT_X_DAG.value, TargetLibraryField.ORDER.value: Q0}],
         ["(0.5-0.5j)|0\u27e9 + (0.5+0.5j)|1\u27e9", "(0.5+0.5j)|0\u27e9 + (0.5-0.5j)|1\u27e9"],
+        grading_mode=GradingMode.UNITARY_GLOBAL_PHASE.value,
     ),
     # ========================
     # LEVEL 1.3: Y GATE
@@ -106,6 +107,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         LEVEL1_QUBITS,
         [{TargetLibraryField.GATE.value: Gate.H.value, TargetLibraryField.ORDER.value: Q0}],
         ["0.707|0⟩ + 0.707|1⟩", "0.707|0⟩ - 0.707|1⟩"],
+        grading_mode=GradingMode.UNITARY_GLOBAL_PHASE.value,
     ),
     # ========================
     # LEVEL 1.4: RX GATE
