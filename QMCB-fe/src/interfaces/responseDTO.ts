@@ -16,8 +16,11 @@ export interface SimulationResponseDTO {
   /** True when the trial circuit is accepted — either exact string match or global-phase equivalence. */
   all_match: boolean;
   validation_mode: boolean;
-  /** "random_theta" for Rx/Ry levels; null for all wavefunction-based levels. */
-  grading_mode: "random_theta" | null;
+  /**
+   * "random_theta" for Rx/Ry sampling; "unitary_global_phase" when the level
+   * compares full unitaries up to global phase (Y); null for Dirac/Born path.
+   */
+  grading_mode: "random_theta" | "unitary_global_phase" | null;
   /** Number of random angles sampled (random_theta mode only). */
   samples_checked: number | null;
   /** Number of sampled angles for which the circuit passed (random_theta mode only). */

@@ -22,6 +22,7 @@ import { DragGateOverlay } from "./DragGateOverlay";
 import { LevelCompleteModal } from "./LevelCompleteModal";
 import { OutputTable, type GradingSummary, type OutputTableMode } from "./OutputTable";
 import { TaskCard } from "./TaskCard";
+import { MathText } from "./MathText";
 import { BlochSphere } from "./BlochSphere";
 import {
   BlochSphereHeader,
@@ -345,8 +346,8 @@ export function MobileSolveLayout({
                       <p className="panel-heading mb-1.5">
                         LEVEL INSIGHT
                       </p>
-                        <p className="font-sans text-sm text-text-body leading-relaxed">
-                          {currentLevel.insight}
+                        <p className="level-insight font-sans text-sm text-text-body leading-relaxed">
+                          <MathText text={currentLevel.insight} />
                         </p>
                       </div>
                     ) : undefined

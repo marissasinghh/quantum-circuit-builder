@@ -13,7 +13,7 @@ from app.utils.helpers import (
     initialize_qubit_sequence,
     build_target_truth_table,
 )
-from app.utils.constants import Gate, TargetLibraryField
+from app.utils.constants import Gate, GradingMode, TargetLibraryField
 from app.dto.simulate_request import SimulateRequestDTO
 from app.dto.truth_table import TruthTableDTO
 from app.utils.types import UnitaryGateEntry
@@ -24,6 +24,34 @@ import math
 
 import cirq
 import numpy as np
+
+
+def _level_grading_mode(target_name: str) -> str | None:
+    """Return the optional per-level grading_mode from TARGET_LIBRARY, or None."""
+    level = TARGET_LIBRARY.get(target_name)
+    if level is None:
+        return None
+    return level.get(TargetLibraryField.GRADING_MODE.value)
+
+
+def _unitaries_match_up_to_global_phase(
+    trial_gates: list[UnitaryGateEntry],
+    trial_qubit_order: list[list[int]],
+    target_name: str,
+    qubits: list,
+    resolved: ResolvedTargetParams,
+) -> bool:
+    """
+    Compare trial and target as full unitaries (cirq.allclose_up_to_global_phase).
+
+    Used only when a level sets grading_mode=unitary_global_phase (currently Y).
+    Rejects same-Born / not-phase-equivalent pairs (e.g. bare X vs Y).
+    """
+    trial_base = CircuitBuilder.build_circuit_base(trial_gates, trial_qubit_order, qubits)
+    target_base = TargetUnitaryBuilder.build(target_name, qubits, resolved)
+    trial_U = cirq.unitary(trial_base)
+    target_U = cirq.unitary(target_base)
+    return bool(cirq.allclose_up_to_global_phase(trial_U, target_U))
 
 
 def _row_probabilities_match(
@@ -340,13 +368,28 @@ def simulate_unitaries(
     trial_dict = trial_truth_table_dto.to_dict()
     target_dict = target_truth_table_dto.to_dict()
 
-    all_match = _compute_all_match(
-        trial_dict, target_dict, resolved.allow_global_phase, atol=resolved.grading_atol
-    )
+    grading_mode = _level_grading_mode(target_name)
+    if grading_mode == GradingMode.UNITARY_GLOBAL_PHASE.value:
+        # Additive path: does not enter _compute_all_match. Truth tables are still
+        # computed above for the FE; pass/fail uses full unitary comparison.
+        all_match = _unitaries_match_up_to_global_phase(
+            trial_dto.gates,
+            trial_dto.qubit_order,
+            target_name,
+            qubits,
+            target_resolved,
+        )
+    else:
+        all_match = _compute_all_match(
+            trial_dict,
+            target_dict,
+            resolved.allow_global_phase,
+            atol=resolved.grading_atol,
+        )
 
     return {
         "message": "Successfully simulated circuits.",
-        "grading_mode": None,
+        "grading_mode": grading_mode,
         "samples_checked": None,
         "samples_passed": None,
         "trial_truth_table": trial_dict,

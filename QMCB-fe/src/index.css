@@ -30,7 +30,8 @@ body {
   background-size: 24px 24px;
 }
 
-.task-description .katex {
+.task-description .katex,
+.level-insight .katex {
   font-family: "JetBrains Mono", monospace;
   color: #c8dde8;
 }

@@ -18,6 +18,7 @@ import { useControlledUnitary } from "../hooks/useControlledUnitary";
 import { useDragAndDrop } from "../hooks/useDragAndDrop";
 
 import { TaskCard } from "../components/TaskCard";
+import { MathText } from "../components/MathText";
 import { Gateset, BlochPreviewToggle, BlochSphereHeader, BLOCH_SPHERE_TOOLTIP } from "../components/Gateset";
 import { Tooltip, TooltipProvider } from "../components/Tooltip";
 import { CircuitCanvas } from "../components/CircuitCanvas";
@@ -542,8 +543,8 @@ function SolveLevelContent({
                       <p className="panel-heading mb-1.5">
                         LEVEL INSIGHT
                       </p>
-                      <p className="font-sans text-sm text-text-body leading-relaxed">
-                        {currentLevel.insight}
+                      <p className="level-insight font-sans text-sm text-text-body leading-relaxed">
+                        <MathText text={currentLevel.insight} />
                       </p>
                     </div>
                   ) : undefined

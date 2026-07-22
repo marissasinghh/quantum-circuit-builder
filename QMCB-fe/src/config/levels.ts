@@ -138,7 +138,7 @@ export const X_DAG_LEVEL: LevelDefinition = {
   hint1: "What is the inverse of a bit-flip?",
   hint2: "X flips $|0\\rangle \\leftrightarrow |1\\rangle$. Applying X again flips it back. So $X^{-1} = X$.",
   insight:
-    "Notice that X-dag was not added to your toolbox. That's because X-dag is literally the same gate as X — Pauli gates are their own inverses ($X^2 = I$), so there is nothing new to add. Whenever you see a \"†\" on a Pauli gate (X, Y, Z), you already have it.",
+    "Notice! The target vector for $X^\\dagger$ is identical to the target vector for $X$. That's because Pauli gates are their own inverses ($X^2 = I$), so there's nothing new for $X^\\dagger$ to add — you already built it. This is why $X^\\dagger$ won't appear in your toolbox. The same logic holds for all three Pauli gates ($X$, $Y$, $Z$): whenever you see a dagger on one of them, you already have it — no pauli-daggers needed!",
 } as const;
 
 // ========================
@@ -395,7 +395,7 @@ export const H_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The Hadamard gate creates equal superposition: $|0\\rangle \\mapsto \\frac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$ and $|1\\rangle \\mapsto \\frac{|0\\rangle - |1\\rangle}{\\sqrt{2}}$. Synthesize a circuit whose unitary matches H exactly.",
+    "The Hadamard gate creates equal superposition: $|0\\rangle \\mapsto \\frac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$ and $|1\\rangle \\mapsto \\frac{|0\\rangle - |1\\rangle}{\\sqrt{2}}$. Synthesize a circuit whose unitary matches H up to global phase.",
   hint1: "H requires both rotation axes — combine Rz and Sqrt_X in sequence.",
   hint2: "Conjugating Sqrt_X by Rz rotations changes the effective rotation axis — try sandwiching Sqrt_X between two Rz gates.",
   insight:
@@ -587,7 +587,7 @@ export const CONTROLLED_H_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is $|1\\rangle$, and passes through unchanged otherwise. Synthesize a circuit whose unitary matches CH exactly.",
+    "The CH gate applies H to the target qubit (Q1) when the control qubit (Q0) is $|1\\rangle$, and passes through unchanged otherwise. Synthesize a circuit whose unitary matches CH up to global phase.",
   hint1: "Controlled gates can often be decomposed using rotation gates sandwiched around a CNOT.",
   hint2: "Ry(π/4) · CNOT · Ry(-π/4) on the target qubit — verify the math for |10⟩ and |11⟩.",
 } as const;
