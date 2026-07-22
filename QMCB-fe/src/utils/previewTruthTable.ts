@@ -115,14 +115,16 @@ export function buildParamPreviewRows(
 }
 
 /**
- * Build graded truth-table rows for a RANDOM_THETA level at the snapshotted slotTheta.
- * ok is computed by comparing probability vectors within ε = 0.001.
+ * Build graded-mode truth-table rows for a RANDOM_THETA level at the snapshotted slotTheta.
+ * Row content (Dirac / probabilities) is still client-preview at snapshot θ.
+ * Match `ok` is the Check API's all_match (10/10 unitary samples) — never Born vs FE canonical.
  * Returns null if canonical is missing or no student gates are placed.
  */
 export function buildParamGradedRows(
   gates: PlacedGate[],
   level: LevelDefinition,
-  slotTheta: number
+  slotTheta: number,
+  allMatch: boolean
 ): TruthRow[] | null {
   if (gates.length === 0) return null;
   const canonicalGates = canonicalToPlacedGates(level, slotTheta);
@@ -139,15 +141,12 @@ export function buildParamGradedRows(
     const targetCol = columnFromUnitary(targetUnitary, i);
     const trialProbabilities = probabilitiesFromColumn(columnFromUnitary(rawTrial, i));
     const targetProbabilities = probabilitiesFromColumn(columnFromUnitary(rawTarget, i));
-    const ok = trialProbabilities.every(
-      (p, j) => Math.abs(p - (targetProbabilities[j] ?? 0)) < 0.001
-    );
 
     return {
       input,
       trial: formatStateVectorAsDirac(trialCol, qubitCount),
       target: formatStateVectorAsDirac(targetCol, qubitCount),
-      ok,
+      ok: allMatch,
       trialProbabilities,
       targetProbabilities,
     };

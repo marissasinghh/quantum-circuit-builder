@@ -171,8 +171,8 @@ function SolveLevelContent({
 
   const snapshotRows = useMemo(() => {
     if (!isRandomThetaLevel || snapshotTheta === null || mutation.status !== "success") return null;
-    return buildParamGradedRows(gates, currentLevel, snapshotTheta);
-  }, [isRandomThetaLevel, snapshotTheta, mutation.status, gates, currentLevel]);
+    return buildParamGradedRows(gates, currentLevel, snapshotTheta, allCorrect);
+  }, [isRandomThetaLevel, snapshotTheta, mutation.status, gates, currentLevel, allCorrect]);
 
   const isGradedDisplay = isRandomThetaLevel
     ? mutation.status === "success" && snapshotTheta !== null
@@ -520,7 +520,7 @@ function SolveLevelContent({
               </>
             )}
             <div className="border-t border-tier1 my-3 shrink-0" />
-            <div ref={circuitOutputRef} className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-visible">
+            <div ref={circuitOutputRef} className="rounded-md border border-tier1 p-3 mb-3 min-w-0 overflow-hidden">
               <OutputTable
                 rows={displayRows}
                 mode={outputTableMode}

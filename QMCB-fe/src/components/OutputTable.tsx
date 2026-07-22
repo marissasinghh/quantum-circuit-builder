@@ -95,7 +95,7 @@ function AmplitudeCell({ value }: { value: string }) {
   return (
     <div
       ref={containerRef}
-      className="relative whitespace-normal overflow-visible break-words min-w-0"
+      className="relative whitespace-normal overflow-hidden break-words min-w-0 max-w-full"
     >
       <span
         ref={measureRef}
@@ -105,7 +105,7 @@ function AmplitudeCell({ value }: { value: string }) {
         {oneLine}
       </span>
       {lines.map((line, i) => (
-        <div key={i} className="block whitespace-normal overflow-visible break-words">
+        <div key={i} className="block whitespace-normal break-words min-w-0">
           {line}
         </div>
       ))}
@@ -117,21 +117,23 @@ function ProbabilityCell({ probs }: { probs: readonly number[] | undefined }) {
   if (!probs?.length) return <>—</>;
   const qubitCount = Math.log2(probs.length);
   return (
-    <table className="border-collapse">
-      <tbody>
-        {probs.map((p, i) => (
-          <tr
-            key={i}
-            className={i < probs.length - 1 ? "border-b border-tier1" : undefined}
-          >
-            <td className="border-r border-tier1 px-1 py-0.5 whitespace-nowrap">
-              {basisInputLabel(qubitCount, i)}
-            </td>
-            <td className="px-1 py-0.5 whitespace-nowrap">{p.toFixed(3)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="min-w-0 max-w-full overflow-x-auto">
+      <table className="border-collapse">
+        <tbody>
+          {probs.map((p, i) => (
+            <tr
+              key={i}
+              className={i < probs.length - 1 ? "border-b border-tier1" : undefined}
+            >
+              <td className="border-r border-tier1 px-1 py-0.5 whitespace-nowrap">
+                {basisInputLabel(qubitCount, i)}
+              </td>
+              <td className="px-1 py-0.5 whitespace-nowrap">{p.toFixed(3)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -166,13 +168,17 @@ export function OutputTable({
 }: OutputTableProps) {
   const isPreview = mode === "preview";
   const isRandomTheta = !!onSetGateTheta;
+  // Match column in graded mode for all levels, including RANDOM_THETA (ok from API all_match).
+  // Preview still hides Match. Partial "N/M rows match" banner stays fixed-level only —
+  // Rx/Ry use the N/10 angles badge instead.
+  const showRowMatch = !isPreview;
   const hasPartialMismatch =
-    !isPreview && !isRandomTheta && rows && rows.length > 0 && !isCorrect && !error;
+    showRowMatch && !isRandomTheta && rows && rows.length > 0 && !isCorrect && !error;
   const matchCount = hasPartialMismatch ? rows.filter((r) => r.ok).length : 0;
   const totalRows = rows?.length ?? 0;
 
   return (
-    <div className="w-full box-border overflow-visible">
+    <div className="w-full min-w-0 box-border">
       <div className="mb-2">
         <h2 className="panel-heading">
           CIRCUIT OUTPUT
@@ -249,12 +255,21 @@ export function OutputTable({
         </div>
       )}
 
-      {gradingSummary && !isCorrect && !error && !isPreview && (
-        <div className="mb-3 bg-mismatch-bg border border-tier1 rounded-md px-3 py-2">
-          <p className="text-sm font-sans text-mismatch-text font-medium">
+      {gradingSummary && !error && !isPreview && (
+        <div
+          className={`mb-3 border border-tier1 rounded-md px-3 py-2 ${
+            isCorrect ? "bg-match-bg" : "bg-mismatch-bg"
+          }`}
+        >
+          <p
+            className={`text-sm font-sans font-medium ${
+              isCorrect ? "text-text-body" : "text-mismatch-text"
+            }`}
+          >
             {gradingSummary.samplesPassed}/{gradingSummary.samplesChecked} angles passed
+            {isCorrect ? " — circuit verified ✓" : ""}
           </p>
-          {onClearAndRetry && (
+          {!isCorrect && onClearAndRetry && (
             <button
               type="button"
               onClick={onClearAndRetry}
@@ -289,64 +304,84 @@ export function OutputTable({
 
       {rows && (
         <>
+          {/*
+            Outer relative + pb-8: room for the absolute corner tooltip trigger.
+            Inner overflow-x-auto: wide tables scroll inside the panel instead of
+            painting past the border. Tooltip popups portal to document.body, so
+            they do not need overflow-visible on these wrappers.
+          */}
           <div
-            className={`relative w-full box-border pb-8 overflow-visible${isChecking ? " opacity-50" : ""}`}
+            className={`relative w-full min-w-0 box-border pb-8${isChecking ? " opacity-50" : ""}`}
           >
-            <table
-              className="font-mono text-[10px] w-full box-border overflow-visible"
-              style={{ tableLayout: "auto" }}
-            >
-              <thead>
-                <tr className="text-text-muted border-b border-tier1">
-                  <th className={`${CELL_CLASS} text-left font-normal`}>Input</th>
-                  <th className={`${CELL_CLASS} text-left font-normal`}>Trial</th>
-                  <th className={`${CELL_CLASS} text-left font-normal`}>P(t)</th>
-                  <th className={`${CELL_CLASS} text-left font-normal`}>Expected</th>
-                  <th className={`${CELL_CLASS} text-left font-normal relative`}>
-                    P(e)
-                    <ExpectedPHeaderTooltip />
-                  </th>
-                  {!isPreview && (
-                    <th className={`${CELL_CLASS} text-left font-normal`}>Match</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((r) => (
-                  <tr
-                    key={r.input}
-                    className={
-                      isPreview ? undefined : r.ok ? "bg-match-bg" : "bg-mismatch-bg"
-                    }
-                  >
-                    <td className={`${CELL_CLASS} text-tier3`}>{r.input}</td>
-                    <td
-                      className={`${CELL_CLASS} ${
-                        isPreview || r.ok ? "text-tier3" : "text-mismatch-text"
-                      }`}
-                    >
-                      <AmplitudeCell value={r.trial} />
-                    </td>
-                    <td className={`${CELL_CLASS} text-text-muted`}>
-                      <ProbabilityCell probs={r.trialProbabilities} />
-                    </td>
-                    <td className={`${CELL_CLASS} text-tier3`}>
-                      <AmplitudeCell value={r.target} />
-                    </td>
-                    <td className={`${CELL_CLASS} text-text-muted`}>
-                      <ProbabilityCell probs={r.targetProbabilities} />
-                    </td>
-                    {!isPreview && (
-                      <td
-                        className={`${CELL_CLASS} ${r.ok ? "text-tier3" : "text-error-action"}`}
-                      >
-                        {r.ok ? "✓" : "✗"}
-                      </td>
+            <div className="w-full min-w-0 overflow-x-auto">
+              <table
+                className="font-mono text-[10px] w-full min-w-0 border-collapse"
+                style={{ tableLayout: "fixed" }}
+              >
+                <colgroup>
+                  <col className="w-[12%]" />
+                  <col className="w-[28%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[28%]" />
+                  <col className="w-[14%]" />
+                  {showRowMatch && <col className="w-[8%]" />}
+                </colgroup>
+                <thead>
+                  <tr className="text-text-muted border-b border-tier1">
+                    <th className={`${CELL_CLASS} text-left font-normal`}>Input</th>
+                    <th className={`${CELL_CLASS} text-left font-normal`}>Trial</th>
+                    <th className={`${CELL_CLASS} text-left font-normal`}>P(t)</th>
+                    <th className={`${CELL_CLASS} text-left font-normal`}>Expected</th>
+                    <th className={`${CELL_CLASS} text-left font-normal relative`}>
+                      P(e)
+                      <ExpectedPHeaderTooltip />
+                    </th>
+                    {showRowMatch && (
+                      <th className={`${CELL_CLASS} text-left font-normal`}>Match</th>
                     )}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rows.map((r) => (
+                    <tr
+                      key={r.input}
+                      className={
+                        showRowMatch
+                          ? r.ok
+                            ? "bg-match-bg"
+                            : "bg-mismatch-bg"
+                          : undefined
+                      }
+                    >
+                      <td className={`${CELL_CLASS} text-tier3 align-top`}>{r.input}</td>
+                      <td
+                        className={`${CELL_CLASS} align-top min-w-0 ${
+                          !showRowMatch || r.ok ? "text-tier3" : "text-mismatch-text"
+                        }`}
+                      >
+                        <AmplitudeCell value={r.trial} />
+                      </td>
+                      <td className={`${CELL_CLASS} text-text-muted align-top`}>
+                        <ProbabilityCell probs={r.trialProbabilities} />
+                      </td>
+                      <td className={`${CELL_CLASS} text-tier3 align-top min-w-0`}>
+                        <AmplitudeCell value={r.target} />
+                      </td>
+                      <td className={`${CELL_CLASS} text-text-muted align-top`}>
+                        <ProbabilityCell probs={r.targetProbabilities} />
+                      </td>
+                      {showRowMatch && (
+                        <td
+                          className={`${CELL_CLASS} align-top ${r.ok ? "text-tier3" : "text-error-action"}`}
+                        >
+                          {r.ok ? "✓" : "✗"}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
             <Tooltip id="circuit-output" bottom={4} right={0}>
               Quantum gates are linear operations. This means if your circuit produces the right
