@@ -24,6 +24,11 @@ export interface LevelDefinition {
   /** How the backend resolves target parameters for this level. */
   parameterMode?: ParameterMode;
   uiMaxGates?: number;
+  /**
+   * CircuitCanvas θ range-slider step in radians for this level only.
+   * When omitted, CircuitCanvas defaults to 0.01 (unchanged for Rx/Ry/etc.).
+   */
+  thetaSliderStep?: number;
   description?: string;
   hint1?: string;
   hint2?: string;

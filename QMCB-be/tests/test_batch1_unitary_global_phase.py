@@ -20,6 +20,7 @@ UNITARY_GP_LEVELS = frozenset(
         Gate.H.value,
         Gate.SQRT_X_DAG.value,
         Gate.CONTROLLED_H.value,
+        Gate.RANDOM_U.value,
     }
 )
 

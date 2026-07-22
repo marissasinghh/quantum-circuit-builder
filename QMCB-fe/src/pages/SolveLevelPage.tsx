@@ -458,6 +458,7 @@ function SolveLevelContent({
               onSetGateTheta={setGateTheta}
               onSetParameterSlot={setParameterSlot}
               showParameterSlotControls={isRandomThetaLevel}
+              thetaSliderStep={currentLevel.thetaSliderStep}
               onCheck={handleCheckWithSnapshot}
               onClear={handleClear}
               isChecking={mutation.isPending}

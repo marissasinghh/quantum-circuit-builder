@@ -39,6 +39,11 @@ interface CircuitCanvasProps {
   onSetGateTheta: (id: string, theta: number) => void;
   onSetParameterSlot?: (id: string) => void;
   showParameterSlotControls?: boolean;
+  /**
+   * Step size for the θ range slider (radians). Defaults to 0.01 so Rx/Ry/Rz
+   * levels keep current behavior; RANDOM_U passes 0.001 via LevelDefinition.
+   */
+  thetaSliderStep?: number;
   onCheck: () => void;
   onClear: () => void;
   isChecking: boolean;
@@ -90,6 +95,7 @@ export function CircuitCanvas({
   onSetGateTheta,
   onSetParameterSlot,
   showParameterSlotControls = false,
+  thetaSliderStep = 0.01,
   onCheck,
   onClear,
   isChecking,
@@ -319,7 +325,7 @@ export function CircuitCanvas({
                       type="range"
                       min={-2 * Math.PI}
                       max={2 * Math.PI}
-                      step={0.01}
+                      step={thetaSliderStep}
                       className="w-24 accent-tier3"
                       value={g.theta ?? 0}
                       onChange={(e) => {

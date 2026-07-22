@@ -21,6 +21,7 @@ UNITARY_GP_LEVELS = frozenset(
         Gate.H.value,
         Gate.SQRT_X_DAG.value,
         Gate.CONTROLLED_H.value,
+        Gate.RANDOM_U.value,
     }
 )
 
@@ -152,9 +153,10 @@ def test_bucket_a_still_exact() -> None:
         assert response["all_match"] is False, target
 
 
-def test_random_u_still_no_unitary_gp_mode() -> None:
-    """Batch 3 out of scope — U must not pick up grading_mode from this change."""
-    assert (
-        TARGET_LIBRARY[Gate.RANDOM_U.value].get(TargetLibraryField.GRADING_MODE.value)
-        is None
+def test_random_u_now_unitary_gp_mode() -> None:
+    """RANDOM_U opted into unitary_global_phase with explicit grading_atol=1e-3."""
+    level = TARGET_LIBRARY[Gate.RANDOM_U.value]
+    assert level.get(TargetLibraryField.GRADING_MODE.value) == (
+        GradingMode.UNITARY_GLOBAL_PHASE.value
     )
+    assert level.get(TargetLibraryField.GRADING_ATOL.value) == 1e-3
