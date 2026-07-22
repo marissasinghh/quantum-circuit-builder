@@ -171,8 +171,8 @@ function SolveLevelContent({
 
   const snapshotRows = useMemo(() => {
     if (!isRandomThetaLevel || snapshotTheta === null || mutation.status !== "success") return null;
-    return buildParamGradedRows(gates, currentLevel, snapshotTheta);
-  }, [isRandomThetaLevel, snapshotTheta, mutation.status, gates, currentLevel]);
+    return buildParamGradedRows(gates, currentLevel, snapshotTheta, allCorrect);
+  }, [isRandomThetaLevel, snapshotTheta, mutation.status, gates, currentLevel, allCorrect]);
 
   const isGradedDisplay = isRandomThetaLevel
     ? mutation.status === "success" && snapshotTheta !== null

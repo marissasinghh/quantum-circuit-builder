@@ -116,14 +116,15 @@ export function buildParamPreviewRows(
 
 /**
  * Build graded-mode truth-table rows for a RANDOM_THETA level at the snapshotted slotTheta.
- * Pass/fail is the API's N/10 unitary sample grade (shown as the angles badge) —
- * ok is always false so OutputTable never paints a contradictory Match column.
+ * Row content (Dirac / probabilities) is still client-preview at snapshot θ.
+ * Match `ok` is the Check API's all_match (10/10 unitary samples) — never Born vs FE canonical.
  * Returns null if canonical is missing or no student gates are placed.
  */
 export function buildParamGradedRows(
   gates: PlacedGate[],
   level: LevelDefinition,
-  slotTheta: number
+  slotTheta: number,
+  allMatch: boolean
 ): TruthRow[] | null {
   if (gates.length === 0) return null;
   const canonicalGates = canonicalToPlacedGates(level, slotTheta);
@@ -145,7 +146,7 @@ export function buildParamGradedRows(
       input,
       trial: formatStateVectorAsDirac(trialCol, qubitCount),
       target: formatStateVectorAsDirac(targetCol, qubitCount),
-      ok: false,
+      ok: allMatch,
       trialProbabilities,
       targetProbabilities,
     };

@@ -168,11 +168,12 @@ export function OutputTable({
 }: OutputTableProps) {
   const isPreview = mode === "preview";
   const isRandomTheta = !!onSetGateTheta;
-  // Per-row Match is only for fixed-level graded tables. RANDOM_THETA uses the
-  // API's N/10 angles badge alone — client Born "ok" can contradict 0/10.
-  const showRowMatch = !isPreview && !isRandomTheta;
+  // Match column in graded mode for all levels, including RANDOM_THETA (ok from API all_match).
+  // Preview still hides Match. Partial "N/M rows match" banner stays fixed-level only —
+  // Rx/Ry use the N/10 angles badge instead.
+  const showRowMatch = !isPreview;
   const hasPartialMismatch =
-    showRowMatch && rows && rows.length > 0 && !isCorrect && !error;
+    showRowMatch && !isRandomTheta && rows && rows.length > 0 && !isCorrect && !error;
   const matchCount = hasPartialMismatch ? rows.filter((r) => r.ok).length : 0;
   const totalRows = rows?.length ?? 0;
 
