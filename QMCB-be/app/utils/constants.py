@@ -61,6 +61,17 @@ class TargetParameterMode(str, Enum):
     RANDOM_THETA = "random_theta"
 
 
+class GradingMode(str, Enum):
+    """How trial vs target equivalence is decided after simulation.
+
+    Levels that omit this field keep the default Dirac-string / Born-probability
+    path in ``_compute_all_match``. ``UNITARY_GLOBAL_PHASE`` compares full
+    unitaries with ``cirq.allclose_up_to_global_phase`` instead.
+    """
+
+    UNITARY_GLOBAL_PHASE = "unitary_global_phase"
+
+
 class TargetLibraryField(Enum):
     NUM_QUBITS = "num_qubits"
     STEPS = "steps"
@@ -70,6 +81,7 @@ class TargetLibraryField(Enum):
     PARAMETER_MODE = "parameter_mode"
     ALLOW_GLOBAL_PHASE = "allow_global_phase"
     GRADING_ATOL = "grading_atol"
+    GRADING_MODE = "grading_mode"
     EXPECTED_OUTPUTS = "expected_outputs"
     COMPOSITE_GATE = "composite_gate"
 

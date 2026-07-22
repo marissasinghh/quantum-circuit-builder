@@ -368,23 +368,26 @@ combining gates already unlocked.
 
 **Canonical circuit:** `X[Q0]  →  Z[Q0]`
 
+**Backend grading:** `grading_mode: unitary_global_phase` — pass/fail uses
+`cirq.allclose_up_to_global_phase` on the full trial vs target unitaries (not Dirac-string /
+Born-probability fallback). Config-only Y† grades against this same `Y` library entry.
+
 **Other accepted solutions:**
-- `Z[Q0]  →  X[Q0]` — equals Y up to a global phase factor (±i); accepted when
-  `allow_global_phase` applies (default for this fixed library entry).
+- `Z[Q0]  →  X[Q0]` — equals Y up to global phase (−i); accepted via unitary GP.
+- `S† → X → S` (exact matrix match).
 - Placing a single `Y` chip once unlocked.
 
 **Sign / angle note:**
-- Target Dirac strings are `1j|1⟩` and `-1j|0⟩`. Relative phases between amplitudes matter
-  for exact match; a pure global re-phasing of the whole state vector can still pass via the
-  global-phase path.
-- Bare `X` or bare `Z` alone fails.
+- Target Dirac strings remain `1j|1⟩` / `-1j|0⟩` for display; X→Z / Z→X differ by ±i globally
+  and still pass.
+- Bare `X` fails: same Born probabilities as Y on \|0⟩/\|1⟩, but not phase-equivalent.
 
-**Truth table (backend-verified):**
+**Truth table (backend-verified display strings):**
 
 | Input | Target output | Match |
 |-------|--------------|-------|
-| \|0⟩  | 1j\|1⟩       | Exact (canonical X→Z may differ by global phase) |
-| \|1⟩  | -1j\|0⟩      | Exact (same) |
+| \|0⟩  | 1j\|1⟩       | Unitary GP (canonical X→Z differs by global phase) |
+| \|1⟩  | -1j\|0⟩      | Unitary GP (same) |
 
 **Hint 1:** Y is closely related to X and Z — flip the bit, then flip the phase.
 
@@ -901,7 +904,7 @@ the matching Pauli / H backend target; they are not separate `TARGET_LIBRARY` ke
 | 1.8   | T†            | 1      | None               | Rz(−π/4) OK; Rz(+π/4) rejected |
 | 1.9   | H             | 1      | e^(iπ/4)           | —                                   |
 | 1.10  | H†            | 1      | Same as H          | Config-only; grades as H; no gateset unlock |
-| 1.11  | Y             | 1      | X→Z / Z→X OK up to global phase | Complex basis amplitudes |
+| 1.11  | Y             | 1      | unitary_global_phase (X→Z / Z→X OK) | Complex basis amplitudes |
 | 1.12  | Y†            | 1      | Same as Y          | Config-only; grades as Y; no gateset unlock |
 | 1.13  | Rx            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |
 | 1.14  | Ry            | 1      | e^(iθ/2) — accepted via global-phase check; negated-angle inverse rejected (see ±θ matrix) | —                                   |

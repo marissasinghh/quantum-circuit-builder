@@ -3,6 +3,7 @@ from typing import Dict, Any
 from app.utils.constants import (
     Basis,
     Gate,
+    GradingMode,
     LEVEL1_QUBITS,
     LEVEL2_QUBITS,
     LEVEL3_QUBITS,
@@ -17,8 +18,9 @@ def _fixed_level(
     steps: list[dict],
     expected_outputs: list[str],
     allow_global_phase: bool = True,
+    grading_mode: str | None = None,
 ) -> Dict[str, Any]:
-    return {
+    entry: Dict[str, Any] = {
         TargetLibraryField.NUM_QUBITS.value: num_qubits,
         TargetLibraryField.PARAMETERIZED.value: False,
         TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.FIXED.value,
@@ -26,6 +28,9 @@ def _fixed_level(
         TargetLibraryField.STEPS.value: steps,
         TargetLibraryField.EXPECTED_OUTPUTS.value: expected_outputs,
     }
+    if grading_mode is not None:
+        entry[TargetLibraryField.GRADING_MODE.value] = grading_mode
+    return entry
 
 
 TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
@@ -68,6 +73,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         LEVEL1_QUBITS,
         [{TargetLibraryField.GATE.value: Gate.Y.value, TargetLibraryField.ORDER.value: Q0}],
         ["1j|1\u27e9", "-1j|0\u27e9"],
+        grading_mode=GradingMode.UNITARY_GLOBAL_PHASE.value,
     ),
     # ========================
     # LEVEL 1.3: Z GATE
