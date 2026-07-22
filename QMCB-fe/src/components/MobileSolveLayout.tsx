@@ -330,7 +330,7 @@ export function MobileSolveLayout({
                 dynamicTruth={isSeedDrivenLevel ? dynamicTruth : undefined}
                 onNewUnitary={handleNewUnitary}
               />
-              <div ref={circuitOutputRef} className="min-w-0 overflow-hidden">
+              <div ref={circuitOutputRef} className="min-w-0 shrink-0">
                 <OutputTable
                   rows={rows}
                   mode={outputTableMode}
