@@ -138,4 +138,20 @@ describe("computeAvailableGates — Tier 2 CNOT grant", () => {
   it("still filters CNOT out on 1-qubit levels after RANDOM_U is granted", () => {
     expect(computeAvailableGates([Gate.RANDOM_U], [], ONE_QUBIT)).not.toContain(Gate.CNOT);
   });
+
+  it("removes CNOT once CNOT_FLIPPED is unlocked", () => {
+    const pastWithFlipped = [...advancedPastAtStart(TIER1_COUNT), Gate.CNOT_FLIPPED];
+    const toolbox = computeAvailableGates(pastWithFlipped, [], TWO_QUBITS);
+    expect(toolbox).toContain(Gate.CNOT_FLIPPED);
+    expect(toolbox).not.toContain(Gate.CNOT);
+
+    // Same via skip of 2.1
+    const afterSkip21 = computeAvailableGates(
+      advancedPastAtStart(TIER1_COUNT),
+      [Gate.CNOT_FLIPPED],
+      TWO_QUBITS,
+    );
+    expect(afterSkip21).toContain(Gate.CNOT_FLIPPED);
+    expect(afterSkip21).not.toContain(Gate.CNOT);
+  });
 });
