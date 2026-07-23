@@ -140,7 +140,7 @@ export const GATE_TOOLTIPS: Partial<Record<Gate, GateTooltipConfig>> = {
     ),
   },
   [Gate.CNOT]: {
-    revealWhenCompleted: Gate.CNOT_FLIPPED,
+    revealWhenCompleted: Gate.RANDOM_U,
     content: (
       <>
         A two-qubit gate. If the control qubit is <TooltipMath>|1⟩</TooltipMath>, it flips the

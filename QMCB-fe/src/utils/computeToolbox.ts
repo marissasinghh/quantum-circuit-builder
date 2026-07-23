@@ -1,6 +1,7 @@
 /**
  * Derives the visible toolbox from persisted progression.
  * Starting primitives + one gate per level advanced past or skipped (unless noGatesetUnlock).
+ * Special cases: RANDOM_U grants U; clearing Tier 1 finale (RANDOM_U) also grants CNOT.
  */
 
 import { LEVEL_ORDER } from "../config/levels";
@@ -59,6 +60,12 @@ export function computeAvailableGates(
       continue;
     }
     unlocked.add(level.target_unitary);
+  }
+
+  // Tier-2 starting primitive: CNOT is not itself a level target, so grant it
+  // once the student has advanced past / skipped Tier 1 finale (RANDOM_U).
+  if (grantingLevels.has(Gate.RANDOM_U)) {
+    unlocked.add(Gate.CNOT);
   }
 
   return TOOLBOX_GATE_ORDER.filter(

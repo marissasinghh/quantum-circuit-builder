@@ -95,6 +95,14 @@ describe("shouldShowGateTooltip — reveal schedule", () => {
     expect(shouldShowGateTooltip(Gate.U, beforeU)).toBe(false);
     expect(shouldShowGateTooltip(Gate.U, [...beforeU, Gate.RANDOM_U])).toBe(true);
   });
+
+  it("reveals CNOT after RANDOM_U (arrival at 2.1), not after CNOT_FLIPPED", () => {
+    const beforeTier2 = [Gate.X, Gate.Z, Gate.S, Gate.H, Gate.Y, Gate.RX, Gate.RY];
+    expect(shouldShowGateTooltip(Gate.CNOT, beforeTier2)).toBe(false);
+    expect(shouldShowGateTooltip(Gate.CNOT, [...beforeTier2, Gate.RANDOM_U])).toBe(true);
+    // Completing 2.1 alone must not be the reveal milestone anymore
+    expect(shouldShowGateTooltip(Gate.CNOT, [Gate.CNOT_FLIPPED])).toBe(false);
+  });
 });
 
 describe("shouldShowGateTooltip — skip reveals same as complete", () => {
