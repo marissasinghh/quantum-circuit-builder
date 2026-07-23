@@ -114,3 +114,28 @@ describe("computeAvailableGates — skip level", () => {
     ).toEqual([Gate.RZ, Gate.SQRT_X, Gate.X, Gate.Z].sort());
   });
 });
+
+const TWO_QUBITS = 2;
+
+describe("computeAvailableGates — Tier 2 CNOT grant", () => {
+  it("does not include CNOT mid–Tier 1 (even on a 2-qubit canvas)", () => {
+    const midTier1 = advancedPastAtStart(8); // start of 1.8 — before RANDOM_U
+    expect(computeAvailableGates(midTier1, [], TWO_QUBITS)).not.toContain(Gate.CNOT);
+    expect(computeAvailableGates(midTier1, [], ONE_QUBIT)).not.toContain(Gate.CNOT);
+  });
+
+  it("grants CNOT once RANDOM_U is advanced past (start of 2.1)", () => {
+    const atStartOf21 = advancedPastAtStart(TIER1_COUNT); // all Tier 1 past
+    expect(atStartOf21).toContain(Gate.RANDOM_U);
+    expect(computeAvailableGates(atStartOf21, [], TWO_QUBITS)).toContain(Gate.CNOT);
+  });
+
+  it("grants CNOT when RANDOM_U alone is advanced past or skipped", () => {
+    expect(computeAvailableGates([Gate.RANDOM_U], [], TWO_QUBITS)).toContain(Gate.CNOT);
+    expect(computeAvailableGates([], [Gate.RANDOM_U], TWO_QUBITS)).toContain(Gate.CNOT);
+  });
+
+  it("still filters CNOT out on 1-qubit levels after RANDOM_U is granted", () => {
+    expect(computeAvailableGates([Gate.RANDOM_U], [], ONE_QUBIT)).not.toContain(Gate.CNOT);
+  });
+});
