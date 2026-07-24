@@ -71,10 +71,16 @@ export type SingleWire = 0 | 1 | 2;
  */
 export type TwoQubitBaseWire = 0 | 1;
 
-/** Order type that can represent any 2-bit pair */
-export type AnyQubitOrder = readonly [0 | 1, 0 | 1]; // covers [0,0], [1,1], [0,1], [1,0]
+/** Wire index in a level (max 3 qubits on the current roadmap). */
+export type QubitIndex = 0 | 1 | 2;
 
-/** Control–target assignment for a 2-qubit gate: [control, target]. */
+/**
+ * Parallel `qubit_order` entry for the API: `[a,a]` for a 1q wire, or
+ * `[control, target]` absolute indices for a 2q gate (may involve wire 2).
+ */
+export type AnyQubitOrder = readonly [QubitIndex, QubitIndex];
+
+/** Control–target assignment for a 2-qubit gate: [control, target] relative to the pair. */
 export type ControlTargetOrder = readonly [0, 1] | readonly [1, 0];
 
 /** A step in a quantum circuit: one gate + qubit order. */

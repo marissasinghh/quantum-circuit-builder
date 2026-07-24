@@ -604,6 +604,9 @@ export const CONTROLLED_U_LEVEL: LevelDefinition = {
   toolbox: [...SINGLE_QUBIT_GATES, Gate.CNOT, Gate.CONTROLLED_Z, Gate.SWAP, Gate.CONTROLLED_H] as const,
 
   parameterMode: ParameterMode.SEED_ZXZ,
+  // CU needs seeded (α,β,γ) angles; reuse as a bare toolbox chip would crash grading.
+  // Same pattern as Tier-1 dagger no-ops — do not unlock into later gatesets.
+  noGatesetUnlock: true,
 
   uiMaxGates: MAX_GATES,
 

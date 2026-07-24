@@ -90,8 +90,67 @@ export function embedSingleQubit(u: Mat2, wire: number, qubitCount: number): Com
   return result;
 }
 
-/** Embed a 4×4 two-qubit gate on wires 0 and 1; remaining wires get identity. */
+/** Bit of `index` on `wire` when q0 is MSB (matches kron / Cirq qubit_order). */
+function bitAtWire(index: number, wire: number, qubitCount: number): number {
+  return (index >> (qubitCount - 1 - wire)) & 1;
+}
+
+function withBitAtWire(
+  index: number,
+  wire: number,
+  qubitCount: number,
+  bit: number
+): number {
+  const shift = qubitCount - 1 - wire;
+  return (index & ~(1 << shift)) | ((bit & 1) << shift);
+}
+
+/**
+ * Embed a 4×4 two-qubit gate on absolute wires (wire0, wire1) in an n-qubit space.
+ * Local MSB of `u4` maps to `wire0`; local LSB maps to `wire1` (same convention as
+ * twoQubitGateMatrix / kron with q0 leftmost).
+ */
+export function embedTwoQubit(
+  u4: ComplexMatrix,
+  wire0: number,
+  wire1: number,
+  qubitCount: number
+): ComplexMatrix {
+  if (qubitCount < 2) {
+    throw new Error("embedTwoQubit requires qubitCount >= 2");
+  }
+  if (wire0 === wire1) {
+    throw new Error("embedTwoQubit requires distinct wires");
+  }
+  if (qubitCount === 2 && wire0 === 0 && wire1 === 1) {
+    return u4;
+  }
+
+  const dim = 2 ** qubitCount;
+  const result = identityMatrix(dim).map((row) => row.map(() => c(0)));
+
+  for (let inIdx = 0; inIdx < dim; inIdx++) {
+    const b0 = bitAtWire(inIdx, wire0, qubitCount);
+    const b1 = bitAtWire(inIdx, wire1, qubitCount);
+    const localIn = (b0 << 1) | b1;
+
+    for (let localOut = 0; localOut < 4; localOut++) {
+      const amp = u4[localOut]?.[localIn];
+      if (!amp || (amp.re === 0 && amp.im === 0)) continue;
+
+      const outB0 = (localOut >> 1) & 1;
+      const outB1 = localOut & 1;
+      let outIdx = inIdx;
+      outIdx = withBitAtWire(outIdx, wire0, qubitCount, outB0);
+      outIdx = withBitAtWire(outIdx, wire1, qubitCount, outB1);
+      result[outIdx][inIdx] = cadd(result[outIdx][inIdx], amp);
+    }
+  }
+
+  return result;
+}
+
+/** @deprecated Prefer embedTwoQubit(u4, 0, 1, qubitCount). Kept as a thin alias. */
 export function embedTwoQubitOn01(u4: ComplexMatrix, qubitCount: number): ComplexMatrix {
-  if (qubitCount === 2) return u4;
-  return kron(u4, I2);
+  return embedTwoQubit(u4, 0, 1, qubitCount);
 }

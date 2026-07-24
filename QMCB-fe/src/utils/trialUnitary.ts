@@ -9,7 +9,7 @@ import { gatesInColumnOrder } from "./circuit";
 import {
   cabs,
   embedSingleQubit,
-  embedTwoQubitOn01,
+  embedTwoQubit,
   identityMatrix,
   matMul,
   type C,
@@ -33,7 +33,8 @@ function embeddedGateMatrix(gate: PlacedGate, qubitCount: number): ComplexMatrix
 
   const u4 = twoQubitGateMatrix(gate.type as Gate, gate.order);
   if (!u4) return null;
-  return embedTwoQubitOn01(u4, qubitCount);
+  // Relative order is baked into u4; embed on the absolute adjacent pair.
+  return embedTwoQubit(u4, gate.baseWire, gate.baseWire + 1, qubitCount);
 }
 
 /**

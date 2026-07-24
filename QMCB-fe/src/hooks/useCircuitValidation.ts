@@ -3,7 +3,7 @@
  * Submits student's circuit and compares against target.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { simulateUnitary } from "../services/simulate";
 import { buildRequestFromLevel, toTruthRows } from "../controllers/simulate";
@@ -11,6 +11,7 @@ import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { PlacedGate } from "../types/global";
 import { Gate } from "../types/global";
 import { ParameterMode } from "../utils/constants";
+import { validateCircuitForSimulate } from "../utils/circuit";
 
 /** Gates that require a theta angle before the backend can apply them. */
 const REQUIRES_THETA = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
@@ -24,6 +25,17 @@ export function useCircuitValidation(
 ) {
   const mutation = useMutation({ mutationFn: simulateUnitary });
   const [validationError, setValidationError] = useState<Error | null>(null);
+
+  // When the student edits after a failed or successful Check, drop mutation
+  // state so Circuit Output returns to live client-side preview (same spirit
+  // as RANDOM_THETA clearing snapshotTheta on gate edits).
+  useEffect(() => {
+    if (mutation.isError || mutation.status === "success") {
+      mutation.reset();
+    }
+    // Intentionally gates-only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gates]);
 
   const rows = mutation.data ? toTruthRows(mutation.data) : null;
   // Use the backend's authoritative all_match flag rather than deriving correctness
@@ -66,7 +78,16 @@ export function useCircuitValidation(
       return;
     }
 
+    const circuitGuard = validateCircuitForSimulate(gates);
+    if (circuitGuard) {
+      setValidationError(new Error(circuitGuard));
+      return;
+    }
+
     setValidationError(null);
+    // Clear any prior failed Check before starting a new one so the banner
+    // cannot linger over in-flight / success state.
+    mutation.reset();
     const body = buildRequestFromLevel(
       currentLevel,
       gates,

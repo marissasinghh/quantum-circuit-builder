@@ -23,6 +23,10 @@ export const Q1: AnyQubitOrder = [1, 1] as const;
 export const C0_T1: ControlTargetOrder = [0, 1] as const;
 export const C1_T0: ControlTargetOrder = [1, 0] as const;
 
+/** Absolute 2-qubit pairs involving wire 2 (3-qubit canvases; matches BE qubit_orders.py) */
+export const C1_T2: AnyQubitOrder = [1, 2] as const;
+export const C2_T1: AnyQubitOrder = [2, 1] as const;
+
 /** 3-qubit gates (aliases match backend qubit_orders.py naming) */
 export const C0_C1_T2: readonly [0, 1, 2] = [0, 1, 2] as const;
 export const C0_T1_T2: readonly [0, 1, 2] = [0, 1, 2] as const;

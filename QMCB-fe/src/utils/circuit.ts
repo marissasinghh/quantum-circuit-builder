@@ -10,8 +10,9 @@ import type {
   PlacedSingleQubitGate,
   ControlTargetOrder,
   AnyQubitOrder,
+  TwoQubitBaseWire,
 } from "../types/global";
-import { isValidOrderFor } from "../config/gates";
+import { isValidOrderFor, isTwoQubitToolboxGate } from "../config/gates";
 import { Gate } from "../types/global";
 import type { UnitaryGateEntry } from "../interfaces/unitary";
 import { DEFAULT_QUBIT_ORDER } from "./constants";
@@ -118,16 +119,34 @@ export function setWire(
   return gates.map((g) => (g.id === id && "wire" in g ? { ...g, wire } : g));
 }
 
-/** Reorder a gate (and optionally change its wire) in one step. */
+/** Move a two-qubit gate to a different adjacent pair without changing its column. */
+export function setBaseWire(
+  gates: PlacedGate[],
+  id: string,
+  baseWire: TwoQubitBaseWire
+): PlacedGate[] {
+  return gates.map((g) => (g.id === id && "order" in g ? { ...g, baseWire } : g));
+}
+
+/**
+ * Reorder a gate and optionally change its vertical placement.
+ * - Single-qubit: `wire` updates the `wire` field.
+ * - Two-qubit: `wire` is treated as the new `baseWire` (caller maps drop → pair).
+ */
 export function moveGate(
   gates: PlacedGate[],
   id: string,
   to: number,
-  wire?: PlacedSingleQubitGate["wire"]
+  wire?: PlacedSingleQubitGate["wire"] | TwoQubitBaseWire
 ): PlacedGate[] {
-  // Wire first: setWire is column-preserving, so moveToColumn splices the fully-updated gate object.
-  const withWire = wire !== undefined ? setWire(gates, id, wire) : gates;
-  return moveToColumn(withWire, id, to);
+  if (wire === undefined) return moveToColumn(gates, id, to);
+
+  const target = gates.find((g) => g.id === id);
+  const withPlacement =
+    target && "order" in target
+      ? setBaseWire(gates, id, wire === 0 ? 0 : 1)
+      : setWire(gates, id, wire as PlacedSingleQubitGate["wire"]);
+  return moveToColumn(withPlacement, id, to);
 }
 
 /** Reset the circuit to empty */
@@ -144,10 +163,44 @@ export function serializeUnitaryGateEntries(gates: PlacedGate[]): UnitaryGateEnt
 export function serializeOrders(gates: PlacedGate[]): AnyQubitOrder[] {
   return sortByColumn(gates).map((g) => {
     if ("order" in g) {
-      // 2-qubit gates have an order property
-      return g.order;
+      // Absolute control/target = baseWire + relative order indices.
+      const [relC, relT] = g.order;
+      return [g.baseWire + relC, g.baseWire + relT] as AnyQubitOrder;
     }
     // Single-qubit gates: encode wire as [wire, wire]
-    return [g.wire, g.wire] as const as AnyQubitOrder;
+    return [g.wire, g.wire] as AnyQubitOrder;
   });
+}
+
+/**
+ * Pre-POST FE guard: catch misclassified 2q chips and equal-index pairs.
+ * Returns an error message, or null when the circuit is safe to submit.
+ */
+export function validateCircuitForSimulate(gates: PlacedGate[]): string | null {
+  for (const g of sortByColumn(gates)) {
+    // 2q type stored as a 1q placement → serializeOrders would emit [w,w].
+    if ("wire" in g && isTwoQubitToolboxGate(g.type as Gate)) {
+      return (
+        `${g.type} was placed as a single-qubit gate. ` +
+        "Remove it and place it again from the toolbox."
+      );
+    }
+
+    if ("order" in g) {
+      const a = g.baseWire + g.order[0];
+      const b = g.baseWire + g.order[1];
+      if (a === b) {
+        return `${g.type}: invalid qubit pair [${a}, ${b}] (control and target must differ).`;
+      }
+    }
+
+    // Option (a): CU is never a reusable chip; if somehow present, block clearly.
+    if (g.type === Gate.CONTROLLED_U) {
+      return (
+        "CONTROLLED_U cannot be checked from the toolbox (it needs seeded angles). " +
+        "Remove it and synthesize Controlled-U with the gates available on this level."
+      );
+    }
+  }
+  return null;
 }

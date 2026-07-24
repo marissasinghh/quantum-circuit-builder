@@ -40,7 +40,8 @@ export interface LevelDefinition {
    * When true, completing or skipping this level does NOT add its gate to
    * the student's unlockedGates. Used by config-only dagger levels whose
    * target gate is identical to a gate the student already has (X†=X, Z†=Z,
-   * H†=H, Y†=Y).
+   * H†=H, Y†=Y), and by CONTROLLED_U (requires seeded angles; not reusable
+   * as a bare toolbox chip).
    */
   noGatesetUnlock?: boolean;
   /**
