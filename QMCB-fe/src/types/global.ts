@@ -109,6 +109,11 @@ export type PlacedTwoQubitGate = {
   order: ControlTargetOrder;
   /** Top of the occupied adjacent pair (0 → 0–1, 1 → 1–2). Never use the name `wire`. */
   baseWire: TwoQubitBaseWire;
+  /**
+   * When true, the gate spans wires 0 and 2 (wire 1 idle). `baseWire` records which
+   * adjacent pair the gate was extended from (for retract). Never use the name `wire`.
+   */
+  extended?: boolean;
   column: number;
 };
 

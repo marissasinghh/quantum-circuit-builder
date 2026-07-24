@@ -70,7 +70,7 @@ function SolveLevelContent({
 }) {
   const navigate = useNavigate();
 
-  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setGateTheta, setParameterSlot, clearAll, loadGates } =
+  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setGateSpan, setGateTheta, setParameterSlot, clearAll, loadGates } =
     useCircuit(currentLevel.number_of_qubits);
 
   const isHydratingRef = React.useRef(true);
@@ -395,6 +395,7 @@ function SolveLevelContent({
         gates={gates}
         removeGate={removeGate}
         setGateOrder={setGateOrder}
+        setGateSpan={setGateSpan}
         cnotFlipUnlocked={cnotFlipUnlocked}
         setGateTheta={setGateTheta}
         setParameterSlot={setParameterSlot}
@@ -470,6 +471,7 @@ function SolveLevelContent({
               isDraggingPlacedGate={isDraggingPlacedGate}
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
+              onSetGateSpan={setGateSpan}
               onSetGateTheta={setGateTheta}
               onSetParameterSlot={setParameterSlot}
               showParameterSlotControls={isRandomThetaLevel}

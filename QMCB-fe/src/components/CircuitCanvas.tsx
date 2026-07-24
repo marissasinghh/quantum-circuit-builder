@@ -12,7 +12,7 @@
  * already in place on both chip components in anticipation of this.
  */
 
-import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder } from "../types/global";
+import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder, type TwoQubitBaseWire } from "../types/global";
 import { DroppableCell, TrashDropZone } from "./DragAndDropWrappers";
 import { SortablePlacedGate } from "./SortablePlacedGate";
 import {
@@ -21,7 +21,12 @@ import {
 } from "./SortablePlacedMultiQubitGate";
 import { gatesInColumnOrder } from "../utils/circuit";
 import { isSingleQubitGate, isMultiQubitGate, isToolboxDragId } from "../utils/placedGateDrag";
-import { CANVAS_PAD_X, CANVAS_COL_W, twoQubitGlyphLayout } from "../utils/canvasGeometry";
+import {
+  CANVAS_PAD_X,
+  CANVAS_COL_W,
+  twoQubitGlyphLayout,
+  twoQubitGlyphLayoutForGate,
+} from "../utils/canvasGeometry";
 import { baseWireFromDropWire } from "../utils/wireValidation";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
 import { isTwoQubitToolboxGate } from "../config/gates";
@@ -51,6 +56,7 @@ interface CircuitCanvasProps {
   isDraggingPlacedGate?: boolean;
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
+  onSetGateSpan?: (id: string, span: { baseWire: TwoQubitBaseWire; extended: boolean }) => void;
   onSetGateTheta: (id: string, theta: number) => void;
   onSetParameterSlot?: (id: string) => void;
   showParameterSlotControls?: boolean;
@@ -107,6 +113,7 @@ export function CircuitCanvas({
   isDraggingPlacedGate = false,
   onRemoveGate,
   onSetGateOrder,
+  onSetGateSpan,
   onSetGateTheta,
   onSetParameterSlot,
   showParameterSlotControls = false,
@@ -142,7 +149,8 @@ export function CircuitCanvas({
       const col = parseInt(m[1], 10);
       const wire = parseInt(m[2], 10);
       const baseWire = baseWireFromDropWire(wire, numberOfQubits);
-      const { wireSpan } = twoQubitGlyphLayout(wireYs, baseWire);
+      // Drop targeting remains adjacent-pair only (Phase 3+ may extend).
+      const { wireSpan } = twoQubitGlyphLayout(wireYs, [baseWire, baseWire + 1]);
       pairDropPreview = {
         left: PAD_X + col * COL_W - SQ_W / 2,
         top: (wireYs[baseWire] ?? 0) - SQ_H / 2,
@@ -292,7 +300,9 @@ export function CircuitCanvas({
                 const specMulti = speculativeMap ? speculativeMap.get(g.id) : undefined;
                 const displayGate =
                   specMulti !== undefined && "order" in specMulti ? specMulti : g;
-                const { top, wireSpan } = twoQubitGlyphLayout(wireYs, displayGate.baseWire);
+                // TEMP Phase 2 visual check: force `{ ...displayGate, extended: true }` locally,
+                // then revert — not a shipped interaction path.
+                const { top, wireSpan } = twoQubitGlyphLayoutForGate(wireYs, displayGate);
                 const { width, height } = multiQubitGlyphDimensions(
                   g.type,
                   numberOfQubits,
@@ -306,9 +316,11 @@ export function CircuitCanvas({
                     top={top}
                     width={width}
                     height={height}
+                    numberOfQubits={numberOfQubits}
                     onRemoveGate={onRemoveGate}
                     cnotFlipUnlocked={cnotFlipUnlocked}
                     onSetGateOrder={onSetGateOrder}
+                    onSetGateSpan={onSetGateSpan}
                   />
                 );
               }

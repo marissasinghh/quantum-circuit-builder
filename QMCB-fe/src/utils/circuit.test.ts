@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { Gate, type PlacedGate } from "../types/global";
-import { gatesInColumnOrder, moveGate, serializeOrders, validateCircuitForSimulate } from "./circuit";
+import { gatesInColumnOrder, moveGate, serializeOrders, setBaseWire, setTwoQubitSpan, validateCircuitForSimulate } from "./circuit";
 
 function fixture(): PlacedGate[] {
   return [
@@ -83,6 +83,67 @@ describe("moveGate", () => {
       expect(result.length).toBe(gates.length);
     }
   });
+
+  it("clears extended when a two-qubit gate is moved via the adjacent-pair DnD path", () => {
+    const gates: PlacedGate[] = [
+      { id: "cnot", type: Gate.CNOT, order: [0, 1], baseWire: 0, extended: true, column: 0 },
+      { id: "h", type: Gate.H, wire: 0, column: 1 },
+    ];
+    const result = moveGate(gates, "cnot", 0, 1);
+    const cnot = gatesInColumnOrder(result).find((g) => g.id === "cnot");
+    expect(cnot).toBeDefined();
+    expect("order" in cnot! && cnot.baseWire).toBe(1);
+    expect("order" in cnot! && cnot.extended).toBeUndefined();
+  });
+
+  it("preserves extended on column-only reorder (no wire argument)", () => {
+    const gates: PlacedGate[] = [
+      { id: "cnot", type: Gate.CNOT, order: [0, 1], baseWire: 0, extended: true, column: 0 },
+      { id: "h", type: Gate.H, wire: 0, column: 1 },
+    ];
+    const result = moveGate(gates, "cnot", 1);
+    const cnot = gatesInColumnOrder(result).find((g) => g.id === "cnot");
+    expect(cnot).toBeDefined();
+    expect("order" in cnot! && cnot.extended).toBe(true);
+  });
+});
+
+describe("setBaseWire", () => {
+  it("clears extended when changing baseWire", () => {
+    const gates: PlacedGate[] = [
+      { id: "cnot", type: Gate.CNOT, order: [0, 1], baseWire: 0, extended: true, column: 0 },
+    ];
+    const result = setBaseWire(gates, "cnot", 1);
+    const cnot = result.find((g) => g.id === "cnot");
+    expect(cnot).toBeDefined();
+    expect("order" in cnot! && cnot.baseWire).toBe(1);
+    expect("order" in cnot! && cnot.extended).toBeUndefined();
+  });
+});
+
+describe("setTwoQubitSpan", () => {
+  it("extends while preserving baseWire as retract origin", () => {
+    const gates: PlacedGate[] = [
+      { id: "cnot", type: Gate.CNOT, order: [0, 1], baseWire: 1, column: 0 },
+    ];
+    const result = setTwoQubitSpan(gates, "cnot", { baseWire: 1, extended: true });
+    const cnot = result.find((g) => g.id === "cnot");
+    expect("order" in cnot! && cnot.extended).toBe(true);
+    expect("order" in cnot! && cnot.baseWire).toBe(1);
+  });
+
+  it("retracts to an explicit baseWire and clears extended", () => {
+    const gates: PlacedGate[] = [
+      { id: "cnot", type: Gate.CNOT, order: [0, 1], baseWire: 0, extended: true, column: 0 },
+    ];
+    const to01 = setTwoQubitSpan(gates, "cnot", { baseWire: 0, extended: false });
+    expect("order" in to01[0]! && to01[0].baseWire).toBe(0);
+    expect("order" in to01[0]! && to01[0].extended).toBeUndefined();
+
+    const to12 = setTwoQubitSpan(gates, "cnot", { baseWire: 1, extended: false });
+    expect("order" in to12[0]! && to12[0].baseWire).toBe(1);
+    expect("order" in to12[0]! && to12[0].extended).toBeUndefined();
+  });
 });
 
 describe("serializeOrders", () => {
@@ -111,6 +172,32 @@ describe("serializeOrders", () => {
     expect(serializeOrders(gates)).toEqual([
       [0, 1],
       [2, 1],
+    ]);
+  });
+
+  it("emits skip-wire pairs [0,2]/[2,0] when extended", () => {
+    const gates: PlacedGate[] = [
+      { id: "a", type: Gate.CNOT, order: [0, 1], baseWire: 0, extended: true, column: 0 },
+      { id: "b", type: Gate.CNOT, order: [1, 0], baseWire: 1, extended: true, column: 1 },
+      { id: "c", type: Gate.CONTROLLED_Z, order: [0, 1], baseWire: 0, extended: true, column: 2 },
+    ];
+    expect(serializeOrders(gates)).toEqual([
+      [0, 2],
+      [2, 0],
+      [0, 2],
+    ]);
+  });
+
+  it("keeps adjacent pairs unchanged when extended is omitted or false", () => {
+    const gates: PlacedGate[] = [
+      { id: "a", type: Gate.CNOT, order: [0, 1], baseWire: 0, column: 0 },
+      { id: "b", type: Gate.CNOT, order: [0, 1], baseWire: 0, extended: false, column: 1 },
+      { id: "c", type: Gate.CNOT, order: [0, 1], baseWire: 1, column: 2 },
+    ];
+    expect(serializeOrders(gates)).toEqual([
+      [0, 1],
+      [0, 1],
+      [1, 2],
     ]);
   });
 });

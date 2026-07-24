@@ -16,6 +16,7 @@ import { isValidOrderFor, isTwoQubitToolboxGate } from "../config/gates";
 import { Gate } from "../types/global";
 import type { UnitaryGateEntry } from "../interfaces/unitary";
 import { DEFAULT_QUBIT_ORDER } from "./constants";
+import { absoluteWires } from "./twoQubitPlacement";
 
 /**
  * FE-only dagger aliases that have no backend CirqGateMapper entry.
@@ -110,6 +111,25 @@ export function setOrder(gates: PlacedGate[], id: string, order: ControlTargetOr
   });
 }
 
+/**
+ * Set skip-wire span placement for a two-qubit gate.
+ * `extended: true` → wires (0,2); `extended: false` clears the flag (adjacent pair at baseWire).
+ */
+export function setTwoQubitSpan(
+  gates: PlacedGate[],
+  id: string,
+  span: { baseWire: TwoQubitBaseWire; extended: boolean }
+): PlacedGate[] {
+  return gates.map((g) => {
+    if (g.id !== id || !("order" in g)) return g;
+    return {
+      ...g,
+      baseWire: span.baseWire,
+      extended: span.extended ? true : undefined,
+    };
+  });
+}
+
 /** Move a single-qubit gate to a different wire without changing its column. */
 export function setWire(
   gates: PlacedGate[],
@@ -125,7 +145,9 @@ export function setBaseWire(
   id: string,
   baseWire: TwoQubitBaseWire
 ): PlacedGate[] {
-  return gates.map((g) => (g.id === id && "order" in g ? { ...g, baseWire } : g));
+  return gates.map((g) =>
+    g.id === id && "order" in g ? { ...g, baseWire, extended: undefined } : g
+  );
 }
 
 /**
@@ -163,9 +185,9 @@ export function serializeUnitaryGateEntries(gates: PlacedGate[]): UnitaryGateEnt
 export function serializeOrders(gates: PlacedGate[]): AnyQubitOrder[] {
   return sortByColumn(gates).map((g) => {
     if ("order" in g) {
-      // Absolute control/target = baseWire + relative order indices.
-      const [relC, relT] = g.order;
-      return [g.baseWire + relC, g.baseWire + relT] as AnyQubitOrder;
+      // Absolute endpoints from absoluteWires; relative order maps control/target onto them.
+      const wires = absoluteWires(g);
+      return [wires[g.order[0]], wires[g.order[1]]] as AnyQubitOrder;
     }
     // Single-qubit gates: encode wire as [wire, wire]
     return [g.wire, g.wire] as AnyQubitOrder;
@@ -187,8 +209,9 @@ export function validateCircuitForSimulate(gates: PlacedGate[]): string | null {
     }
 
     if ("order" in g) {
-      const a = g.baseWire + g.order[0];
-      const b = g.baseWire + g.order[1];
+      const wires = absoluteWires(g);
+      const a = wires[g.order[0]];
+      const b = wires[g.order[1]];
       if (a === b) {
         return `${g.type}: invalid qubit pair [${a}, ${b}] (control and target must differ).`;
       }

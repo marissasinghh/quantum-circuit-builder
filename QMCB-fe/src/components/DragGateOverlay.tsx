@@ -1,6 +1,7 @@
-import { Gate, type PlacedGate, type PlacedSingleQubitGate, type TwoQubitBaseWire } from "../types/global";
+import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 import { isToolboxDragId, isSingleQubitGate, isMultiQubitGate } from "../utils/placedGateDrag";
 import { twoQubitGlyphLayout } from "../utils/canvasGeometry";
+import { absoluteWires } from "../utils/twoQubitPlacement";
 import {
   CNOTGlyph,
   ControlledZGlyph,
@@ -45,12 +46,15 @@ function overlayWireYs(numberOfQubits: number): number[] {
 }
 
 /**
- * Wire-pair span for overlay sizing. On 3q uses real adjacent span for baseWire.
+ * Wire-pair span for overlay sizing. On 3q uses real endpoint span (adjacent or 0–2).
  * On 2q keeps the historical ~80 approx so Tier 2 drag chrome is unchanged.
  */
-function twoQubitOverlaySpan(numberOfQubits: number, baseWire: TwoQubitBaseWire = 0): number {
+function twoQubitOverlaySpan(
+  numberOfQubits: number,
+  wires: readonly [number, number] = [0, 1]
+): number {
   if (numberOfQubits >= 3) {
-    return twoQubitGlyphLayout(overlayWireYs(numberOfQubits), baseWire).wireSpan;
+    return twoQubitGlyphLayout(overlayWireYs(numberOfQubits), wires).wireSpan;
   }
   return numberOfQubits > 1 ? 80 : 0;
 }
@@ -62,7 +66,11 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
     // Toolbox drops always start at baseWire 0; size preview to that pair.
     const twoQDims =
       numberOfQubits >= 3
-        ? multiQubitGlyphDimensions(Gate.CNOT, numberOfQubits, twoQubitOverlaySpan(numberOfQubits, 0))
+        ? multiQubitGlyphDimensions(
+            Gate.CNOT,
+            numberOfQubits,
+            twoQubitOverlaySpan(numberOfQubits, [0, 1])
+          )
         : { width: 84, height: 64 };
 
     switch (activeId) {
@@ -121,7 +129,7 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
   }
 
   if (isMultiQubitGate(gate) && "order" in gate) {
-    const wireSpan = twoQubitOverlaySpan(numberOfQubits, gate.baseWire);
+    const wireSpan = twoQubitOverlaySpan(numberOfQubits, absoluteWires(gate));
     const { width, height } = multiQubitGlyphDimensions(gate.type, numberOfQubits, wireSpan);
     return <PlacedMultiQubitOverlayContent gate={gate} width={width} height={height} />;
   }
