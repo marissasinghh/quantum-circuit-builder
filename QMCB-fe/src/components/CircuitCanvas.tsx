@@ -116,7 +116,10 @@ export function CircuitCanvas({
   const canvasH = canvasHeightFor(numberOfQubits);
   const wireYs = computeWireYs(numberOfQubits, canvasH);
   const wireTop = wireYs[0];
-  const wireSpan = wireYs.length > 1 ? wireYs[wireYs.length - 1] - wireYs[0] : 0;
+  // 2-qubit glyphs grade/serialize as wires 0–1; span only those Ys so the
+  // visual matches. On 2-qubit levels wireYs[1] is the last wire — unchanged.
+  // Toffoli/Fredkin ignore this span (fixed 3-row height in multiQubitGlyphDimensions).
+  const wireSpan = wireYs.length >= 2 ? wireYs[1] - wireYs[0] : 0;
 
   const hasRotationGate = gates.some(
     (g) => "wire" in g && PARAMETERIZED_GATES.has(g.type)
