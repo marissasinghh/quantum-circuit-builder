@@ -40,6 +40,7 @@ export function useCircuit(numberOfQubits: number) {
       id: crypto.randomUUID(),
       type: gate,
       order: DEFAULT_QUBIT_ORDER,
+      baseWire: 0,
       column: 0,
     };
     setGates((prev) => column !== undefined ? insertAt(prev, g, column) : append(prev, g));

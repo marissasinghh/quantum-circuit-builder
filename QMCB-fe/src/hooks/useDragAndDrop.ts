@@ -70,10 +70,10 @@ function parseCellId(id: string): { col: number; wire: number } | null {
   return { col: parseInt(m[1], 10), wire: parseInt(m[2], 10) };
 }
 
-/** Returns true when the placed gate has no `wire` field (i.e. it's a multi-qubit gate). */
+/** Returns true when the placed gate is multi-qubit (has control/target order). */
 function isMultiQubitPlacedGate(id: string, gates: PlacedGate[]): boolean {
   const g = gates.find((gate) => gate.id === id);
-  return g !== undefined && !("wire" in g);
+  return g !== undefined && "order" in g;
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────

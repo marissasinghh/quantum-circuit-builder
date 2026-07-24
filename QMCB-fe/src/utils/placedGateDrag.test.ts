@@ -11,7 +11,7 @@ import { gatesInColumnOrder } from "./circuit";
 
 function interleavedFixture(): PlacedGate[] {
   return [
-    { id: "cnot", type: Gate.CNOT, order: [0, 1] as const, column: 0 },
+    { id: "cnot", type: Gate.CNOT, order: [0, 1] as const, baseWire: 0, column: 0 },
     { id: "h", type: Gate.H, wire: 0, column: 1 },
     { id: "y", type: Gate.T, wire: 1, column: 2 },
     { id: "x", type: Gate.X, wire: 0, column: 3 },

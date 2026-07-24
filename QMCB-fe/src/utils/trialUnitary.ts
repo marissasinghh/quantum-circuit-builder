@@ -20,6 +20,7 @@ import { singleQubitGateMatrix, twoQubitGateMatrix } from "./gateMatrices";
 export type { C as Complex };
 
 function isSingleQubitGate(g: PlacedGate): g is PlacedSingleQubitGate {
+  // 1q-only field; 2q uses baseWire + order, so this stays safe.
   return "wire" in g;
 }
 

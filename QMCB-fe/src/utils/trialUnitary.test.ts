@@ -38,7 +38,7 @@ function assertAllRowProbs(
 const CNOT_FLIPPED_GATES: PlacedGate[] = [
   { id: "h0a", type: Gate.H, wire: 0, column: 0 },
   { id: "h1a", type: Gate.H, wire: 1, column: 1 },
-  { id: "cnot", type: Gate.CNOT, order: [1, 0], column: 2 },
+  { id: "cnot", type: Gate.CNOT, order: [1, 0], baseWire: 0, column: 2 },
   { id: "h0b", type: Gate.H, wire: 0, column: 3 },
   { id: "h1b", type: Gate.H, wire: 1, column: 4 },
 ];
@@ -53,11 +53,11 @@ const CNOT_FLIPPED_GOLDEN: Record<string, number[]> = {
 
 /** Single unlocked CNOT_FLIPPED chip — must match backend expansion + Cirq. */
 const CNOT_FLIPPED_CHIP: PlacedGate[] = [
-  { id: "cf", type: Gate.CNOT_FLIPPED, order: [0, 1], column: 0 },
+  { id: "cf", type: Gate.CNOT_FLIPPED, order: [0, 1], baseWire: 0, column: 0 },
 ];
 
 const CNOT_FLIPPED_CHIP_FLIPPED: PlacedGate[] = [
-  { id: "cf", type: Gate.CNOT_FLIPPED, order: [1, 0], column: 0 },
+  { id: "cf", type: Gate.CNOT_FLIPPED, order: [1, 0], baseWire: 0, column: 0 },
 ];
 
 const CNOT_FLIPPED_FLIPPED_GOLDEN: Record<string, number[]> = {
@@ -69,7 +69,7 @@ const CNOT_FLIPPED_FLIPPED_GOLDEN: Record<string, number[]> = {
 
 /** Single CONTROLLED_H chip — matches cirq.H.controlled() / library Ry sandwich. */
 const CONTROLLED_H_CHIP: PlacedGate[] = [
-  { id: "ch", type: Gate.CONTROLLED_H, order: [0, 1], column: 0 },
+  { id: "ch", type: Gate.CONTROLLED_H, order: [0, 1], baseWire: 0, column: 0 },
 ];
 
 const CONTROLLED_H_GOLDEN: Record<string, number[]> = {
@@ -80,7 +80,7 @@ const CONTROLLED_H_GOLDEN: Record<string, number[]> = {
 };
 
 const CONTROLLED_H_CHIP_FLIPPED: PlacedGate[] = [
-  { id: "ch", type: Gate.CONTROLLED_H, order: [1, 0], column: 0 },
+  { id: "ch", type: Gate.CONTROLLED_H, order: [1, 0], baseWire: 0, column: 0 },
 ];
 
 const CONTROLLED_H_FLIPPED_GOLDEN: Record<string, number[]> = {
@@ -92,7 +92,7 @@ const CONTROLLED_H_FLIPPED_GOLDEN: Record<string, number[]> = {
 
 /** Cirq goldens: single CONTROLLED_Z with order [0,1]. */
 const CZ_GATES: PlacedGate[] = [
-  { id: "cz", type: Gate.CONTROLLED_Z, order: [0, 1], column: 0 },
+  { id: "cz", type: Gate.CONTROLLED_Z, order: [0, 1], baseWire: 0, column: 0 },
 ];
 
 const CZ_GOLDEN: Record<string, number[]> = {
@@ -104,7 +104,7 @@ const CZ_GOLDEN: Record<string, number[]> = {
 
 /** Cirq goldens: single SWAP with order [0,1]. */
 const SWAP_GATES: PlacedGate[] = [
-  { id: "swap", type: Gate.SWAP, order: [0, 1], column: 0 },
+  { id: "swap", type: Gate.SWAP, order: [0, 1], baseWire: 0, column: 0 },
 ];
 
 const SWAP_GOLDEN: Record<string, number[]> = {

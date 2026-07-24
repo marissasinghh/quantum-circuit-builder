@@ -64,6 +64,13 @@ export type TwoQubitGate =
  */
 export type SingleWire = 0 | 1 | 2;
 
+/**
+ * Top wire of the adjacent pair a 2-qubit gate occupies.
+ * 0 → wires 0–1; 1 → wires 1–2 (3-qubit canvases only).
+ * Must NOT be named `wire` — that property discriminates single-qubit gates.
+ */
+export type TwoQubitBaseWire = 0 | 1;
+
 /** Order type that can represent any 2-bit pair */
 export type AnyQubitOrder = readonly [0 | 1, 0 | 1]; // covers [0,0], [1,1], [0,1], [1,0]
 
@@ -89,11 +96,13 @@ export type PlacedSingleQubitGate = {
   isParameterSlot?: boolean;
 };
 
-/** Two-qubit CNOT chip placed on the canvas. */
+/** Two-qubit chip placed on the canvas (adjacent wire pair starting at baseWire). */
 export type PlacedTwoQubitGate = {
   id: string;
   type: TwoQubitGate;
   order: ControlTargetOrder;
+  /** Top of the occupied adjacent pair (0 → 0–1, 1 → 1–2). Never use the name `wire`. */
+  baseWire: TwoQubitBaseWire;
   column: number;
 };
 

@@ -5,7 +5,7 @@ import { gatesInColumnOrder, moveGate } from "./circuit";
 
 function fixture(): PlacedGate[] {
   return [
-    { id: "cnot", type: Gate.CNOT, order: [0, 1] as const, column: 0 },
+    { id: "cnot", type: Gate.CNOT, order: [0, 1] as const, baseWire: 0, column: 0 },
     { id: "h", type: Gate.H, wire: 0, column: 1 },
     { id: "x", type: Gate.X, wire: 0, column: 2 },
   ];
