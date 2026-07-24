@@ -8,8 +8,10 @@
  *   so `over.id` is always a cell ID or "trash-can" — never a chip.
  * - onDragMove/onDragOver record whichever cell is currently hovered.
  * - onDragEnd reads the final cell ID directly; no coordinate math is needed.
- *   For placed-gate reorders: moveGate(id, col, wire).  Wire is ignored for
- *   multi-qubit gates, which use moveGate(id, col) only.
+ *   For placed-gate reorders: moveGate(id, col, wire).  For multi-qubit gates,
+ *   `wire` is mapped to an adjacent-pair baseWire via baseWireFromDropWire
+ *   (min(droppedWire, n-2)). cellFirstCollision already picks the pair via
+ *   midpoint-Y for 2q drags, so the cell wire is typically the pair top.
  * - For toolbox drags the wire is read from the cell; gates are still appended
  *   to the end of the sequence (position-aware insertion is Phase 2+).
  *
@@ -25,22 +27,15 @@
 import { useState, useCallback, useRef } from "react";
 import type { DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core";
 import {
-  Gate,
   type TwoQubitGate,
   type SingleQubitGate,
   type PlacedGate,
   type SingleWire,
 } from "../types/global";
 import { isToolboxDragId, isPlacedGateId } from "../utils/placedGateDrag";
-import { isValidSingleWire } from "../utils/wireValidation";
+import { isValidSingleWire, baseWireFromDropWire } from "../utils/wireValidation";
+import { isTwoQubitToolboxGate } from "../config/gates";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
-
-const TWO_QUBIT_GATES = new Set<Gate>([
-  Gate.CNOT,
-  Gate.CNOT_FLIPPED,
-  Gate.CONTROLLED_Z,
-  Gate.SWAP,
-]);
 
 const TOUCH_DND_ACTIVE_CLASS = "touch-dnd-active";
 
@@ -70,10 +65,10 @@ function parseCellId(id: string): { col: number; wire: number } | null {
   return { col: parseInt(m[1], 10), wire: parseInt(m[2], 10) };
 }
 
-/** Returns true when the placed gate has no `wire` field (i.e. it's a multi-qubit gate). */
+/** Returns true when the placed gate is multi-qubit (has control/target order). */
 function isMultiQubitPlacedGate(id: string, gates: PlacedGate[]): boolean {
   const g = gates.find((gate) => gate.id === id);
-  return g !== undefined && !("wire" in g);
+  return g !== undefined && "order" in g;
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
@@ -82,7 +77,7 @@ export function useDragAndDrop(
   gates: PlacedGate[],
   numberOfQubits: number,
   addSingleQubitGate: (gate: SingleQubitGate, wire: SingleWire, column?: number) => void,
-  addTwoQubitGate: (gate: TwoQubitGate, column?: number) => void,
+  addTwoQubitGate: (gate: TwoQubitGate, column?: number, baseWire?: 0 | 1) => void,
   moveGate: (id: string, to: number, wire?: SingleWire) => void,
   removeGate: (id: string) => void
 ) {
@@ -176,8 +171,9 @@ export function useDragAndDrop(
 
       if (isPlacedGateId(id, gates)) {
         if (isMultiQubitPlacedGate(id, gates)) {
-          // Multi-qubit gates have no wire field; only column matters.
-          moveGate(id, col);
+          // Same drop cells as 1q; map wire → adjacent-pair baseWire by construction.
+          const baseWire = baseWireFromDropWire(wire, numberOfQubits);
+          moveGate(id, col, baseWire);
         } else {
           // Single-qubit gate: both column and wire come straight from the cell.
           // isValidSingleWire narrows `wire` to SingleWire for the type system.
@@ -197,8 +193,9 @@ export function useDragAndDrop(
       const gateType = TOOL_TO_GATE[id];
       if (!gateType) return;
 
-      if (TWO_QUBIT_GATES.has(gateType)) {
-        addTwoQubitGate(gateType as TwoQubitGate, col);
+      if (isTwoQubitToolboxGate(gateType)) {
+        const baseWire = baseWireFromDropWire(wire, numberOfQubits);
+        addTwoQubitGate(gateType, col, baseWire);
       } else if (isValidSingleWire(wire, numberOfQubits)) {
         addSingleQubitGate(gateType as SingleQubitGate, wire, col);
       }

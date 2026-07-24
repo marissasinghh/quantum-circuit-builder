@@ -6,20 +6,68 @@
  *
  * Strategy:
  *   1. Trash can wins when the pointer is physically inside its bounding rect.
- *   2. All other droppables are grid cells.  Pick the cell whose 2D centre
- *      (Euclidean distance) is closest to the pointer.
+ *   2. Column (X): pick the cell whose 2D centre is closest to the pointer
+ *      (same as before for every gate type).
+ *   3. Wire (Y):
+ *      - Single-qubit / unknown: use that nearest cell's wire (unchanged).
+ *      - Two-qubit: ignore grab height on the glyph; pick the adjacent pair
+ *        whose vertical midpoint is closest to the pointer Y, then return the
+ *        cell for that column + the pair's top wire (baseWire). Downstream
+ *        `baseWireFromDropWire` still applies and is a no-op when fed the
+ *        pair top index.
  *
- * Why 2D nearest-centre vs y-only (old wireFirstCollision):
- *   - 2D gives correct results for multi-qubit gates whose visual footprint
- *     spans two wires — either wire's cell is an acceptable target, and the
- *     one physically closest to the pointer wins.
- *   - No special multi-qubit filtering is needed: onDragEnd ignores the wire
- *     component for multi-qubit gates and uses only the column.
+ * Flip / relative `order` never participates — grab point only mattered under
+ * the old nearest-single-wire rule.
  */
 
-import type { CollisionDetection } from "@dnd-kit/core";
+import type { Active, CollisionDetection } from "@dnd-kit/core";
+import { TOOL_TO_GATE } from "../config/gateUiConfig";
+import { isTwoQubitToolboxGate } from "../config/gates";
+
+const CELL_ID_RE = /^cell-col(\d+)-wire(\d+)$/;
+
+/** True when the active drag should use pair-midpoint Y targeting. */
+export function isTwoQubitActiveDrag(active: Active | null | undefined): boolean {
+  if (!active) return false;
+  const data = active.data.current as { multiQubit?: boolean } | undefined;
+  if (data?.multiQubit === true) return true;
+  if (data?.multiQubit === false) return false;
+  const gate = TOOL_TO_GATE[String(active.id)];
+  return gate != null && isTwoQubitToolboxGate(gate);
+}
+
+/**
+ * Among adjacent wire pairs, return the baseWire (top index) whose midpoint
+ * Y is closest to `pointerY`. Ties prefer the lower baseWire (pair 0–1).
+ */
+export function resolvePairBaseWireFromPointerY(
+  pointerY: number,
+  wireCentersY: readonly number[]
+): number {
+  const n = wireCentersY.length;
+  if (n < 2) return 0;
+
+  let bestBase = 0;
+  let bestDist = Infinity;
+  for (let base = 0; base <= n - 2; base++) {
+    const mid = (wireCentersY[base]! + wireCentersY[base + 1]!) / 2;
+    const dist = Math.abs(pointerY - mid);
+    if (dist < bestDist) {
+      bestDist = dist;
+      bestBase = base;
+    }
+  }
+  return bestBase;
+}
+
+function parseCellId(id: string): { col: number; wire: number } | null {
+  const m = id.match(CELL_ID_RE);
+  if (!m) return null;
+  return { col: parseInt(m[1], 10), wire: parseInt(m[2], 10) };
+}
 
 export const cellFirstCollision: CollisionDetection = ({
+  active,
   droppableContainers,
   droppableRects,
   pointerCoordinates,
@@ -43,12 +91,12 @@ export const cellFirstCollision: CollisionDetection = ({
     }
   }
 
-  // Among cell droppables, pick the one whose 2D centre is nearest the pointer.
   const cells = droppableContainers.filter((c) =>
-    /^cell-col\d+-wire\d+$/.test(String(c.id))
+    CELL_ID_RE.test(String(c.id))
   );
   if (cells.length === 0) return [];
 
+  // Nearest cell by 2D centre — also supplies the column for 2q pair targeting.
   let closestId: string | null = null;
   let minDist = Infinity;
 
@@ -67,5 +115,37 @@ export const cellFirstCollision: CollisionDetection = ({
   }
 
   if (!closestId) return [];
-  return [{ id: closestId }];
+
+  if (!isTwoQubitActiveDrag(active)) {
+    return [{ id: closestId }];
+  }
+
+  const nearest = parseCellId(closestId);
+  if (!nearest) return [{ id: closestId }];
+
+  // Wire-centre Ys for this column (sorted by wire index).
+  const wireCenterByIndex = new Map<number, number>();
+  for (const cell of cells) {
+    const parsed = parseCellId(String(cell.id));
+    if (!parsed || parsed.col !== nearest.col) continue;
+    const rect = droppableRects.get(cell.id);
+    if (!rect) continue;
+    wireCenterByIndex.set(parsed.wire, rect.top + rect.height / 2);
+  }
+
+  const maxWire = Math.max(...wireCenterByIndex.keys(), -1);
+  if (maxWire < 0) return [{ id: closestId }];
+
+  const wireCentersY: number[] = [];
+  for (let w = 0; w <= maxWire; w++) {
+    const cy = wireCenterByIndex.get(w);
+    if (cy === undefined) return [{ id: closestId }];
+    wireCentersY.push(cy);
+  }
+
+  const baseWire = resolvePairBaseWireFromPointerY(
+    pointerCoordinates.y,
+    wireCentersY
+  );
+  return [{ id: `cell-col${nearest.col}-wire${baseWire}` }];
 };

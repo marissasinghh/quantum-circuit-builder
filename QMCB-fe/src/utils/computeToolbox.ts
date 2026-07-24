@@ -3,6 +3,7 @@
  * Starting primitives + one gate per level advanced past or skipped (unless noGatesetUnlock).
  * Special cases: RANDOM_U grants U; clearing Tier 1 finale (RANDOM_U) also grants CNOT
  * until CNOT_FLIPPED is unlocked (then CNOT↕ replaces plain CNOT).
+ * CONTROLLED_U uses noGatesetUnlock (needs seeded angles; not a reusable chip).
  */
 
 import { LEVEL_ORDER } from "../config/levels";

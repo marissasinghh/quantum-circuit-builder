@@ -20,11 +20,26 @@ import {
   multiQubitGlyphDimensions,
 } from "./SortablePlacedMultiQubitGate";
 import { gatesInColumnOrder } from "../utils/circuit";
-import { isSingleQubitGate, isMultiQubitGate } from "../utils/placedGateDrag";
-import { CANVAS_PAD_X, CANVAS_COL_W } from "../utils/canvasGeometry";
+import { isSingleQubitGate, isMultiQubitGate, isToolboxDragId } from "../utils/placedGateDrag";
+import { CANVAS_PAD_X, CANVAS_COL_W, twoQubitGlyphLayout } from "../utils/canvasGeometry";
+import { baseWireFromDropWire } from "../utils/wireValidation";
+import { TOOL_TO_GATE } from "../config/gateUiConfig";
+import { isTwoQubitToolboxGate } from "../config/gates";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
 import { useCircuitPreview } from "../hooks/useCircuitPreview";
+
+const CELL_HOVER_RE = /^cell-col(\d+)-wire(\d+)$/;
+
+function isActiveTwoQubitDrag(activeId: string | null, gates: PlacedGate[]): boolean {
+  if (!activeId) return false;
+  if (isToolboxDragId(activeId)) {
+    const gate = TOOL_TO_GATE[activeId];
+    return gate != null && isTwoQubitToolboxGate(gate);
+  }
+  const gate = gates.find((g) => g.id === activeId);
+  return gate !== undefined && "order" in gate;
+}
 
 interface CircuitCanvasProps {
   gates: PlacedGate[];
@@ -115,8 +130,27 @@ export function CircuitCanvas({
 
   const canvasH = canvasHeightFor(numberOfQubits);
   const wireYs = computeWireYs(numberOfQubits, canvasH);
-  const wireTop = wireYs[0];
-  const wireSpan = wireYs.length > 1 ? wireYs[wireYs.length - 1] - wireYs[0] : 0;
+
+  const twoQubitDrag = isActiveTwoQubitDrag(activeId, gates);
+
+  // Pair-spanning dashed box for 2q drops; 1q still uses per-cell isActiveTarget.
+  let pairDropPreview: { left: number; top: number; width: number; height: number } | null =
+    null;
+  if (twoQubitDrag && hoveredCellId) {
+    const m = hoveredCellId.match(CELL_HOVER_RE);
+    if (m) {
+      const col = parseInt(m[1], 10);
+      const wire = parseInt(m[2], 10);
+      const baseWire = baseWireFromDropWire(wire, numberOfQubits);
+      const { wireSpan } = twoQubitGlyphLayout(wireYs, baseWire);
+      pairDropPreview = {
+        left: PAD_X + col * COL_W - SQ_W / 2,
+        top: (wireYs[baseWire] ?? 0) - SQ_H / 2,
+        width: SQ_W,
+        height: wireSpan + SQ_H,
+      };
+    }
+  }
 
   const hasRotationGate = gates.some(
     (g) => "wire" in g && PARAMETERIZED_GATES.has(g.type)
@@ -129,13 +163,19 @@ export function CircuitCanvas({
 
   return (
     <div className="flex flex-1 flex-col min-h-0 gap-3">
-      <div className="relative flex-1 min-w-0 rounded-panel bg-[#090f1d]" style={{ minHeight: canvasH }}>
+      {/* Fixed to canvasH — do not flex-grow or the navy box outruns the wire content
+          and leaves a dead zone with a mid-panel scrollbar. */}
+      <div className="relative min-w-0 rounded-panel bg-[#090f1d]" style={{ height: canvasH }}>
         <Tooltip id="circuit-canvas">
           A qubit is the quantum version of a classical bit. Unlike a bit which is always 0 or 1, a
           qubit can exist in a superposition of both until it is measured.
         </Tooltip>
-        <div className="absolute inset-0 overflow-x-auto overflow-y-hidden rounded-panel">
-        <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* Single horizontal scroll layer sized to canvasH so the track sits on the
+            canvas bottom — not mid-panel via absolute inset-0 over a taller flex parent. */}
+        <div
+          className="w-full overflow-x-auto overflow-y-hidden rounded-panel panel-scroll"
+          style={{ height: canvasH, WebkitOverflowScrolling: "touch" }}
+        >
         <div
           className="relative"
           style={{ minWidth: CANVAS_W, height: canvasH }}
@@ -143,7 +183,7 @@ export function CircuitCanvas({
           {/* ── Cell droppable grid ──────────────────────────────────────────
                One DroppableCell per (column-slot × wire). Cells are invisible
                (pointer-events: none) and sit below the chip layer in z-order.
-               cellFirstCollision resolves drags to the nearest cell centre.    */}
+               cellFirstCollision resolves drags; 2q uses pair-midpoint Y.    */}
           {wireYs.map((y, wireIndex) =>
             Array.from({ length: numSlots }, (_, col) => {
               const cellId = `cell-col${col}-wire${wireIndex}`;
@@ -155,10 +195,29 @@ export function CircuitCanvas({
                   top={y - SQ_H / 2}
                   width={SQ_W}
                   height={SQ_H}
-                  isActiveTarget={hoveredCellId === cellId}
+                  isActiveTarget={!twoQubitDrag && hoveredCellId === cellId}
                 />
               );
             })
+          )}
+
+          {pairDropPreview && (
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                left: pairDropPreview.left,
+                top: pairDropPreview.top,
+                width: pairDropPreview.width,
+                height: pairDropPreview.height,
+                boxSizing: "border-box",
+                pointerEvents: "none",
+                outline: "2px dashed #7dc4e0",
+                outlineOffset: 3,
+                borderRadius: 4,
+                zIndex: 5,
+              }}
+            />
           )}
 
           {/* ── Wire lines ───────────────────────────────────────────────── */}
@@ -229,19 +288,22 @@ export function CircuitCanvas({
                 );
               }
               if (isMultiQubitGate(g) && "order" in g) {
+                // Toffoli/Fredkin ignore wireSpan (fixed 3-row height in multiQubitGlyphDimensions).
+                const specMulti = speculativeMap ? speculativeMap.get(g.id) : undefined;
+                const displayGate =
+                  specMulti !== undefined && "order" in specMulti ? specMulti : g;
+                const { top, wireSpan } = twoQubitGlyphLayout(wireYs, displayGate.baseWire);
                 const { width, height } = multiQubitGlyphDimensions(
                   g.type,
                   numberOfQubits,
                   wireSpan
                 );
-                const specMulti = speculativeMap ? speculativeMap.get(g.id) : undefined;
-                const displayColMulti = specMulti !== undefined ? specMulti.column : g.column;
                 return (
                   <SortablePlacedMultiQubitGate
                     key={g.id}
                     gate={g}
-                    left={PAD_X + displayColMulti * COL_W - width / 2}
-                    top={wireTop - 12}
+                    left={PAD_X + displayGate.column * COL_W - width / 2}
+                    top={top}
                     width={width}
                     height={height}
                     onRemoveGate={onRemoveGate}
@@ -255,7 +317,6 @@ export function CircuitCanvas({
           </div>
 
           <TrashDropZone visible={isDraggingPlacedGate} />
-        </div>
         </div>
         </div>
       </div>

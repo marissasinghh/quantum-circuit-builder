@@ -155,3 +155,20 @@ describe("computeAvailableGates — Tier 2 CNOT grant", () => {
     expect(afterSkip21).not.toContain(Gate.CNOT);
   });
 });
+
+describe("computeAvailableGates — CONTROLLED_U noGatesetUnlock", () => {
+  it("does not unlock CONTROLLED_U after advancing past or skipping level 2.5", () => {
+    const past = [...advancedPastAtStart(TIER1_COUNT), Gate.CONTROLLED_U];
+    expect(computeAvailableGates(past, [], TWO_QUBITS)).not.toContain(Gate.CONTROLLED_U);
+    expect(computeAvailableGates(advancedPastAtStart(TIER1_COUNT), [Gate.CONTROLLED_U], TWO_QUBITS)).not.toContain(
+      Gate.CONTROLLED_U,
+    );
+  });
+
+  it("still unlocks CONTROLLED_H for later levels", () => {
+    const past = [...advancedPastAtStart(TIER1_COUNT), Gate.CONTROLLED_H, Gate.CONTROLLED_U];
+    const toolbox = computeAvailableGates(past, [], TWO_QUBITS);
+    expect(toolbox).toContain(Gate.CONTROLLED_H);
+    expect(toolbox).not.toContain(Gate.CONTROLLED_U);
+  });
+});

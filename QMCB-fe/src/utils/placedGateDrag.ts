@@ -25,12 +25,14 @@ export function wireFromDropId(id: string): number | null {
 }
 
 export function isSingleQubitGate(g: PlacedGate): g is PlacedSingleQubitGate {
+  // Discriminate on `wire` (1q-only). Never use baseWire — that is 2q placement.
   return "wire" in g;
 }
 
 /** Gates that live in a single wire's sortable list (not cross-wire draggable). */
 export function isMultiQubitGate(g: PlacedGate): boolean {
-  return !("wire" in g);
+  // Prefer `order` so a future accidental `wire`-like field cannot flip classification.
+  return "order" in g;
 }
 
 /** Wire-0 owns all multi-qubit chips for dnd-kit (one context, no duplication). */

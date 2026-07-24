@@ -13,7 +13,7 @@
 import { useMemo } from "react";
 import { moveGate } from "../utils/circuit";
 import { isPlacedGateId, isSingleQubitGate } from "../utils/placedGateDrag";
-import { isValidSingleWire } from "../utils/wireValidation";
+import { isValidSingleWire, baseWireFromDropWire } from "../utils/wireValidation";
 import type { PlacedGate, SingleWire } from "../types/global";
 
 const CELL_RE = /^cell-col(\d+)-wire(\d+)$/;
@@ -37,7 +37,7 @@ export function useCircuitPreview(
     const isMulti = activeGate !== undefined && !isSingleQubitGate(activeGate);
 
     const speculative = isMulti
-      ? moveGate(gates, activeId, col)
+      ? moveGate(gates, activeId, col, baseWireFromDropWire(wire, numberOfQubits))
       : isValidSingleWire(wire as SingleWire, numberOfQubits)
         ? moveGate(gates, activeId, col, wire as SingleWire)
         : moveGate(gates, activeId, col);

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { Gate, type PlacedGate } from "../types/global";
-import { gatesInColumnOrder, moveGate } from "./circuit";
+import { gatesInColumnOrder, moveGate, serializeOrders, validateCircuitForSimulate } from "./circuit";
 
 function fixture(): PlacedGate[] {
   return [
-    { id: "cnot", type: Gate.CNOT, order: [0, 1] as const, column: 0 },
+    { id: "cnot", type: Gate.CNOT, order: [0, 1] as const, baseWire: 0, column: 0 },
     { id: "h", type: Gate.H, wire: 0, column: 1 },
     { id: "x", type: Gate.X, wire: 0, column: 2 },
   ];
@@ -48,7 +48,7 @@ describe("moveGate", () => {
     assertGaplessColumns(result);
   });
 
-  it("ignores wire param for two-qubit gates and only moves column", () => {
+  it("updates baseWire for two-qubit gates while moving column", () => {
     const gates = fixture();
     const result = moveGate(gates, "cnot", 2, 1);
 
@@ -60,9 +60,17 @@ describe("moveGate", () => {
     const cnot = ordered.find((g) => g.id === "cnot");
     expect(cnot).toBeDefined();
     expect("wire" in cnot!).toBe(false);
+    expect("order" in cnot! && cnot.baseWire).toBe(1);
     assertGaplessColumns(result);
   });
 
+  it("preserves column when only baseWire changes for a two-qubit gate", () => {
+    const gates = fixture();
+    const result = moveGate(gates, "cnot", 0, 1);
+    const cnot = gatesInColumnOrder(result).find((g) => g.id === "cnot");
+    expect(cnot?.column).toBe(0);
+    expect("order" in cnot! && cnot.baseWire).toBe(1);
+  });
   it("preserves gate count on every move", () => {
     const gates = fixture();
     const cases = [
@@ -74,5 +82,67 @@ describe("moveGate", () => {
     for (const result of cases) {
       expect(result.length).toBe(gates.length);
     }
+  });
+});
+
+describe("serializeOrders", () => {
+  it("emits absolute pairs from baseWire + relative order", () => {
+    const gates: PlacedGate[] = [
+      { id: "a", type: Gate.CNOT, order: [0, 1], baseWire: 0, column: 0 },
+      { id: "b", type: Gate.CNOT, order: [1, 0], baseWire: 0, column: 1 },
+      { id: "c", type: Gate.CNOT, order: [0, 1], baseWire: 1, column: 2 },
+      { id: "d", type: Gate.CNOT, order: [1, 0], baseWire: 1, column: 3 },
+      { id: "e", type: Gate.X, wire: 2, column: 4 },
+    ];
+    expect(serializeOrders(gates)).toEqual([
+      [0, 1],
+      [1, 0],
+      [1, 2],
+      [2, 1],
+      [2, 2],
+    ]);
+  });
+
+  it("emits distinct pairs for CONTROLLED_H (not [w,w])", () => {
+    const gates: PlacedGate[] = [
+      { id: "ch", type: Gate.CONTROLLED_H, order: [0, 1], baseWire: 0, column: 0 },
+      { id: "ch2", type: Gate.CONTROLLED_H, order: [1, 0], baseWire: 1, column: 1 },
+    ];
+    expect(serializeOrders(gates)).toEqual([
+      [0, 1],
+      [2, 1],
+    ]);
+  });
+});
+
+describe("validateCircuitForSimulate", () => {
+  it("rejects a 2q gate stored as a single-qubit placement", () => {
+    const gates: PlacedGate[] = [
+      { id: "bad", type: Gate.CONTROLLED_H as never, wire: 0, column: 0 },
+    ];
+    expect(validateCircuitForSimulate(gates)).toMatch(/single-qubit/);
+  });
+
+  it("rejects equal-index absolute pairs", () => {
+    const gates: PlacedGate[] = [
+      // Impossible via normal order+baseWire, but guard equal indices explicitly.
+      { id: "bad", type: Gate.CNOT, order: [0, 0] as never, baseWire: 0, column: 0 },
+    ];
+    expect(validateCircuitForSimulate(gates)).toMatch(/invalid qubit pair/);
+  });
+
+  it("rejects CONTROLLED_U (not reusable without seeded angles)", () => {
+    const gates: PlacedGate[] = [
+      { id: "cu", type: Gate.CONTROLLED_U, order: [0, 1], baseWire: 0, column: 0 },
+    ];
+    expect(validateCircuitForSimulate(gates)).toMatch(/CONTROLLED_U/);
+  });
+
+  it("allows CONTROLLED_H with a valid pair", () => {
+    const gates: PlacedGate[] = [
+      { id: "ch", type: Gate.CONTROLLED_H, order: [0, 1], baseWire: 1, column: 0 },
+      { id: "rz", type: Gate.RZ, wire: 0, column: 1, theta: 0.5 },
+    ];
+    expect(validateCircuitForSimulate(gates)).toBeNull();
   });
 });

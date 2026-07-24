@@ -12,6 +12,7 @@ import {
   type ControlTargetOrder,
   type SingleQubitGate,
   type SingleWire,
+  type TwoQubitBaseWire,
   TwoQubitGate,
 } from "../types/global";
 import { DEFAULT_QUBIT_ORDER } from "../utils/constants";
@@ -35,15 +36,19 @@ export function useCircuit(numberOfQubits: number) {
   /** Current circuit, always stored in column order (0..n-1). */
   const [gates, setGates] = useState<PlacedGate[]>([]);
 
-  const addTwoQubitGate = useCallback((gate: TwoQubitGate, column?: number) => {
-    const g: PlacedTwoQubitGate = {
-      id: crypto.randomUUID(),
-      type: gate,
-      order: DEFAULT_QUBIT_ORDER,
-      column: 0,
-    };
-    setGates((prev) => column !== undefined ? insertAt(prev, g, column) : append(prev, g));
-  }, []);
+  const addTwoQubitGate = useCallback(
+    (gate: TwoQubitGate, column?: number, baseWire: TwoQubitBaseWire = 0) => {
+      const g: PlacedTwoQubitGate = {
+        id: crypto.randomUUID(),
+        type: gate,
+        order: DEFAULT_QUBIT_ORDER,
+        baseWire,
+        column: 0,
+      };
+      setGates((prev) => (column !== undefined ? insertAt(prev, g, column) : append(prev, g)));
+    },
+    []
+  );
 
   const addSingleQubitGate = useCallback(
     (type: SingleQubitGate, wire: SingleWire, column?: number) => {

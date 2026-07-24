@@ -181,7 +181,9 @@ function SolveLevelContent({
   const displayRows = isGradedDisplay
     ? (isRandomThetaLevel ? snapshotRows : rows)
     : previewRows;
-  const outputTableMode = isGradedDisplay ? "graded" : "preview";
+  // On transport failure keep live preview (not blank); never show graded chrome.
+  const outputTableMode =
+    mutation.isError || !isGradedDisplay ? "preview" : "graded";
   const displayIsCorrect = isGradedDisplay && allCorrect;
 
   const {
@@ -360,7 +362,20 @@ function SolveLevelContent({
 
   const isMutationPending = mutation.isPending;
   const mutationError: Error | null = mutation.isError ? (mutation.error as Error) : null;
+  // Transport failures keep live previewRows (not blank). FE validationError
+  // still overlays preview as before.
+  const transportError: Error | null = mutationError
+    ? new Error(
+        mutationError.message.startsWith("Check failed:")
+          ? mutationError.message
+          : `Check failed: ${mutationError.message}`,
+      )
+    : null;
+  const outputError: Error | null = validationError ?? transportError;
+  // Prefer live client preview over graded/API rows while a Check failed.
+  const outputRows = mutation.isError ? previewRows : displayRows;
   const gradingSummary: GradingSummary | undefined =
+    !mutation.isError &&
     mutation.data?.grading_mode === "random_theta" &&
     mutation.data.samples_checked != null &&
     mutation.data.samples_passed != null
@@ -384,14 +399,14 @@ function SolveLevelContent({
         setGateTheta={setGateTheta}
         setParameterSlot={setParameterSlot}
         showParameterSlotControls={isRandomThetaLevel}
-        rows={displayRows}
+        rows={outputRows}
         allCorrect={displayIsCorrect}
         outputTableMode={outputTableMode}
         handleCheck={handleCheckWithSnapshot}
-        validationError={validationError}
+        validationError={outputError}
         isChecking={isChecking}
         isMutationPending={isMutationPending}
-        mutationError={mutationError}
+        mutationError={null}
         gradingSummary={gradingSummary}
         paramSlotGate={
           isRandomThetaLevel && paramSlotGate
@@ -522,22 +537,13 @@ function SolveLevelContent({
             <div className="border-t border-tier1 my-3 shrink-0" />
             <div ref={circuitOutputRef} className="rounded-md border border-tier1 p-3 mb-3 min-w-0 shrink-0">
               <OutputTable
-                rows={displayRows}
+                rows={outputRows}
                 mode={outputTableMode}
                 isCorrect={displayIsCorrect}
-                error={validationError ?? (mutation.isError ? (mutation.error as Error) : null)}
+                error={outputError}
                 isChecking={isChecking}
                 onClearAndRetry={handleClear}
-                gradingSummary={
-                  mutation.data?.grading_mode === "random_theta" &&
-                  mutation.data.samples_checked != null &&
-                  mutation.data.samples_passed != null
-                    ? ({
-                        samplesChecked: mutation.data.samples_checked,
-                        samplesPassed: mutation.data.samples_passed,
-                      } satisfies GradingSummary)
-                    : undefined
-                }
+                gradingSummary={gradingSummary}
                 levelInsight={
                   currentLevel.insight && allCorrect ? (
                     <div className="mb-3 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">

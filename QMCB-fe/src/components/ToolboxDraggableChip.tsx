@@ -6,6 +6,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import { Gate } from "../types/global";
 import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
+import { isTwoQubitToolboxGate } from "../config/gates";
 import { GateDisplayLabel } from "./GateDisplayLabel";
 import { Tooltip } from "./Tooltip";
 
@@ -33,6 +34,7 @@ export function ToolboxDraggableChip({
 }: ToolboxDraggableChipProps) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef } = useDraggable({
     id: toolId,
+    data: { type: "toolbox", multiQubit: isTwoQubitToolboxGate(gate) },
   });
   const tooltipCfg = GATE_TOOLTIPS[gate];
   const showTooltip =

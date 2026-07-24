@@ -253,9 +253,13 @@ export function OutputTable({
       {levelInsight}
 
       {error && (
-        <div className="font-sans text-[12px] text-error-action mb-2">{error.message}</div>
+        <div className="font-sans text-[12px] text-error-action mb-2" role="alert">
+          {error.message}
+        </div>
       )}
 
+      {/* Tables are suppressed by the parent while a transport Check failure is
+          active (rows === null) so preview is not mistaken for a grading result. */}
       {!rows && !error && !isCorrect && !gradingSummary && (
         <div className="font-sans text-[12px] text-tier2">
           {isPreview

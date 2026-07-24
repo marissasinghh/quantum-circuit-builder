@@ -16,6 +16,7 @@ import { singleQubitGateMatrix } from "./gateMatrices";
 type StateVec = [C, C];
 
 function isSingleQubitGate(g: PlacedGate): g is PlacedSingleQubitGate {
+  // 1q-only field; 2q uses baseWire + order, so this stays safe.
   return "wire" in g;
 }
 
