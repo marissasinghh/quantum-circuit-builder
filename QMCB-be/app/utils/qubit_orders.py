@@ -19,6 +19,12 @@ C1_T2 = [1, 2]
 # 2-qubit gate: control=2, target=1 (flipped upper pair)
 C2_T1 = [2, 1]
 
+# 2-qubit gate: control=0, target=2 (skip-wire pair; wire 1 idle)
+C0_T2 = [0, 2]
+
+# 2-qubit gate: control=2, target=0 (flipped skip-wire pair)
+C2_T0 = [2, 0]
+
 # 3-qubit gate: control=0, control=1, target=2 (Toffoli / CCX)
 C0_C1_T2 = [0, 1, 2]
 

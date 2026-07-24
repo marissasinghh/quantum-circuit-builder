@@ -37,7 +37,7 @@ import { getNextLevel } from "../config/levels";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO, TruthRow } from "../interfaces/truthTable";
 import type { BlochState } from "../utils/blochMath";
-import { Gate, type PlacedGate, type ControlTargetOrder } from "../types/global";
+import { Gate, type PlacedGate, type ControlTargetOrder, type TwoQubitBaseWire } from "../types/global";
 
 interface MobileSolveLayoutProps {
   // Level
@@ -50,6 +50,7 @@ interface MobileSolveLayoutProps {
   gates: PlacedGate[];
   removeGate: (id: string) => void;
   setGateOrder: (id: string, order: ControlTargetOrder) => void;
+  setGateSpan?: (id: string, span: { baseWire: TwoQubitBaseWire; extended: boolean }) => void;
   setGateTheta: (id: string, theta: number) => void;
   setParameterSlot?: (id: string) => void;
   showParameterSlotControls?: boolean;
@@ -122,6 +123,7 @@ export function MobileSolveLayout({
   gates,
   removeGate,
   setGateOrder,
+  setGateSpan,
   setGateTheta,
   setParameterSlot,
   showParameterSlotControls = false,
@@ -258,6 +260,7 @@ export function MobileSolveLayout({
                   isDraggingPlacedGate={isDraggingPlacedGate}
                   onRemoveGate={removeGate}
                   onSetGateOrder={setGateOrder}
+                  onSetGateSpan={setGateSpan}
                   onSetGateTheta={setGateTheta}
                   onSetParameterSlot={setParameterSlot}
                   showParameterSlotControls={showParameterSlotControls}

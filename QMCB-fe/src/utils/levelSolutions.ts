@@ -59,6 +59,7 @@ export function isValidPlacedGate(value: unknown): value is PlacedGate {
   // Reject the single-qubit `wire` field; 2q placement uses `baseWire` only.
   if ("wire" in g && g.wire !== undefined) return false;
   if (!isTwoQubitBaseWire(g.baseWire)) return false;
+  if (g.extended !== undefined && typeof g.extended !== "boolean") return false;
   return true;
 }
 

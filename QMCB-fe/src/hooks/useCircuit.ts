@@ -20,6 +20,7 @@ import {
   append,
   remove,
   setOrder as setOrderInCircuit,
+  setTwoQubitSpan as setTwoQubitSpanInCircuit,
   moveGate as moveGateInCircuit,
   insertAt,
   clear as clearCircuit,
@@ -69,6 +70,13 @@ export function useCircuit(numberOfQubits: number) {
     setGates((prev) => setOrderInCircuit(prev, id, order));
   }, []);
 
+  const setGateSpan = useCallback(
+    (id: string, span: { baseWire: TwoQubitBaseWire; extended: boolean }) => {
+      setGates((prev) => setTwoQubitSpanInCircuit(prev, id, span));
+    },
+    []
+  );
+
   const moveGate = useCallback(
     (id: string, to: number, wire?: SingleWire) => {
       if (wire !== undefined && !isValidSingleWire(wire, numberOfQubits)) return;
@@ -108,6 +116,7 @@ export function useCircuit(numberOfQubits: number) {
     addTwoQubitGate,
     addSingleQubitGate,
     setGateOrder,
+    setGateSpan,
     moveGate,
     setGateTheta,
     setParameterSlot,

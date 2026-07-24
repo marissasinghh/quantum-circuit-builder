@@ -16,6 +16,7 @@ import {
   type ComplexMatrix,
 } from "./complexMath";
 import { singleQubitGateMatrix, twoQubitGateMatrix } from "./gateMatrices";
+import { absoluteWires } from "./twoQubitPlacement";
 
 export type { C as Complex };
 
@@ -33,8 +34,9 @@ function embeddedGateMatrix(gate: PlacedGate, qubitCount: number): ComplexMatrix
 
   const u4 = twoQubitGateMatrix(gate.type as Gate, gate.order);
   if (!u4) return null;
-  // Relative order is baked into u4; embed on the absolute adjacent pair.
-  return embedTwoQubit(u4, gate.baseWire, gate.baseWire + 1, qubitCount);
+  // Relative order is baked into u4; embed on absolute endpoint wires (adjacent or 0–2).
+  const [w0, w1] = absoluteWires(gate);
+  return embedTwoQubit(u4, w0, w1, qubitCount);
 }
 
 /**
