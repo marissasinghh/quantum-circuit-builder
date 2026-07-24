@@ -137,8 +137,12 @@ export function CircuitCanvas({
           A qubit is the quantum version of a classical bit. Unlike a bit which is always 0 or 1, a
           qubit can exist in a superposition of both until it is measured.
         </Tooltip>
-        <div className="absolute inset-0 overflow-x-auto overflow-y-hidden rounded-panel">
-        <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: "touch" }}>
+        {/* Single horizontal scroll layer sized to canvasH so the track sits on the
+            canvas bottom — not mid-panel via absolute inset-0 over a taller flex parent. */}
+        <div
+          className="w-full overflow-x-auto overflow-y-hidden rounded-panel panel-scroll"
+          style={{ height: canvasH, WebkitOverflowScrolling: "touch" }}
+        >
         <div
           className="relative"
           style={{ minWidth: CANVAS_W, height: canvasH }}
@@ -258,7 +262,6 @@ export function CircuitCanvas({
           </div>
 
           <TrashDropZone visible={isDraggingPlacedGate} />
-        </div>
         </div>
         </div>
       </div>
