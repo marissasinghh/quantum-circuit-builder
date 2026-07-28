@@ -74,7 +74,7 @@ export function Gateset({ availableGates, numberOfQubits }: GatesetProps) {
       <h2 className="panel-heading mb-2">
         GATESET
       </h2>
-      <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-2 sm:max-h-[160px] sm:overflow-y-auto sm:pb-0">
+      <div className="flex flex-nowrap overflow-x-auto gap-2 pb-1 shrink-0 min-w-0 sm:grid sm:grid-cols-4 sm:max-h-[200px] sm:overflow-y-auto sm:pb-0">
         {availableGates.map((gate) => {
           const config = GATE_UI_CONFIG[gate];
           if (!config) return null;

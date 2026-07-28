@@ -2,6 +2,7 @@ from flask_restx import Api
 from app.api.simulate import simulate_ns
 from app.api.levels import levels_ns
 from app.api.debug import debug_ns
+from app.api.feedback import feedback_ns
 
 api = Api(
     title="Quantum Circuit Builder API",
@@ -17,3 +18,5 @@ api.add_namespace(simulate_ns, path="/simulate")
 api.add_namespace(levels_ns, path="/levels")
 # Temporary: ZXZ extraction formula diagnostic — remove after verification
 api.add_namespace(debug_ns, path="/debug")
+# Feedback page solution submissions → GitHub Issues
+api.add_namespace(feedback_ns, path="/feedback")

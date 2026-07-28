@@ -291,10 +291,16 @@ export function SwapGlyph({
   order = [0, 1],
   width = 80,
   height = 60,
+  primaryMarkSize = 8,
+  secondaryMarkSize = 6,
 }: {
   order?: ControlTargetOrder;
   width?: number;
   height?: number;
+  /** Primary-wire × half-span; canvas default 8. Toolbox may pass a smaller value. */
+  primaryMarkSize?: number;
+  /** Secondary-wire × half-span; canvas default 6. */
+  secondaryMarkSize?: number;
 }) {
   const pad = 10;
   const yTop = 12;
@@ -328,8 +334,8 @@ export function SwapGlyph({
         strokeLinecap="round"
       />
       {/* Secondary first so the primary × paints on top after flip. */}
-      <XMark cx={cx} cy={secondaryY} size={6} />
-      <XMark cx={cx} cy={primaryY} size={8} />
+      <XMark cx={cx} cy={secondaryY} size={secondaryMarkSize} />
+      <XMark cx={cx} cy={primaryY} size={primaryMarkSize} />
     </svg>
   );
 }

@@ -7,6 +7,7 @@ import MySolutionsPage from "./pages/MySolutionsPage";
 import SolveLevelPage from "./pages/SolveLevelPage";
 import AboutPage from "./pages/AboutPage";
 import SettingsPage from "./pages/SettingsPage";
+import FeedbackPage from "./pages/FeedbackPage";
 import { LevelProgressProvider, useLevelProgress } from "./hooks/useLevelProgress";
 import { LEVEL_ORDER, getLevelStatus, getLevelNumber } from "./config/levels";
 import { GateDisplayLabel } from "./components/GateDisplayLabel";
@@ -111,6 +112,7 @@ function AppShell() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/solutions" element={<MySolutionsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
           </Routes>
         </div>
       </div>
