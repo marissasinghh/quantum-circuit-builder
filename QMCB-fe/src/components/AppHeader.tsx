@@ -39,6 +39,12 @@ export function AppHeader() {
           >
             Settings
           </Link>
+          <Link
+            to="/feedback"
+            className="font-sans text-[13px] text-tier2 hover:text-tier3 transition-colors"
+          >
+            Feedback
+          </Link>
         </div>
       </nav>
     </header>

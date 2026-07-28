@@ -47,16 +47,19 @@ make run
 
 ### Environment Variables
 
-The application uses the following environment variables:
+The application uses the following environment variables (see `.env.sample`):
 - `SECRET_KEY`=dev_secret_key
 - `ALLOWED_ORIGINS`=http://localhost:3000
 - `API_VERSION`=v1
 - `MONGO_URI`=mongodb://localhost:27017/qmc_project
+- `GITHUB_PAT`= (fine-grained PAT with Issues read/write; required for Feedback submissions)
+- `GITHUB_REPO`=marissasinghh/quantum-circuit-builder
 
 
 ### API Endpoints
 
 1. POST /api/simulate: Simulates a quantum circuit built from gates provided by the frontend and returns a truth table
+2. POST /api/feedback/solution: Creates a GitHub Issue labeled `student-submission` from a Feedback page solution payload
 
 ## Example Request: 
 {

@@ -43,6 +43,10 @@ class Config:
     # MongoDB URI – not currently used
     MONGO_URI = getenv("MONGO_URI", "")
 
+    # GitHub Issues for Feedback page solution submissions (never commit real PAT)
+    GITHUB_PAT = getenv("GITHUB_PAT", "")
+    GITHUB_REPO = getenv("GITHUB_REPO", "marissasinghh/quantum-circuit-builder")
+
     # Optional: Validate target circuits by computing them
     # Set to False in development for faster iteration
     VALIDATE_TARGET_CIRCUITS = (

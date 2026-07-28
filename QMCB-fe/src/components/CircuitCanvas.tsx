@@ -65,7 +65,9 @@ interface CircuitCanvasProps {
    * levels keep current behavior; RANDOM_U passes 0.001 via LevelDefinition.
    */
   thetaSliderStep?: number;
-  onCheck: () => void;
+  /** When false, hides the Check Solution button (e.g. Feedback page). Default true. */
+  showCheckSolution?: boolean;
+  onCheck?: () => void;
   onClear: () => void;
   isChecking: boolean;
   onSkip?: () => void;
@@ -118,6 +120,7 @@ export function CircuitCanvas({
   onSetParameterSlot,
   showParameterSlotControls = false,
   thetaSliderStep = 0.01,
+  showCheckSolution = true,
   onCheck,
   onClear,
   isChecking,
@@ -338,7 +341,9 @@ export function CircuitCanvas({
       <div className="space-y-1.5">
         {gates.length === 0 && (
           <div className="font-sans text-[12px] text-tier2">
-            Drag a gate from the gateset to the wires, then click &quot;Check Solution&quot;.
+            {showCheckSolution
+              ? 'Drag a gate from the gateset to the wires, then click "Check Solution".'
+              : "Drag a gate from the gateset to the wires."}
           </div>
         )}
 
@@ -448,13 +453,15 @@ export function CircuitCanvas({
       </div>
 
       <div className="flex flex-col gap-2 bg-bg-panel rounded-panel p-2">
-        <button
-          onClick={onCheck}
-          disabled={isChecking || gates.length === 0}
-          className="w-full py-1.5 bg-tier3/5 border border-tier3/35 rounded-gate font-mono text-[12px] uppercase text-text-body tracking-[0.05em] hover:bg-tier3/10 hover:border-tier3/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isChecking ? "CHECKING..." : "CHECK SOLUTION"}
-        </button>
+        {showCheckSolution && onCheck && (
+          <button
+            onClick={onCheck}
+            disabled={isChecking || gates.length === 0}
+            className="w-full py-1.5 bg-tier3/5 border border-tier3/35 rounded-gate font-mono text-[12px] uppercase text-text-body tracking-[0.05em] hover:bg-tier3/10 hover:border-tier3/60 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {isChecking ? "CHECKING..." : "CHECK SOLUTION"}
+          </button>
+        )}
         <button
           onClick={onClear}
           className="w-full py-1 bg-transparent border border-tier1 rounded-gate font-mono text-[12px] uppercase text-text-muted hover:border-tier2 hover:text-tier2 transition-colors"
