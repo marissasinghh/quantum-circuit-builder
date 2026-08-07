@@ -27,7 +27,6 @@ import { serializeOrders, serializeUnitaryGateEntries } from "../utils/circuit";
 import { feedbackAvailableGates } from "../utils/feedbackToolbox";
 import { submitFeedbackSolution } from "../services/feedback";
 
-/** TODO: replace with real Google Form URL */
 const GOOGLE_FEEDBACK_FORM_URL = "https://forms.gle/drd7ADjYcqVQUqB69";
 
 type SubmitPhase = "form" | "success";

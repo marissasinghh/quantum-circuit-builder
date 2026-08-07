@@ -37,6 +37,7 @@ import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/glob
 import { useMobileView } from "../hooks/useMobileView";
 import { MobileSolveLayout } from "../components/MobileSolveLayout";
 import { loadLevelSolutions, saveLevelSolution } from "../utils/levelSolutions";
+import { trackEvent } from "../utils/trackEvent";
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
   return gates.length > 0 && gates.every((g) => g.type === Gate.RZ);
@@ -87,6 +88,19 @@ function SolveLevelContent({
     if (isHydratingRef.current) return;
     saveLevelSolution(levelId, gates);
   }, [levelId, gates]);
+
+  // SolveLevelPage remounts per level (see key={currentLevel.target_unitary}
+  // in SolveLevelPage above). firedLevelIdRef stores the last levelId this
+  // effect fired for, so StrictMode's dev-only double-invoke (same levelId,
+  // same ref) is a no-op on the second pass, while a genuine level change
+  // (different levelId) still fires a fresh level_start.
+  const firedLevelIdRef = React.useRef<string | null>(null);
+
+  React.useEffect(() => {
+    if (firedLevelIdRef.current === levelId) return;
+    firedLevelIdRef.current = levelId;
+    trackEvent("level_start", levelId);
+  }, [levelId]);
 
   const isRandomThetaLevel =
     currentLevel.parameterMode === ParameterMode.RANDOM_THETA;
@@ -289,6 +303,7 @@ function SolveLevelContent({
     if (allCorrect) {
       hasBeenCorrectRef.current = true;
       markLevelComplete(currentLevel);
+      trackEvent("level_complete", levelId);
       const t = setTimeout(() => setShowCompletionModal(true), 300);
       return () => clearTimeout(t);
     }
