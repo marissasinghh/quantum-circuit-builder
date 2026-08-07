@@ -38,11 +38,16 @@ export function useCircuit(numberOfQubits: number) {
   const [gates, setGates] = useState<PlacedGate[]>([]);
 
   const addTwoQubitGate = useCallback(
-    (gate: TwoQubitGate, column?: number, baseWire: TwoQubitBaseWire = 0) => {
+    (
+      gate: TwoQubitGate,
+      column?: number,
+      baseWire: TwoQubitBaseWire = 0,
+      initialOrder: ControlTargetOrder = DEFAULT_QUBIT_ORDER
+    ) => {
       const g: PlacedTwoQubitGate = {
         id: crypto.randomUUID(),
         type: gate,
-        order: DEFAULT_QUBIT_ORDER,
+        order: initialOrder,
         baseWire,
         column: 0,
       };

@@ -215,7 +215,8 @@ function SolveLevelContent({
     addSingleQubitGate,
     addTwoQubitGate,
     moveGate,
-    removeGate
+    removeGate,
+    levelId
   );
 
   // Mouse/stylus: start drag after 8 px of movement (prevents accidental drags on click).
