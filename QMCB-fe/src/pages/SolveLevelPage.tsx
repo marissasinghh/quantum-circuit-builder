@@ -71,7 +71,7 @@ function SolveLevelContent({
 }) {
   const navigate = useNavigate();
 
-  const { gates, addTwoQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setGateSpan, setGateTheta, setParameterSlot, clearAll, loadGates } =
+  const { gates, addTwoQubitGate, addThreeQubitGate, addSingleQubitGate, removeGate, moveGate, setGateOrder, setThreeQubitTarget, setGateSpan, setGateTheta, setParameterSlot, clearAll, loadGates } =
     useCircuit(currentLevel.number_of_qubits);
 
   const isHydratingRef = React.useRef(true);
@@ -216,7 +216,8 @@ function SolveLevelContent({
     addTwoQubitGate,
     moveGate,
     removeGate,
-    levelId
+    levelId,
+    addThreeQubitGate
   );
 
   // Mouse/stylus: start drag after 8 px of movement (prevents accidental drags on click).
@@ -412,6 +413,7 @@ function SolveLevelContent({
         removeGate={removeGate}
         setGateOrder={setGateOrder}
         setGateSpan={setGateSpan}
+        setThreeQubitTarget={setThreeQubitTarget}
         cnotFlipUnlocked={cnotFlipUnlocked}
         setGateTheta={setGateTheta}
         setParameterSlot={setParameterSlot}
@@ -488,6 +490,7 @@ function SolveLevelContent({
               onRemoveGate={removeGate}
               onSetGateOrder={setGateOrder}
               onSetGateSpan={setGateSpan}
+              onSetThreeQubitTarget={setThreeQubitTarget}
               onSetGateTheta={setGateTheta}
               onSetParameterSlot={setParameterSlot}
               showParameterSlotControls={isRandomThetaLevel}

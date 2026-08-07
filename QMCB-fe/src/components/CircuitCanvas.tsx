@@ -12,14 +12,14 @@
  * already in place on both chip components in anticipation of this.
  */
 
-import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder, type TwoQubitBaseWire } from "../types/global";
+import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder, type TwoQubitBaseWire, type ThreeQubitOrder } from "../types/global";
 import { DroppableCell, TrashDropZone } from "./DragAndDropWrappers";
 import { SortablePlacedGate } from "./SortablePlacedGate";
 import {
   SortablePlacedMultiQubitGate,
   multiQubitGlyphDimensions,
 } from "./SortablePlacedMultiQubitGate";
-import { gatesInColumnOrder } from "../utils/circuit";
+import { gatesInColumnOrder, isPlacedThreeQubitGate } from "../utils/circuit";
 import { isSingleQubitGate, isMultiQubitGate, isToolboxDragId } from "../utils/placedGateDrag";
 import {
   CANVAS_PAD_X,
@@ -57,6 +57,8 @@ interface CircuitCanvasProps {
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
   onSetGateSpan?: (id: string, span: { baseWire: TwoQubitBaseWire; extended: boolean }) => void;
+  /** Toffoli target-wire picker: reassigns which wire is the target. */
+  onSetThreeQubitTarget?: (id: string, order: ThreeQubitOrder) => void;
   onSetGateTheta: (id: string, theta: number) => void;
   onSetParameterSlot?: (id: string) => void;
   showParameterSlotControls?: boolean;
@@ -116,6 +118,7 @@ export function CircuitCanvas({
   onRemoveGate,
   onSetGateOrder,
   onSetGateSpan,
+  onSetThreeQubitTarget,
   onSetGateTheta,
   onSetParameterSlot,
   showParameterSlotControls = false,
@@ -303,9 +306,11 @@ export function CircuitCanvas({
                 const specMulti = speculativeMap ? speculativeMap.get(g.id) : undefined;
                 const displayGate =
                   specMulti !== undefined && "order" in specMulti ? specMulti : g;
-                // TEMP Phase 2 visual check: force `{ ...displayGate, extended: true }` locally,
-                // then revert — not a shipped interaction path.
-                const { top, wireSpan } = twoQubitGlyphLayoutForGate(wireYs, displayGate);
+                // Toffoli always spans all 3 wires (no baseWire/extended) — layout directly
+                // from wireYs rather than through the 2-qubit absoluteWires path.
+                const { top, wireSpan } = isPlacedThreeQubitGate(displayGate)
+                  ? twoQubitGlyphLayout(wireYs, [0, wireYs.length - 1])
+                  : twoQubitGlyphLayoutForGate(wireYs, displayGate);
                 const { width, height } = multiQubitGlyphDimensions(
                   g.type,
                   numberOfQubits,
@@ -324,6 +329,7 @@ export function CircuitCanvas({
                     cnotFlipUnlocked={cnotFlipUnlocked}
                     onSetGateOrder={onSetGateOrder}
                     onSetGateSpan={onSetGateSpan}
+                    onSetThreeQubitTarget={onSetThreeQubitTarget}
                   />
                 );
               }

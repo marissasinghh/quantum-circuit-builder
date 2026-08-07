@@ -4,12 +4,15 @@ import { GATE_UI_CONFIG } from "../config/gateUiConfig";
 import { feedbackAvailableGates } from "./feedbackToolbox";
 
 describe("feedbackAvailableGates", () => {
-  it("excludes gates without GATE_UI_CONFIG (TOFFOLI / FREDKIN)", () => {
+  it("excludes FREDKIN, which has no GATE_UI_CONFIG entry (not yet supported)", () => {
     const gates = feedbackAvailableGates(3);
-    expect(gates).not.toContain(Gate.TOFFOLI);
     expect(gates).not.toContain(Gate.FREDKIN);
-    expect(GATE_UI_CONFIG[Gate.TOFFOLI]).toBeUndefined();
     expect(GATE_UI_CONFIG[Gate.FREDKIN]).toBeUndefined();
+  });
+
+  it("includes TOFFOLI on 3-qubit levels now that it has a GATE_UI_CONFIG entry", () => {
+    expect(GATE_UI_CONFIG[Gate.TOFFOLI]).toBeDefined();
+    expect(feedbackAvailableGates(3)).toContain(Gate.TOFFOLI);
   });
 
   it("filters by qubit count", () => {
@@ -21,11 +24,13 @@ describe("feedbackAvailableGates", () => {
     const twoQ = feedbackAvailableGates(2);
     expect(twoQ).toContain(Gate.CNOT);
     expect(twoQ).toContain(Gate.SWAP);
+    expect(twoQ).not.toContain(Gate.TOFFOLI);
 
     const threeQ = feedbackAvailableGates(3);
     expect(threeQ).toContain(Gate.CNOT);
-    // No 3q chips without GATE_UI_CONFIG — same placeable set as 2q.
-    expect(threeQ).toEqual(twoQ);
+    expect(threeQ).toContain(Gate.TOFFOLI);
+    // 3q toolbox is 2q's set plus TOFFOLI (FREDKIN still excluded — no GATE_UI_CONFIG).
+    expect(threeQ).toEqual([...twoQ, Gate.TOFFOLI]);
   });
 
   it("only returns placeable configured gates", () => {

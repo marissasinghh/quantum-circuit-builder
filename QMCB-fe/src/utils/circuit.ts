@@ -8,8 +8,10 @@
 import type {
   PlacedGate,
   PlacedSingleQubitGate,
+  PlacedThreeQubitGate,
   ControlTargetOrder,
   AnyQubitOrder,
+  ThreeQubitOrder,
   TwoQubitBaseWire,
 } from "../types/global";
 import { isValidOrderFor, isTwoQubitToolboxGate } from "../config/gates";
@@ -44,6 +46,15 @@ function placedGateToUnitaryEntry(g: PlacedGate): UnitaryGateEntry {
     return { gate: effectiveType, theta: g.theta };
   }
   return effectiveType;
+}
+
+/**
+ * True for a placed 3-qubit gate (Toffoli). Distinguished from a placed 2-qubit
+ * gate by the absence of `baseWire` — both have an `order` field, but only
+ * 2-qubit gates use baseWire/extended for adjacent-pair placement.
+ */
+export function isPlacedThreeQubitGate(g: PlacedGate): g is PlacedThreeQubitGate {
+  return "order" in g && !("baseWire" in g);
 }
 
 /** Return a new array sorted by column (ascending) */
@@ -105,10 +116,23 @@ export function moveToColumn(gates: PlacedGate[], id: string, to: number): Place
 /** Set the control–target order ([0,1] or [1,0]) for a gate */
 export function setOrder(gates: PlacedGate[], id: string, order: ControlTargetOrder): PlacedGate[] {
   return gates.map((g) => {
-    if (g.id !== id) return g;
+    if (g.id !== id || isPlacedThreeQubitGate(g) || !("order" in g)) return g;
     const next = isValidOrderFor(g.type, order) ? order : DEFAULT_QUBIT_ORDER;
     return { ...g, order: next };
   });
+}
+
+/**
+ * Set the absolute `[control, control, target]` order for a placed 3-qubit gate
+ * (Toffoli). Unlike `setOrder`, this is not relative to a baseWire — it's the
+ * literal wire assignment, matching the backend's `qubit_orders.py` constants.
+ */
+export function setThreeQubitOrder(
+  gates: PlacedGate[],
+  id: string,
+  order: ThreeQubitOrder
+): PlacedGate[] {
+  return gates.map((g) => (g.id === id && isPlacedThreeQubitGate(g) ? { ...g, order } : g));
 }
 
 /**
@@ -164,6 +188,10 @@ export function moveGate(
   if (wire === undefined) return moveToColumn(gates, id, to);
 
   const target = gates.find((g) => g.id === id);
+  // 3-qubit gates always span all 3 wires — no vertical repositioning to apply.
+  if (target && isPlacedThreeQubitGate(target)) {
+    return moveToColumn(gates, id, to);
+  }
   const withPlacement =
     target && "order" in target
       ? setBaseWire(gates, id, wire === 0 ? 0 : 1)
@@ -184,6 +212,10 @@ export function serializeUnitaryGateEntries(gates: PlacedGate[]): UnitaryGateEnt
 /** Column-ordered qubit orders for the API request body */
 export function serializeOrders(gates: PlacedGate[]): AnyQubitOrder[] {
   return sortByColumn(gates).map((g) => {
+    if (isPlacedThreeQubitGate(g)) {
+      // Already absolute [control, control, target] — no baseWire indirection.
+      return g.order;
+    }
     if ("order" in g) {
       // Absolute endpoints from absoluteWires; relative order maps control/target onto them.
       const wires = absoluteWires(g);
@@ -208,7 +240,12 @@ export function validateCircuitForSimulate(gates: PlacedGate[]): string | null {
       );
     }
 
-    if ("order" in g) {
+    if (isPlacedThreeQubitGate(g)) {
+      const uniqueWires = new Set(g.order);
+      if (uniqueWires.size !== 3) {
+        return `${g.type}: invalid qubit order [${g.order.join(", ")}] (control/control/target must all differ).`;
+      }
+    } else if ("order" in g) {
       const wires = absoluteWires(g);
       const a = wires[g.order[0]];
       const b = wires[g.order[1]];

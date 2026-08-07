@@ -28,5 +28,8 @@ C2_T0 = [2, 0]
 # 3-qubit gate: control=0, control=1, target=2 (Toffoli / CCX)
 C0_C1_T2 = [0, 1, 2]
 
+# 3-qubit gate: control=0, control=2, target=1 (Toffoli / CCX, reconfigured)
+C0_C2_T1 = [0, 2, 1]
+
 # 3-qubit gate: control=0, swap-targets=1,2 (Fredkin / CSWAP)
 C0_T1_T2 = [0, 1, 2]

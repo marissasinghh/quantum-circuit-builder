@@ -2,7 +2,7 @@
  * Runtime constants shared across the app.
  */
 
-import type { ControlTargetOrder, AnyQubitOrder } from "../types/global";
+import type { ControlTargetOrder, AnyQubitOrder, ThreeQubitOrder } from "../types/global";
 import { Gate } from "../types/global";
 
 export const MAX_GATES = 10;
@@ -31,10 +31,25 @@ export const C0_T2: AnyQubitOrder = [0, 2] as const;
 export const C2_T0: AnyQubitOrder = [2, 0] as const;
 
 /** 3-qubit gates (aliases match backend qubit_orders.py naming) */
-export const C0_C1_T2: readonly [0, 1, 2] = [0, 1, 2] as const;
-export const C0_T1_T2: readonly [0, 1, 2] = [0, 1, 2] as const;
-export const CC0_C1_T2: readonly [0, 1, 2] = C0_C1_T2;
-export const CC0_C2_T1: readonly [0, 2, 1] = [0, 2, 1] as const;
+export const C0_C1_T2: ThreeQubitOrder = [0, 1, 2] as const;
+export const C0_T1_T2: ThreeQubitOrder = [0, 1, 2] as const;
+export const CC0_C1_T2: ThreeQubitOrder = C0_C1_T2;
+export const CC0_C2_T1: ThreeQubitOrder = [0, 2, 1] as const;
+/** Alias matching backend qubit_orders.py's `C0_C2_T1` naming exactly. */
+export const C0_C2_T1: ThreeQubitOrder = CC0_C2_T1;
+
+/** Default spawn order for a freshly-dropped Toffoli toolbox chip. */
+export const DEFAULT_THREE_QUBIT_ORDER: ThreeQubitOrder = C0_C1_T2;
+
+/**
+ * Given the wire designated as the Toffoli's target, return the full
+ * `[control, control, target]` order (the other two wires become controls,
+ * in ascending order). Used by the target-wire reconfiguration UI.
+ */
+export function threeQubitOrderForTarget(target: 0 | 1 | 2): ThreeQubitOrder {
+  const controls = ([0, 1, 2] as const).filter((w) => w !== target);
+  return [controls[0], controls[1], target] as ThreeQubitOrder;
+}
 
 /** Legal control–target orders to offer for 2-qubit primitives */
 export const ALLOWED_QUBIT_ORDERS: readonly ControlTargetOrder[] = [C0_T1, C1_T0] as const;

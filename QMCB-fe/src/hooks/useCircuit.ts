@@ -9,17 +9,21 @@ import {
   type PlacedGate,
   type PlacedSingleQubitGate,
   type PlacedTwoQubitGate,
+  type PlacedThreeQubitGate,
   type ControlTargetOrder,
+  type ThreeQubitOrder,
   type SingleQubitGate,
   type SingleWire,
   type TwoQubitBaseWire,
   TwoQubitGate,
+  type ThreeQubitGate,
 } from "../types/global";
-import { DEFAULT_QUBIT_ORDER } from "../utils/constants";
+import { DEFAULT_QUBIT_ORDER, DEFAULT_THREE_QUBIT_ORDER } from "../utils/constants";
 import {
   append,
   remove,
   setOrder as setOrderInCircuit,
+  setThreeQubitOrder as setThreeQubitOrderInCircuit,
   setTwoQubitSpan as setTwoQubitSpanInCircuit,
   moveGate as moveGateInCircuit,
   insertAt,
@@ -56,6 +60,23 @@ export function useCircuit(numberOfQubits: number) {
     []
   );
 
+  const addThreeQubitGate = useCallback(
+    (
+      gate: ThreeQubitGate,
+      column?: number,
+      initialOrder: ThreeQubitOrder = DEFAULT_THREE_QUBIT_ORDER
+    ) => {
+      const g: PlacedThreeQubitGate = {
+        id: crypto.randomUUID(),
+        type: gate,
+        order: initialOrder,
+        column: 0,
+      };
+      setGates((prev) => (column !== undefined ? insertAt(prev, g, column) : append(prev, g)));
+    },
+    []
+  );
+
   const addSingleQubitGate = useCallback(
     (type: SingleQubitGate, wire: SingleWire, column?: number) => {
       if (!isValidSingleWire(wire, numberOfQubits)) return;
@@ -73,6 +94,11 @@ export function useCircuit(numberOfQubits: number) {
 
   const setGateOrder = useCallback((id: string, order: ControlTargetOrder) => {
     setGates((prev) => setOrderInCircuit(prev, id, order));
+  }, []);
+
+  /** Reconfigure a placed Toffoli's target wire (other two wires auto-become controls). */
+  const setThreeQubitTarget = useCallback((id: string, order: ThreeQubitOrder) => {
+    setGates((prev) => setThreeQubitOrderInCircuit(prev, id, order));
   }, []);
 
   const setGateSpan = useCallback(
@@ -119,8 +145,10 @@ export function useCircuit(numberOfQubits: number) {
   return {
     gates,
     addTwoQubitGate,
+    addThreeQubitGate,
     addSingleQubitGate,
     setGateOrder,
+    setThreeQubitTarget,
     setGateSpan,
     moveGate,
     setGateTheta,

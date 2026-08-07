@@ -1,5 +1,5 @@
 import React from "react";
-import type { ControlTargetOrder } from "../types/global";
+import type { ControlTargetOrder, ThreeQubitOrder } from "../types/global";
 import { colors, fonts } from "../design-tokens";
 
 const WIRE_COLOR = colors.grid;
@@ -41,8 +41,12 @@ const XMark = ({ cx, cy, size = 7 }: { cx: number; cy: number; size?: number }) 
   </>
 );
 
-/** Evenly spaced wire y-positions for multi-qubit glyphs */
-function threeWireYs(height: number, pad = 10): [number, number, number] {
+/**
+ * Evenly spaced wire y-positions for multi-qubit glyphs.
+ * Exported so the target-wire picker (SortablePlacedMultiQubitGate) can align
+ * its per-wire buttons exactly with the glyph's wire lines.
+ */
+export function threeWireYs(height: number, pad = 10): [number, number, number] {
   const y0 = pad + 8;
   const y2 = height - pad - 8;
   const y1 = (y0 + y2) / 2;
@@ -208,30 +212,45 @@ export function ControlledZGlyph({
   );
 }
 
-/** Toffoli (CCX) glyph: controls on wires 0 & 1, ⊕ target on wire 2 */
+/**
+ * Toffoli (CCX) glyph: control dots on the two control wires, ⊕ target on the
+ * target wire — positions driven by `order` (`[control, control, target]`,
+ * absolute wire indices; see `ThreeQubitOrder`). Defaults to `[0, 1, 2]`
+ * (controls on wires 0 & 1, target on wire 2), matching the pre-existing
+ * hardcoded appearance exactly.
+ */
 export function ToffoliGlyph({
+  order = [0, 1, 2],
   width = 80,
   height = 90,
 }: {
+  order?: ThreeQubitOrder;
   width?: number;
   height?: number;
 }) {
   const pad = 10;
-  const [y0, y1, y2] = threeWireYs(height, pad);
+  const wireYs = threeWireYs(height, pad);
   const cx = width / 2;
+
+  const [control0, control1, target] = order;
+  const controlY0 = wireYs[control0];
+  const controlY1 = wireYs[control1];
+  const targetY = wireYs[target];
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="Toffoli">
-      <Wire x1={pad} x2={width - pad} y={y0} />
-      <Wire x1={pad} x2={width - pad} y={y1} />
-      <Wire x1={pad} x2={width - pad} y={y2} />
+      <Wire x1={pad} x2={width - pad} y={wireYs[0]} />
+      <Wire x1={pad} x2={width - pad} y={wireYs[1]} />
+      <Wire x1={pad} x2={width - pad} y={wireYs[2]} />
 
-      <line x1={cx} y1={y0} x2={cx} y2={y2} stroke={colors.cyan} strokeWidth={2} />
+      {/* Toffoli always occupies all 3 wires, so the connector always spans top-to-bottom
+          regardless of which wires are controls vs. target. */}
+      <line x1={cx} y1={wireYs[0]} x2={cx} y2={wireYs[2]} stroke={colors.cyan} strokeWidth={2} />
 
-      <circle cx={cx} cy={y0} r={5} fill={colors.cyan} />
-      <circle cx={cx} cy={y1} r={5} fill={colors.cyan} />
-      <circle cx={cx} cy={y2} r={9} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
-      <Plus cx={cx} cy={y2} r={5} />
+      <circle cx={cx} cy={controlY0} r={5} fill={colors.cyan} />
+      <circle cx={cx} cy={controlY1} r={5} fill={colors.cyan} />
+      <circle cx={cx} cy={targetY} r={9} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
+      <Plus cx={cx} cy={targetY} r={5} />
     </svg>
   );
 }
