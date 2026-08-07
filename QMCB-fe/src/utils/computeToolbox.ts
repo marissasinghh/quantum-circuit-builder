@@ -1,9 +1,10 @@
 /**
  * Derives the visible toolbox from persisted progression.
  * Starting primitives + one gate per level advanced past or skipped (unless noGatesetUnlock).
- * Special cases: RANDOM_U grants U; clearing Tier 1 finale (RANDOM_U) also grants CNOT
- * until CNOT_FLIPPED is unlocked (then CNOT↕ replaces plain CNOT).
- * CONTROLLED_U uses noGatesetUnlock (needs seeded angles; not a reusable chip).
+ * Special case: clearing Tier 1 finale (RANDOM_U) also grants CNOT until CNOT_FLIPPED is
+ * unlocked (then CNOT↕ replaces plain CNOT).
+ * RANDOM_U and CONTROLLED_U both use noGatesetUnlock — "arbitrary U" isn't a discrete,
+ * reusable gate, and CONTROLLED_U needs seeded angles; neither becomes a toolbox chip.
  */
 
 import { LEVEL_ORDER } from "../config/levels";
@@ -57,10 +58,6 @@ export function computeAvailableGates(
   for (const level of LEVEL_ORDER) {
     if (!grantingLevels.has(level.target_unitary)) continue;
     if (level.noGatesetUnlock) continue;
-    if (level.target_unitary === Gate.RANDOM_U) {
-      unlocked.add(Gate.U);
-      continue;
-    }
     unlocked.add(level.target_unitary);
   }
 

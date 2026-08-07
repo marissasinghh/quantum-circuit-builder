@@ -52,10 +52,10 @@ export enum ParameterMode {
   TRIAL_ZXZ = "trial_zxz",
 }
 
-/** sessionStorage key for Level 1.6 random-unitary seed persistence. */
+/** sessionStorage key for Level 1.15 random-unitary seed persistence. */
 export const RANDOM_UNITARY_SEED_KEY = "qmcb-random-unitary-seed";
 
-/** sessionStorage key for Level 2.5 controlled-unitary seed persistence. */
+/** sessionStorage key for Level 2.4 controlled-unitary seed persistence. */
 export const CONTROLLED_UNITARY_SEED_KEY = "qmcb-controlled-unitary-seed";
 
 /** localStorage key for gate-unlock progression. */
@@ -149,7 +149,7 @@ export const SINGLE_QUBIT_GATES = [
   Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG,
   Gate.H, Gate.H_DAG,
   Gate.X_DAG, Gate.Z_DAG, Gate.Y_DAG,
-  Gate.RX, Gate.RY, Gate.U,
+  Gate.RX, Gate.RY,
 ] as const;
 
 /** Type helper: extract the union type from the array */
