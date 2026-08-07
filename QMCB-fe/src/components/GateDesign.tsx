@@ -304,57 +304,34 @@ export function FredkinGlyph({
   );
 }
 
-/** SWAP glyph: × on both wires. Flip mirrors which wire gets the larger mark (UI cue;
- *  SWAP(a,b)≡SWAP(b,a) physically — both marks stay on the vertical centerline). */
+/**
+ * SWAP glyph: standard textbook symbol — one × mark per wire (equal size), joined by
+ * a single straight vertical line. SWAP(a,b) ≡ SWAP(b,a) physically, so there is no
+ * "primary"/"secondary" wire distinction — both marks always render identically,
+ * regardless of any control/target-style order (SWAP has no such `order` prop).
+ */
 export function SwapGlyph({
-  order = [0, 1],
   width = 80,
   height = 60,
-  primaryMarkSize = 8,
-  secondaryMarkSize = 6,
+  markSize = 8,
 }: {
-  order?: ControlTargetOrder;
   width?: number;
   height?: number;
-  /** Primary-wire × half-span; canvas default 8. Toolbox may pass a smaller value. */
-  primaryMarkSize?: number;
-  /** Secondary-wire × half-span; canvas default 6. */
-  secondaryMarkSize?: number;
+  /** × half-span for both marks; canvas default 8. Toolbox may pass a smaller value. */
+  markSize?: number;
 }) {
   const pad = 10;
   const yTop = 12;
   const yBot = height - 12;
   const cx = width / 2;
-  const bridgeHalf = (yBot - yTop) * 0.38;
-  // order[0] = "primary" wire for UI only — larger × swaps top↔bottom on flip.
-  const primaryY = order[0] === 0 ? yTop : yBot;
-  const secondaryY = order[0] === 0 ? yBot : yTop;
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="SWAP">
       <Wire x1={pad} x2={width - pad} y={yTop} />
       <Wire x1={pad} x2={width - pad} y={yBot} />
-      <line
-        x1={cx - bridgeHalf}
-        y1={yTop}
-        x2={cx + bridgeHalf}
-        y2={yBot}
-        stroke={colors.cyan}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-      />
-      <line
-        x1={cx + bridgeHalf}
-        y1={yTop}
-        x2={cx - bridgeHalf}
-        y2={yBot}
-        stroke={colors.cyan}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-      />
-      {/* Secondary first so the primary × paints on top after flip. */}
-      <XMark cx={cx} cy={secondaryY} size={secondaryMarkSize} />
-      <XMark cx={cx} cy={primaryY} size={primaryMarkSize} />
+      <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke={colors.cyan} strokeWidth={1.5} />
+      <XMark cx={cx} cy={yTop} size={markSize} />
+      <XMark cx={cx} cy={yBot} size={markSize} />
     </svg>
   );
 }

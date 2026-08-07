@@ -160,7 +160,7 @@ function MultiQubitPreviewGlyph({
     case Gate.CONTROLLED_Z:
       return <ControlledZGlyph order={order} width={w} height={h} />;
     case Gate.SWAP:
-      return <SwapGlyph order={order} width={w} height={h} />;
+      return <SwapGlyph width={w} height={h} />;
     case Gate.FREDKIN:
       return <FredkinGlyph width={w} height={h} />;
     case Gate.CONTROLLED_H:

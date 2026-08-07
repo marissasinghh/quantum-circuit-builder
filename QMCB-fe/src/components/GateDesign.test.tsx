@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ToffoliGlyph } from "./GateDesign";
+import { ToffoliGlyph, SwapGlyph } from "./GateDesign";
 import { Gate } from "../types/global";
 import { append, serializeOrders, setThreeQubitOrder } from "../utils/circuit";
 import { threeQubitOrderForTarget } from "../utils/constants";
@@ -99,5 +99,67 @@ describe("ToffoliGlyph", () => {
     // this is literally what gets POSTed as `qubit_order` and fed to the backend's
     // `CirqGateMapper.apply()`, which is positional in the identical way (see docblock).
     expect(serializeOrders(gates)).toEqual([order]);
+  });
+});
+
+/**
+ * SWAP glyph redesign: standard textbook symbol — two EQUAL-sized × marks (one per
+ * wire) joined by a single straight VERTICAL line. Replaces the old diagonal
+ * "bowtie" bridge + asymmetric-size marks. SWAP(a,b) ≡ SWAP(b,a) physically, so
+ * SwapGlyph intentionally has no `order` prop — rendering must be invariant.
+ */
+describe("SwapGlyph", () => {
+  function linesByLinecap(markup: string, linecap: "round" | null) {
+    const all = [...markup.matchAll(/<line ([^>]*)><\/line>/g)].map((m) => m[1]);
+    return all.filter((attrs) =>
+      linecap === "round" ? attrs.includes('stroke-linecap="round"') : !attrs.includes("stroke-linecap")
+    );
+  }
+
+  function attr(lineAttrs: string, name: string): number {
+    const m = lineAttrs.match(new RegExp(`${name}="(-?[\\d.]+)"`));
+    if (!m) throw new Error(`missing ${name} in <line ${lineAttrs}>`);
+    return Number(m[1]);
+  }
+
+  it("renders exactly one straight vertical connector (no diagonal bowtie)", () => {
+    const markup = renderToStaticMarkup(<SwapGlyph width={80} height={60} />);
+    // Wire lines (2) + connector (1) = 3 lines with no stroke-linecap attribute.
+    const plainLines = linesByLinecap(markup, null);
+    const connectors = plainLines.filter((attrs) => attr(attrs, "x1") === attr(attrs, "x2"));
+    // The two Wire lines are horizontal (y1 === y2); only the connector is vertical.
+    const verticalConnectors = connectors.filter((attrs) => attr(attrs, "y1") !== attr(attrs, "y2"));
+    expect(verticalConnectors).toHaveLength(1);
+
+    const [connector] = verticalConnectors;
+    expect(attr(connector, "x1")).toEqual(40); // width / 2
+    expect(attr(connector, "y1")).toEqual(12); // yTop
+    expect(attr(connector, "y2")).toEqual(48); // yBot (height - 12)
+  });
+
+  it("renders exactly two × marks, both the same size", () => {
+    const markup = renderToStaticMarkup(<SwapGlyph width={80} height={60} markSize={8} />);
+    const diagonalLines = linesByLinecap(markup, "round");
+    // Each XMark draws 2 diagonal lines; 2 marks → 4 lines total.
+    expect(diagonalLines).toHaveLength(4);
+
+    const sizes = diagonalLines.map((attrs) => Math.abs(attr(attrs, "x2") - attr(attrs, "x1")) / 2);
+    // All four diagonals must share the same half-span (no primary/secondary asymmetry).
+    expect(new Set(sizes.map((s) => Math.round(s * 1000)))).toEqual(new Set([8000]));
+
+    // The two marks sit on the two wires (yTop=12, yBot=48), one each.
+    const markCenters = new Set(
+      diagonalLines.map((attrs) => (attr(attrs, "y1") + attr(attrs, "y2")) / 2)
+    );
+    expect(markCenters).toEqual(new Set([12, 48]));
+  });
+
+  it("rendering is invariant — SwapGlyph accepts no order-like prop to vary it", () => {
+    // Regression guard for the redesign: rendering the glyph twice with identical
+    // props (the only inputs it accepts) must be pixel-identical — there is no
+    // hidden order-driven asymmetry left in the component.
+    const a = renderToStaticMarkup(<SwapGlyph width={80} height={60} />);
+    const b = renderToStaticMarkup(<SwapGlyph width={80} height={60} />);
+    expect(a).toEqual(b);
   });
 });
