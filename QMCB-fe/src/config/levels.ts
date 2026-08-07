@@ -349,7 +349,7 @@ export const S_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 1.2: T GATE
+// LEVEL 1.7: T GATE
 // ========================
 export const T_LEVEL: LevelDefinition = {
   target_unitary: Gate.T,
@@ -374,7 +374,7 @@ export const T_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 1.3: H GATE
+// LEVEL 1.9: H GATE
 // ========================
 export const H_LEVEL: LevelDefinition = {
   target_unitary: Gate.H,
@@ -403,7 +403,7 @@ export const H_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 1.4: RX GATE
+// LEVEL 1.13: RX GATE
 // ========================
 export const RX_LEVEL: LevelDefinition = {
   target_unitary: Gate.RX,
@@ -427,7 +427,7 @@ export const RX_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 1.5: RY GATE
+// LEVEL 1.14: RY GATE
 // ========================
 export const RY_LEVEL: LevelDefinition = {
   target_unitary: Gate.RY,
@@ -451,7 +451,7 @@ export const RY_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 1.6: RANDOM UNITARY
+// LEVEL 1.15: RANDOM UNITARY
 // ========================
 export const RANDOM_U_LEVEL: LevelDefinition = {
   target_unitary: Gate.RANDOM_U,
@@ -482,7 +482,7 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 2.1: CNOT FLIPPED
+// LEVEL 2.0: CNOT FLIPPED
 // ========================
 export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
   target_unitary: Gate.CNOT_FLIPPED,
@@ -513,7 +513,7 @@ export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 2.2: CONTROLLED Z
+// LEVEL 2.1: CONTROLLED Z
 // ========================
 export const CONTROLLED_Z_LEVEL: LevelDefinition = {
   target_unitary: Gate.CONTROLLED_Z,
@@ -542,7 +542,7 @@ export const CONTROLLED_Z_LEVEL: LevelDefinition = {
 } as const;
 
 // =================
-// LEVEL 2.3: SWAP
+// LEVEL 2.2: SWAP
 // =================
 export const SWAP_LEVEL: LevelDefinition = {
   target_unitary: Gate.SWAP,
@@ -569,7 +569,7 @@ export const SWAP_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 2.4: CONTROLLED-H
+// LEVEL 2.3: CONTROLLED-H
 // ========================
 export const CONTROLLED_H_LEVEL: LevelDefinition = {
   target_unitary: Gate.CONTROLLED_H,
@@ -596,7 +596,7 @@ export const CONTROLLED_H_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 2.5: CONTROLLED-U
+// LEVEL 2.4: CONTROLLED-U
 // ========================
 export const CONTROLLED_U_LEVEL: LevelDefinition = {
   target_unitary: Gate.CONTROLLED_U,
@@ -619,11 +619,11 @@ export const CONTROLLED_U_LEVEL: LevelDefinition = {
     "Focus on the rows where control is $|1\\rangle$ — those reveal what U does to $|0\\rangle$ and $|1\\rangle$.",
   hint2:
     "Once you know what U is from the truth table, you already know how to decompose it — " +
-    "you solved the same problem in Level 1.6. Then wrap that single-qubit decomposition in a controlled structure using the gates in your gateset.",
+    "you solved the same problem in Level 1.15. Then wrap that single-qubit decomposition in a controlled structure using the gates in your gateset.",
 } as const;
 
 // ========================
-// LEVEL 3.1: TOFFOLI (CCX)
+// LEVEL 3.0: TOFFOLI (CCX)
 // ========================
 export const TOFFOLI_LEVEL: LevelDefinition = {
   target_unitary: Gate.TOFFOLI,
@@ -655,7 +655,7 @@ export const TOFFOLI_LEVEL: LevelDefinition = {
 } as const;
 
 // ========================
-// LEVEL 3.2: FREDKIN (CSWAP)
+// LEVEL 3.1: FREDKIN (CSWAP)
 // ========================
 export const FREDKIN_LEVEL: LevelDefinition = {
   target_unitary: Gate.FREDKIN,
@@ -706,15 +706,15 @@ export const LEVEL_ORDER: readonly LevelDefinition[] = [
   RX_LEVEL,          // 1.13 (was 1.4)
   RY_LEVEL,          // 1.14 (was 1.5)
   RANDOM_U_LEVEL,    // 1.15 (was 1.6)
-  // Tier 2 — two-qubit gates
-  CNOT_FLIPPED_LEVEL,
-  CONTROLLED_Z_LEVEL,
-  SWAP_LEVEL,
-  CONTROLLED_H_LEVEL,
-  CONTROLLED_U_LEVEL,
-  // Tier 3 — three-qubit gates
-  TOFFOLI_LEVEL,
-  FREDKIN_LEVEL,
+  // Tier 2 — two-qubit gates (2.0 – 2.4)
+  CNOT_FLIPPED_LEVEL,  // 2.0
+  CONTROLLED_Z_LEVEL,  // 2.1
+  SWAP_LEVEL,          // 2.2
+  CONTROLLED_H_LEVEL,  // 2.3
+  CONTROLLED_U_LEVEL,  // 2.4
+  // Tier 3 — three-qubit gates (3.0 – 3.1)
+  TOFFOLI_LEVEL,       // 3.0
+  FREDKIN_LEVEL,       // 3.1
 ] as const;
 
 /** All Tier 2 level definitions (for unlock gating). */
@@ -833,13 +833,12 @@ export function getLevelStatus(
   return "locked";
 }
 
-/** Display label such as "1.0", "2.3", "3.1". */
+/** Display label such as "1.0", "2.3", "3.1" (0-based within each tier). */
 export function getLevelNumber(index: number): string {
   const level = LEVEL_ORDER[index];
   const sameTier = LEVEL_ORDER.filter((l) => l.number_of_qubits === level.number_of_qubits);
   const withinTier = sameTier.findIndex((l) => l.target_unitary === level.target_unitary);
-  if (level.number_of_qubits === 1) return `1.${withinTier}`;
-  return `${level.number_of_qubits}.${withinTier + 1}`;
+  return `${level.number_of_qubits}.${withinTier}`;
 }
 
 /** Get the human-readable level title for UI display. */

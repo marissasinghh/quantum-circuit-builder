@@ -52,10 +52,10 @@ export enum ParameterMode {
   TRIAL_ZXZ = "trial_zxz",
 }
 
-/** sessionStorage key for Level 1.6 random-unitary seed persistence. */
+/** sessionStorage key for Level 1.15 random-unitary seed persistence. */
 export const RANDOM_UNITARY_SEED_KEY = "qmcb-random-unitary-seed";
 
-/** sessionStorage key for Level 2.5 controlled-unitary seed persistence. */
+/** sessionStorage key for Level 2.4 controlled-unitary seed persistence. */
 export const CONTROLLED_UNITARY_SEED_KEY = "qmcb-controlled-unitary-seed";
 
 /** localStorage key for gate-unlock progression. */

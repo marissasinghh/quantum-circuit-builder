@@ -43,7 +43,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         [Basis.STATE_1.value, Basis.STATE_0.value],
     ),
     # ========================
-    # LEVEL 1.1: S GATE
+    # LEVEL 1.5: S GATE
     # ========================
     Gate.S.value: _fixed_level(
         LEVEL1_QUBITS,
@@ -51,7 +51,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         [Basis.STATE_0.value, "1j|1⟩"],
     ),
     # ========================
-    # LEVEL 1.2: T GATE
+    # LEVEL 1.7: T GATE
     # ========================
     Gate.T.value: _fixed_level(
         LEVEL1_QUBITS,
@@ -59,7 +59,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         [Basis.STATE_0.value, "(0.707+0.707j)|1⟩"],
     ),
     # ========================
-    # LEVEL 1.3: SQRT-X-DAG GATE
+    # LEVEL 1.1: SQRT-X-DAG GATE
     # ========================
     Gate.SQRT_X_DAG.value: _fixed_level(
         LEVEL1_QUBITS,
@@ -68,7 +68,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         grading_mode=GradingMode.UNITARY_GLOBAL_PHASE.value,
     ),
     # ========================
-    # LEVEL 1.3: Y GATE
+    # LEVEL 1.11: Y GATE
     # ========================
     Gate.Y.value: _fixed_level(
         LEVEL1_QUBITS,
@@ -85,7 +85,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         [Basis.STATE_0.value, "-1|1\u27e9"],
     ),
     # ========================
-    # LEVEL 1.3: S-DAG GATE
+    # LEVEL 1.6: S-DAG GATE
     # ========================
     Gate.S_DAG.value: _fixed_level(
         LEVEL1_QUBITS,
@@ -93,7 +93,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         [Basis.STATE_0.value, "-1j|1\u27e9"],
     ),
     # ========================
-    # LEVEL 1.3: T-DAG GATE
+    # LEVEL 1.8: T-DAG GATE
     # ========================
     Gate.T_DAG.value: _fixed_level(
         LEVEL1_QUBITS,
@@ -101,7 +101,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         [Basis.STATE_0.value, "(0.707-0.707j)|1\u27e9"],
     ),
     # ========================
-    # LEVEL 1.3: H GATE
+    # LEVEL 1.9: H GATE
     # ========================
     Gate.H.value: _fixed_level(
         LEVEL1_QUBITS,
@@ -110,7 +110,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         grading_mode=GradingMode.UNITARY_GLOBAL_PHASE.value,
     ),
     # ========================
-    # LEVEL 1.4: RX GATE
+    # LEVEL 1.13: RX GATE
     # ========================
     Gate.RX.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
@@ -121,7 +121,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         # No steps — target is cirq.rx(theta_i) built directly inside the sampling loop.
     },
     # ========================
-    # LEVEL 1.5: RY GATE
+    # LEVEL 1.14: RY GATE
     # ========================
     Gate.RY.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
@@ -132,7 +132,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         # No steps — target is cirq.ry(theta_i) built directly inside the sampling loop.
     },
     # ========================
-    # LEVEL 1.6: RANDOM UNITARY
+    # LEVEL 1.15: RANDOM UNITARY
     # ========================
     Gate.RANDOM_U.value: {
         TargetLibraryField.NUM_QUBITS.value: LEVEL1_QUBITS,
@@ -149,7 +149,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         ],
     },
     # ========================
-    # LEVEL 2.1: CNOT FLIPPED
+    # LEVEL 2.0: CNOT FLIPPED
     # ========================
     Gate.CNOT_FLIPPED.value: _fixed_level(
         LEVEL2_QUBITS,
@@ -168,7 +168,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         ],
     ),
     # ========================
-    # LEVEL 2.2: CONTROLLED-Z
+    # LEVEL 2.1: CONTROLLED-Z
     # ========================
     Gate.CONTROLLED_Z.value: _fixed_level(
         LEVEL2_QUBITS,
@@ -185,7 +185,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         ],
     ),
     # =================
-    # LEVEL 2.3: SWAP
+    # LEVEL 2.2: SWAP
     # =================
     Gate.SWAP.value: _fixed_level(
         LEVEL2_QUBITS,
@@ -202,7 +202,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         ],
     ),
     # ========================
-    # LEVEL 2.4: CONTROLLED-H
+    # LEVEL 2.3: CONTROLLED-H
     # ========================
     Gate.CONTROLLED_H.value: _fixed_level(
         LEVEL2_QUBITS,
@@ -231,7 +231,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         grading_mode=GradingMode.UNITARY_GLOBAL_PHASE.value,
     ),
     # ========================
-    # LEVEL 3.1: TOFFOLI (CCX)
+    # LEVEL 3.0: TOFFOLI (CCX)
     # ========================
     Gate.TOFFOLI.value: _fixed_level(
         LEVEL3_QUBITS,
@@ -253,7 +253,7 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         ],
     ),
     # ========================
-    # LEVEL 3.2: FREDKIN (CSWAP)
+    # LEVEL 3.1: FREDKIN (CSWAP)
     # ========================
     Gate.FREDKIN.value: _fixed_level(
         LEVEL3_QUBITS,
