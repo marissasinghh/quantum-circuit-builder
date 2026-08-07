@@ -1,0 +1,243 @@
+# CNOT Game (.cursorrules)
+# Repo: marissasinghh/quantum-circuit-builder
+# Place this file at the monorepo root (same level as QMCB-be/ and QMCB-fe/)
+# Last updated: April 2026
+
+---
+
+## Project Identity
+
+- **Name:** QMCB — Quantum Circuit Builder / The CNOT Game
+- **Concept:** Browser-based puzzle game where students build quantum gates progressively
+  using a universal gateset of {CNOT, X, Rz(θ)}. Inspired by The NAND Game.
+- **Live site:** cnotgame.com
+- **Deadlines:** Berkeley Summer Camp alpha July 6, 2026 | Quantum Motor City beta July 29, 2026
+
+---
+
+## Monorepo Structure
+
+```
+quantum-circuit-builder/
+├── QMCB-be/          Flask + Cirq Python backend
+├── QMCB-fe/          Vite + React + TypeScript frontend
+├── .cursorrules      ← you are here
+└── README.md
+```
+
+---
+
+## Tech Stack
+
+### Backend (QMCB-be/)
+- **Python 3.11.12**
+- **Flask 3.1.1** + **Flask-RESTX 1.3.0** (Swagger UI at /api/docs)
+- **Cirq 1.6.0** — ALL quantum simulation goes through Cirq. Never suggest hand-rolled gate math or manual matrix multiplication.
+- **flask-cors 6.0.1**
+- **pymongo** — wired (MONGO_URI in settings) but no MongoDB code exists yet
+- **Entry point:** `python -m app.main`
+- **Only live endpoint:** `POST /api/simulate`
+
+### Frontend (QMCB-fe/)
+- **React 18** + **Vite 5** + **TypeScript** (strict mode, ES2020)
+- **Tailwind CSS 3** + PostCSS + Autoprefixer
+- **TanStack Query v5** — `useMutation` only (no queries yet)
+- **@dnd-kit/core v6** — drag-and-drop circuit building
+- **@dnd-kit/sortable** — installed but UNUSED; do not suggest using it
+- **No client-side router yet** — single page, level is in-app React state
+
+---
+
+## Core Data Flow (end-to-end)
+
+```
+1. Student drags gates onto CircuitCanvas (dnd-kit → useDragAndDrop → useCircuit)
+2. "Check Solution" click → useCircuitValidation.handleCheck()
+3. buildRequestFromLevel(level, gates) in controllers/simulate.ts → UnitaryRequestDTO
+4. POST /api/simulate via services/simulate.ts (TanStack useMutation)
+5. Flask: api/simulate.py → controllers/simulate.py → simulate_unitaries()
+6. simulate_unitaries() loops over all 2^n basis states:
+     - CircuitBuilder.construct_unitary_circuit() → Cirq circuit
+     - CircuitSimulator.simulate_wavefunction() → output state
+     - Compares to target expected_outputs or re-simulates target circuit
+7. Returns truth table rows (trial + target, per basis state)
+8. Frontend toTruthRows() → OutputTable renders per-row match/mismatch
+9. If all rows match → LevelCompleteModal shown
+```
+
+**Key insight:** Verification works by linearity — if the student's circuit produces
+the correct output for all 2^n basis states, it implements the correct unitary for all
+inputs. This is the core pedagogical mechanic of the game.
+
+---
+
+## Level System
+
+**Every level requires TWO coordinated pieces. Never add one without the other.**
+
+### Backend piece: `QMCB-be/app/config/target_library.py`
+```python
+TARGET_LIBRARY = {
+    "CNOT_FLIPPED": {
+        "num_qubits": 2,
+        "steps": [{"gate": "CNOT", "qubit_order": "C1_T0"}],
+        "expected_outputs": [
+            {"input": [0, 0], "output": [0, 0]},
+            {"input": [0, 1], "output": [1, 1]},
+            {"input": [1, 0], "output": [1, 0]},
+            {"input": [1, 1], "output": [0, 1]},
+        ]
+    },
+    # ...
+}
+```
+- The dict key (e.g. `"CNOT_FLIPPED"`) must exactly match the frontend's `targetUnitary` field.
+- `steps` defines the reference circuit (used when `VALIDATE_TARGET_CIRCUITS=True`)
+- `expected_outputs` is the stored truth table (used when flag is False)
+
+### Frontend piece: `QMCB-fe/src/config/levels.ts`
+```typescript
+export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
+  id: "CNOT_FLIPPED",
+  name: "CNOT (Flipped)",
+  tier: 2,
+  description: "...",         // pedagogical explanation text
+  targetUnitary: "CNOT_FLIPPED",  // must match BE key exactly
+  numberOfQubits: 2,
+  toolboxGates: [Gate.CNOT],  // which gates the student has available
+  expectedTruthTable: [...],  // for TaskCard display
+};
+```
+
+### Implemented levels (as of April 2026)
+| Level | ID | Qubits | Status |
+|-------|----|--------|--------|
+| 2.1 | CNOT_FLIPPED | 2 | ✅ Done |
+| 2.2 | CONTROLLED_Z | 2 | ✅ Done |
+| 2.3 | SWAP | 2 | ✅ Done |
+
+**Coming next:** Tier 1 single-qubit levels (1.0 X, 1.1 S, 1.2 T, 1.3 H, 1.4 Rx, 1.5 Ry, 1.6 U)
+**Single-qubit glyphs already built in GateDesign.tsx:** HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph
+
+---
+
+## DTO Shapes
+
+### Simulate Request (FE → BE): `UnitaryRequestDTO`
+```typescript
+{
+  gates: string[] | Array<{name: string, theta: number}>,  // gate names or parameterized gates
+  qubit_order: string[],       // e.g. ["C0_T1"] per gate
+  number_of_qubits: 2,
+  target_unitary: "CNOT_FLIPPED"  // matches TARGET_LIBRARY key
+}
+```
+> Note: Parameterized gate support (theta) is being added in Week 2. Until then, gates is a flat string[].
+> IMPORTANT: The wire format key is `gates`, not `circuit`. The inventory doc was wrong on this point.
+
+### Simulate Response (BE → FE): `SimulationResponseDTO`
+```typescript
+{
+  "validation_mode": "truth_table",  // NOTE: bug — currently has trailing colon "validation_mode:" — fix in Week 1
+  results: Array<{
+    input: number[],
+    expected: number[],
+    actual: number[],
+    match: boolean
+  }>,
+  all_match: boolean
+}
+```
+
+---
+
+## Key Backend Files (know these before modifying anything)
+
+| File | Role |
+|------|------|
+| `app/controllers/simulate.py` | `simulate_unitaries()` — the main loop; runs both trial and target through Cirq |
+| `app/services/circuit_builder.py` | `CircuitBuilder` — constructs Cirq circuits from gate dicts |
+| `app/services/simulator.py` | `CircuitSimulator` — runs wavefunction simulation; `run_and_measure` path is UNUSED |
+| `app/config/gates.py` | `CirqGateMapper.apply()` — maps gate name strings → Cirq operations |
+| `app/config/target_library.py` | `TARGET_LIBRARY` — the ground truth for all levels |
+| `app/services/target_builder.py` | `TargetUnitaryBuilder.build()` (active) + `get_unitary()` (legacy dead code — ignore) |
+| `app/utils/helpers.py` | Pure functions: basis state generation, ket formatting, result extraction |
+| `app/utils/qubit_orders.py` | Named qubit orders: Q0, Q1, C0_T1, C1_T0 |
+
+## Key Frontend Files
+
+| File | Role |
+|------|------|
+| `src/App.tsx` | Root; wires all hooks; DndContext + DragOverlay |
+| `src/hooks/useCircuit.ts` | `gates[]` state; addGate, removeGate, clearGates, setGateOrder |
+| `src/hooks/useCircuitValidation.ts` | useMutation; handleCheck; builds and fires the API request |
+| `src/hooks/useDragAndDrop.ts` | Maps tool IDs → Gate enum; onDragEnd → addGate |
+| `src/controllers/simulate.ts` | `buildRequestFromLevel()` → UnitaryRequestDTO serialization |
+| `src/config/levels.ts` | All level definitions + LEVEL_ORDER + getNextLevel() |
+| `src/config/gates.ts` | allowedOrdersFor, labelFor, arityFor per gate |
+| `src/components/GateDesign.tsx` | SVG glyphs — CNOTGlyph, CZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph |
+
+---
+
+## Conventions & Rules
+
+### Quantum simulation
+- **ALWAYS use Cirq.** Never suggest `numpy` matrix math, hand-rolled gate operations, or custom unitary computation.
+- Supported gates in `CirqGateMapper`: CNOT, H, X, Y, Z, S, T, Rx, Ry, CZ, SWAP
+- For parameterized gates: `cirq.rx(theta)`, `cirq.ry(theta)`, `cirq.rz(theta)` — theta is in radians
+- The `run_and_measure` path in `simulator.py` is not used — the game uses wavefunction simulation
+
+### Level development
+- **Adding a level always requires BOTH** a `target_library.py` entry AND a `levels.ts` entry
+- The `target_unitary` string in the FE must exactly match the `TARGET_LIBRARY` key in the BE
+- Expected outputs are truth table rows for all 2^n basis states in order
+
+### TypeScript
+- Prefer explicit types over `any`
+- Gate enum lives in `types/global.ts` — use it, don't use raw strings for gate names
+- `MAX_GATES` constant exists in `utils/constants.ts` — reference it, don't hardcode
+
+### Testing
+- Tests live in `QMCB-be/tests/` — use pytest
+- No Jest/Vitest yet — FE has no test suite
+- Always verify AI-generated quantum math against a reference (Nielsen & Chuang, or known Cirq output)
+
+### What NOT to do
+- Do not re-introduce the `"validation_mode:"` trailing colon bug (already fixed in Week 1)
+- Do not add a second CORS wrapper — it already exists in `__init__.py`; `main.py` has a duplicate that is being removed
+- Do not suggest using `@dnd-kit/sortable` — it's installed but the project doesn't use it
+- Do not suggest using `get_unitary()` in `target_builder.py` — it's legacy dead code
+- Do not modify `utils/circuit.ts` helpers without checking if they're actually used (some are not)
+- Do not hardcode qubit counts — use `numberOfQubits` from the level config
+
+---
+
+## Known Bugs (do not re-introduce)
+
+| Bug | Location | Status |
+|-----|----------|--------|
+| `"validation_mode:"` trailing colon in response key | `controllers/simulate.py` | Fix in Week 1 |
+| Double CORS application | `main.py` + `__init__.py` | Remove from `main.py` in Week 1 |
+| `testing/mwe.py` wrong `simulate_unitaries` signature | `testing/mwe.py` | Fix in Week 1 |
+| `testing/bug_testing.py` imports missing `app.repositories` | `testing/bug_testing.py` | Fix in Week 1 |
+| Stale `index.html` title "SWAP Prototype" | `index.html` | Fix in Week 1 |
+| README documents `/simulate` but actual path is `/api/simulate` | `README.md` | Fix in Week 1 |
+| `DragOverlay` in `App.tsx` only handles 3 tool IDs | `App.tsx` | Fix in Week 5 |
+| `Toolbox.tsx` receives `activeId` prop it never uses | `Toolbox.tsx` | Fix in Week 5 |
+| `MAX_GATES` defined but not enforced | `useCircuit.ts` | Fix in Week 5 |
+
+---
+
+## Starting Primitives (gates available from game start)
+
+Students begin each session with: **Rz(θ)** and **Rx(π/2)**
+(Updated from original plan — confirmed in April 2026 meeting notes)
+
+---
+
+## Build Phases (high-level, for context)
+
+- **Phase 1 (Wks 1–4, Apr 7 – May 4):** Foundation, parameterized gate infra, Tier 1 backend, Tier 1 frontend
+- **Phase 2 (Wks 5–8, May 5 – Jun 1):** Level progression, unlock system, routing, deployment
+- **Phase 3 (Wks 9–13, Jun 2 – Jul 6):** Auth, Tier 3 (Toffoli/Fredkin), polish, Berkeley
+- **Phase 4 (Wks 14–17, Jul 7 – Jul 29):** Berkeley feedback, AI hint assistant, Tier 4 (Grover)
