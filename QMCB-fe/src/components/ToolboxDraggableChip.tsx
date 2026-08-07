@@ -61,15 +61,7 @@ function ToolboxGateContent({ gate }: { gate: Gate }) {
     case Gate.CONTROLLED_Z:
       return <ControlledZGlyph order={[0, 1]} width={TOOLBOX_GLYPH_W} height={TOOLBOX_GLYPH_H} />;
     case Gate.SWAP:
-      return (
-        <SwapGlyph
-          order={[0, 1]}
-          width={TOOLBOX_GLYPH_W}
-          height={TOOLBOX_GLYPH_H}
-          primaryMarkSize={5}
-          secondaryMarkSize={4}
-        />
-      );
+      return <SwapGlyph width={TOOLBOX_GLYPH_W} height={TOOLBOX_GLYPH_H} markSize={5} />;
     case Gate.TOFFOLI:
       return (
         <ToffoliGlyph

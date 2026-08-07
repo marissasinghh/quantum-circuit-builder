@@ -47,8 +47,24 @@ function useDoubleTap(onDoubleTap: () => void) {
 
 type PlacedMultiQubitGate = Extract<PlacedGate, { order: ControlTargetOrder }> | PlacedThreeQubitGate;
 
-/** Two-qubit gates whose order is editable via the on-chip flip icon. */
+/**
+ * Two-qubit gates whose order is editable via the on-chip flip icon.
+ * SWAP is intentionally excluded: cirq.SWAP(a,b) ≡ cirq.SWAP(b,a), so flipping its
+ * order is functionally inert — showing the flip icon would be a false affordance.
+ */
 const ORDER_BEARING_GATES = new Set<Gate>([
+  Gate.CNOT,
+  Gate.CNOT_FLIPPED,
+  Gate.CONTROLLED_Z,
+]);
+
+/**
+ * Two-qubit gates that support the extend/retract span controls (which wire-pair
+ * they occupy on a 3-qubit canvas). This is a placement concern, independent of
+ * whether the gate's control/target `order` is meaningful — SWAP has no meaningful
+ * order (see ORDER_BEARING_GATES above) but still needs to be repositionable.
+ */
+const SPAN_CONTROL_GATES = new Set<Gate>([
   Gate.CNOT,
   Gate.CNOT_FLIPPED,
   Gate.CONTROLLED_Z,
@@ -104,7 +120,7 @@ function MultiQubitGlyph({
     case Gate.CONTROLLED_Z:
       return <ControlledZGlyph order={order} width={width} height={height} />;
     case Gate.SWAP:
-      return <SwapGlyph order={order} width={width} height={height} />;
+      return <SwapGlyph width={width} height={height} />;
     case Gate.FREDKIN:
       return <FredkinGlyph width={width} height={height} />;
     case Gate.CONTROLLED_H:
@@ -170,9 +186,9 @@ export function SortablePlacedMultiQubitGate({
   const showFlipIcon =
     ORDER_BEARING_GATES.has(gate.type) && cnotFlipUnlocked && onSetGateOrder != null;
 
-  // Extend/retract: Tier-3 only + same gate family as flip; never on 2q levels.
+  // Extend/retract: Tier-3 only + same gate family as flip (plus SWAP); never on 2q levels.
   const spanControls =
-    ORDER_BEARING_GATES.has(gate.type) && onSetGateSpan != null
+    SPAN_CONTROL_GATES.has(gate.type) && onSetGateSpan != null
       ? twoQubitSpanControls(gate as PlacedTwoQubitGate, numberOfQubits)
       : [];
 

@@ -19,6 +19,14 @@ const cnot: PlacedTwoQubitGate = {
   column: 0,
 };
 
+const swap: PlacedTwoQubitGate = {
+  id: "swap",
+  type: Gate.SWAP,
+  order: [0, 1],
+  baseWire: 0,
+  column: 0,
+};
+
 describe("SortablePlacedMultiQubitGate target-wire picker", () => {
   it("renders 3 picker buttons for a placed Toffoli, marking the current target wire", () => {
     const markup = renderToStaticMarkup(
@@ -91,5 +99,98 @@ describe("SortablePlacedMultiQubitGate target-wire picker", () => {
       />
     );
     expect(markup).not.toContain("the target");
+  });
+});
+
+/**
+ * SWAP redesign: SWAP is no longer in ORDER_BEARING_GATES (flip is functionally
+ * inert for SWAP — cirq.SWAP(a,b) ≡ cirq.SWAP(b,a)), but it must keep its
+ * extend/retract span controls on a 3-qubit canvas since wire-pair placement is
+ * still a real, functional distinction.
+ */
+describe("SortablePlacedMultiQubitGate — SWAP flip icon removal & span controls", () => {
+  it("does NOT render the flip icon for a placed SWAP chip, even with cnotFlipUnlocked", () => {
+    const markup = renderToStaticMarkup(
+      <SortablePlacedMultiQubitGate
+        gate={swap}
+        left={0}
+        top={0}
+        width={80}
+        height={52}
+        numberOfQubits={3}
+        onRemoveGate={vi.fn()}
+        cnotFlipUnlocked
+        onSetGateOrder={vi.fn()}
+      />
+    );
+    expect(markup).not.toContain("Flip control/target order");
+  });
+
+  it("still renders the flip icon for a placed CNOT chip with cnotFlipUnlocked (scoped correctly)", () => {
+    const markup = renderToStaticMarkup(
+      <SortablePlacedMultiQubitGate
+        gate={cnot}
+        left={0}
+        top={0}
+        width={80}
+        height={52}
+        numberOfQubits={3}
+        onRemoveGate={vi.fn()}
+        cnotFlipUnlocked
+        onSetGateOrder={vi.fn()}
+      />
+    );
+    expect(markup).toContain('aria-label="Flip control/target order"');
+  });
+
+  it("still renders the flip icon for a placed CONTROLLED_Z chip with cnotFlipUnlocked", () => {
+    const cz: PlacedTwoQubitGate = { ...cnot, id: "cz", type: Gate.CONTROLLED_Z };
+    const markup = renderToStaticMarkup(
+      <SortablePlacedMultiQubitGate
+        gate={cz}
+        left={0}
+        top={0}
+        width={80}
+        height={52}
+        numberOfQubits={3}
+        onRemoveGate={vi.fn()}
+        cnotFlipUnlocked
+        onSetGateOrder={vi.fn()}
+      />
+    );
+    expect(markup).toContain('aria-label="Flip control/target order"');
+  });
+
+  it("still renders extend/retract span controls for a placed SWAP chip on a 3-qubit canvas", () => {
+    const markup = renderToStaticMarkup(
+      <SortablePlacedMultiQubitGate
+        gate={swap}
+        left={0}
+        top={0}
+        width={80}
+        height={52}
+        numberOfQubits={3}
+        onRemoveGate={vi.fn()}
+        onSetGateSpan={vi.fn()}
+      />
+    );
+    // swap.baseWire=0, not extended → occupies wires 0-1 → only "extend down" control shows.
+    expect(markup).toContain('aria-label="Extend gate to wires 0–2"');
+  });
+
+  it("does not render span controls for SWAP on a 2-qubit canvas", () => {
+    const markup = renderToStaticMarkup(
+      <SortablePlacedMultiQubitGate
+        gate={swap}
+        left={0}
+        top={0}
+        width={80}
+        height={52}
+        numberOfQubits={2}
+        onRemoveGate={vi.fn()}
+        onSetGateSpan={vi.fn()}
+      />
+    );
+    expect(markup).not.toContain("Extend gate");
   });
 });
