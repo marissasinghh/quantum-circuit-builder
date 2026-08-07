@@ -62,12 +62,12 @@ describe("computeAvailableGates — Tier 1 progression", () => {
     }
   });
 
-  it("grants U when level 1.15 (RANDOM_U) is advanced past or skipped", () => {
+  it("never grants U, even after level 1.15 (RANDOM_U) is advanced past or skipped", () => {
     const fullTier1Past = LEVEL_ORDER.slice(0, TIER1_COUNT).map((l) => l.target_unitary);
-    expect(computeAvailableGates(fullTier1Past, [], ONE_QUBIT)).toContain(Gate.U);
+    expect(computeAvailableGates(fullTier1Past, [], ONE_QUBIT)).not.toContain(Gate.U);
 
-    expect(computeAvailableGates([Gate.RANDOM_U], [], ONE_QUBIT)).toContain(Gate.U);
-    expect(computeAvailableGates([], [Gate.RANDOM_U], ONE_QUBIT)).toContain(Gate.U);
+    expect(computeAvailableGates([Gate.RANDOM_U], [], ONE_QUBIT)).not.toContain(Gate.U);
+    expect(computeAvailableGates([], [Gate.RANDOM_U], ONE_QUBIT)).not.toContain(Gate.U);
   });
 
   it("never includes dagger config-only gates or RANDOM_U", () => {
@@ -80,6 +80,7 @@ describe("computeAvailableGates — Tier 1 progression", () => {
     expect(toolbox).not.toContain(Gate.H_DAG);
     expect(toolbox).not.toContain(Gate.Y_DAG);
     expect(toolbox).not.toContain(Gate.RANDOM_U);
+    expect(toolbox).not.toContain(Gate.U);
   });
 
   it("dagger no-op levels do not grow toolbox vs previous level", () => {

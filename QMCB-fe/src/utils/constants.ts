@@ -149,7 +149,7 @@ export const SINGLE_QUBIT_GATES = [
   Gate.S, Gate.S_DAG, Gate.T, Gate.T_DAG,
   Gate.H, Gate.H_DAG,
   Gate.X_DAG, Gate.Z_DAG, Gate.Y_DAG,
-  Gate.RX, Gate.RY, Gate.U,
+  Gate.RX, Gate.RY,
 ] as const;
 
 /** Type helper: extract the union type from the array */

@@ -458,6 +458,9 @@ export const RANDOM_U_LEVEL: LevelDefinition = {
   name: "ARBITRARY U",
   number_of_qubits: LEVEL1_QUBITS,
   toolbox: [Gate.RZ, Gate.SQRT_X, Gate.X, Gate.S, Gate.T, Gate.H, Gate.RX, Gate.RY] as const,
+  // "Arbitrary U" isn't a discrete, reusable gate — completing this level should not
+  // add Gate.U to the student's unlocked toolbox.
+  noGatesetUnlock: true,
 
   canonical: [
     { gate: Gate.RZ, order: Q0 },
