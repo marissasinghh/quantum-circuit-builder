@@ -12,6 +12,7 @@ import type { PlacedGate } from "../types/global";
 import { Gate } from "../types/global";
 import { ParameterMode } from "../utils/constants";
 import { validateCircuitForSimulate } from "../utils/circuit";
+import { trackEvent } from "../utils/trackEvent";
 
 /** Gates that require a theta angle before the backend can apply them. */
 const REQUIRES_THETA = new Set<Gate>([Gate.RX, Gate.RY, Gate.RZ]);
@@ -96,6 +97,7 @@ export function useCircuitValidation(
       seedZyzAngles
     );
     mutation.mutate(body);
+    trackEvent("submission_attempt", currentLevel.target_unitary);
   };
 
   return {

@@ -15,6 +15,7 @@ import { Gate } from "../types/global";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import { LEVEL_PROGRESS_KEY } from "../utils/constants";
 import { deriveAdvancedPastLevels } from "../config/levels";
+import { trackEvent } from "../utils/trackEvent";
 
 const STARTING_GATES: Gate[] = [Gate.RZ, Gate.SQRT_X];
 
@@ -165,6 +166,12 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
   const skipLevel = useCallback((level: LevelDefinition) => {
     const levelId = level.target_unitary;
     const isRealGate = levelId !== Gate.RANDOM_U;
+    // Read outside the setState updater (rather than from `prev` inside it) so this
+    // fires exactly once per call even under StrictMode's dev-only double-invoke of
+    // updater functions.
+    if (!progress.skippedLevels.includes(levelId)) {
+      trackEvent("skip", levelId);
+    }
     setProgress((prev) => {
       const alreadySkipped = prev.skippedLevels.includes(levelId);
       const gateAlreadyUnlocked = !isRealGate || prev.unlockedGates.includes(levelId as Gate);
@@ -181,7 +188,7 @@ export function LevelProgressProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(LEVEL_PROGRESS_KEY, JSON.stringify(next));
       return next;
     });
-  }, []);
+  }, [progress.skippedLevels]);
 
   const resetProgress = useCallback(() => {
     const fresh = defaultProgress();
