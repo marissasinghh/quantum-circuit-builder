@@ -173,3 +173,32 @@ describe("computeAvailableGates — CONTROLLED_U noGatesetUnlock", () => {
     expect(toolbox).not.toContain(Gate.CONTROLLED_U);
   });
 });
+
+const THREE_QUBITS = 3;
+const TOFFOLI_LEVEL_INDEX = LEVEL_ORDER.findIndex((l) => l.target_unitary === Gate.TOFFOLI);
+
+describe("computeAvailableGates — Tier 3 TOFFOLI unlock (Phase 5)", () => {
+  it("does not include TOFFOLI in the toolbox at the start of its own level", () => {
+    const atStartOfToffoli = advancedPastAtStart(TOFFOLI_LEVEL_INDEX);
+    expect(computeAvailableGates(atStartOfToffoli, [], THREE_QUBITS)).not.toContain(Gate.TOFFOLI);
+  });
+
+  it("unlocks TOFFOLI generically (no special case needed) after advancing past it", () => {
+    const pastIncludingToffoli = advancedPastAtStart(TOFFOLI_LEVEL_INDEX + 1);
+    expect(pastIncludingToffoli).toContain(Gate.TOFFOLI);
+    expect(computeAvailableGates(pastIncludingToffoli, [], THREE_QUBITS)).toContain(Gate.TOFFOLI);
+  });
+
+  it("unlocks TOFFOLI when its level is skipped instead of completed", () => {
+    expect(computeAvailableGates([], [Gate.TOFFOLI], THREE_QUBITS)).toContain(Gate.TOFFOLI);
+  });
+
+  it("filters TOFFOLI out on canvases with fewer than 3 qubits even once unlocked", () => {
+    expect(computeAvailableGates([], [Gate.TOFFOLI], TWO_QUBITS)).not.toContain(Gate.TOFFOLI);
+    expect(computeAvailableGates([], [Gate.TOFFOLI], ONE_QUBIT)).not.toContain(Gate.TOFFOLI);
+  });
+
+  it("does NOT unlock TOFFOLI merely from completing/skipping FREDKIN (independent gates)", () => {
+    expect(computeAvailableGates([], [Gate.FREDKIN], THREE_QUBITS)).not.toContain(Gate.TOFFOLI);
+  });
+});

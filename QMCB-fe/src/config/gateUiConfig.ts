@@ -130,6 +130,12 @@ export const GATE_UI_CONFIG: Partial<Record<Gate, { label: string; toolId: strin
     description: "Controlled unitary",
     toolId: "tool-cu",
   },
+  // ── Three-qubit gates ─────────────────────────────────────────────────────────
+  [Gate.TOFFOLI]: {
+    label: GATE_DISPLAY_NAME[Gate.TOFFOLI],
+    description: "Doubly-controlled NOT (CCX)",
+    toolId: "tool-toffoli",
+  },
 };
 
 /** Maps every drag toolId string to its Gate enum value. */
@@ -157,4 +163,5 @@ export const TOOL_TO_GATE: Record<string, Gate> = {
   "tool-swap": Gate.SWAP,
   "tool-ch": Gate.CONTROLLED_H,
   "tool-cu": Gate.CONTROLLED_U,
+  "tool-toffoli": Gate.TOFFOLI,
 };

@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
-import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder } from "../types/global";
-import { gatesInColumnOrder } from "../utils/circuit";
+import {
+  Gate,
+  type PlacedGate,
+  type PlacedSingleQubitGate,
+  type PlacedThreeQubitGate,
+  type ControlTargetOrder,
+} from "../types/global";
+import { gatesInColumnOrder, isPlacedThreeQubitGate } from "../utils/circuit";
 import { CANVAS_COL_W, CANVAS_PAD_X } from "../utils/canvasGeometry";
 import { isSingleQubitGate } from "../utils/placedGateDrag";
 import {
@@ -49,7 +55,7 @@ const PREVIEW_WIRE_INSET = 36 * PREVIEW_CANVAS_SCALE;
 const PREVIEW_PAD_Y = 6;
 const PREVIEW_ROW_H = 28;
 
-type PlacedMultiQubitGate = Extract<PlacedGate, { order: ControlTargetOrder }>;
+type PlacedMultiQubitGate = Extract<PlacedGate, { order: ControlTargetOrder }> | PlacedThreeQubitGate;
 
 /**
  * Renders a glyph at its canonical SVG size, then uniformly scales to the preview slot.
@@ -143,6 +149,11 @@ function MultiQubitPreviewGlyph({
 }) {
   const w = CANONICAL_MULTI_W;
   const h = canonicalHeight;
+
+  if (isPlacedThreeQubitGate(gate)) {
+    return <ToffoliGlyph order={gate.order} width={w} height={h} />;
+  }
+
   const order = gate.order;
 
   switch (gate.type as Gate) {
@@ -150,8 +161,6 @@ function MultiQubitPreviewGlyph({
       return <ControlledZGlyph order={order} width={w} height={h} />;
     case Gate.SWAP:
       return <SwapGlyph order={order} width={w} height={h} />;
-    case Gate.TOFFOLI:
-      return <ToffoliGlyph width={w} height={h} />;
     case Gate.FREDKIN:
       return <FredkinGlyph width={w} height={h} />;
     case Gate.CONTROLLED_H:

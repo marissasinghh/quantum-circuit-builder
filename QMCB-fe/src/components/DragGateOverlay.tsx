@@ -2,6 +2,7 @@ import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/glob
 import { isToolboxDragId, isSingleQubitGate, isMultiQubitGate } from "../utils/placedGateDrag";
 import { twoQubitGlyphLayout } from "../utils/canvasGeometry";
 import { absoluteWires } from "../utils/twoQubitPlacement";
+import { isPlacedThreeQubitGate } from "../utils/circuit";
 import {
   CNOTGlyph,
   ControlledZGlyph,
@@ -129,7 +130,12 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
   }
 
   if (isMultiQubitGate(gate) && "order" in gate) {
-    const wireSpan = twoQubitOverlaySpan(numberOfQubits, absoluteWires(gate));
+    // Toffoli always spans all 3 wires (no baseWire/extended) — wireSpan is ignored by
+    // multiQubitGlyphDimensions for TOFFOLI/FREDKIN anyway (fixed 3-row height).
+    const wires: readonly [number, number] = isPlacedThreeQubitGate(gate)
+      ? [0, 2]
+      : absoluteWires(gate);
+    const wireSpan = twoQubitOverlaySpan(numberOfQubits, wires);
     const { width, height } = multiQubitGlyphDimensions(gate.type, numberOfQubits, wireSpan);
     return <PlacedMultiQubitOverlayContent gate={gate} width={width} height={height} />;
   }

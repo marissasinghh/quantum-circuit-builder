@@ -17,6 +17,7 @@ import {
 } from "./complexMath";
 import { singleQubitGateMatrix, twoQubitGateMatrix } from "./gateMatrices";
 import { absoluteWires } from "./twoQubitPlacement";
+import { isPlacedThreeQubitGate } from "./circuit";
 
 export type { C as Complex };
 
@@ -30,6 +31,12 @@ function embeddedGateMatrix(gate: PlacedGate, qubitCount: number): ComplexMatrix
     const u2 = singleQubitGateMatrix(gate.type as Gate, gate.theta);
     if (!u2) return null;
     return embedSingleQubit(u2, gate.wire, qubitCount);
+  }
+
+  if (isPlacedThreeQubitGate(gate)) {
+    // Client-side trial preview is display-only and doesn't embed 3-qubit gates yet;
+    // actual grading always goes through the backend Cirq simulation regardless.
+    return null;
   }
 
   const u4 = twoQubitGateMatrix(gate.type as Gate, gate.order);

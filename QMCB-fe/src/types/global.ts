@@ -59,6 +59,13 @@ export type TwoQubitGate =
   | Gate.CONTROLLED_U;
 
 /**
+ * All three-qubit gates available in the toolbox.
+ * Only TOFFOLI is wired for toolbox placement so far — FREDKIN placement is
+ * explicitly out of scope until confirmed separately.
+ */
+export type ThreeQubitGate = Gate.TOFFOLI;
+
+/**
  * For single-qubit placement: which wire the chip sits on.
  * Capped at 2 for the current roadmap (max 3 qubits per level).
  */
@@ -75,13 +82,27 @@ export type TwoQubitBaseWire = 0 | 1;
 export type QubitIndex = 0 | 1 | 2;
 
 /**
- * Parallel `qubit_order` entry for the API: `[a,a]` for a 1q wire, or
- * `[control, target]` absolute indices for a 2q gate (may involve wire 2).
+ * Absolute 3-way wire assignment for a placed 3-qubit gate: `[control, control, target]`.
+ * Unlike 2-qubit `ControlTargetOrder`, this is always absolute (Toffoli occupies all 3
+ * wires on a 3-qubit canvas — there's no baseWire/extended concept to map through).
  */
-export type AnyQubitOrder = readonly [QubitIndex, QubitIndex];
+export type ThreeQubitOrder = readonly [QubitIndex, QubitIndex, QubitIndex];
+
+/**
+ * Parallel `qubit_order` entry for the API: `[a,a]` for a 1q wire, `[control, target]`
+ * absolute indices for a 2q gate (may involve wire 2), or `[control, control, target]`
+ * absolute indices for a 3q gate.
+ */
+export type AnyQubitOrder = readonly [QubitIndex, QubitIndex] | ThreeQubitOrder;
 
 /** Control–target assignment for a 2-qubit gate: [control, target] relative to the pair. */
 export type ControlTargetOrder = readonly [0, 1] | readonly [1, 0];
+
+/**
+ * Which single wire is the Toffoli's target; the other two default to controls.
+ * Distinct from `ControlTargetOrder` (2-state) — this is a 3-way choice.
+ */
+export type ThreeQubitTargetWire = QubitIndex;
 
 /** A step in a quantum circuit: one gate + qubit order. */
 export type GateStep = {
@@ -117,5 +138,20 @@ export type PlacedTwoQubitGate = {
   column: number;
 };
 
+/**
+ * Three-qubit chip placed on the canvas. Always spans all 3 wires of a 3-qubit
+ * level — no `baseWire`/`extended` concept (that's 2-qubit-only, for adjacent-pair
+ * placement on a wider canvas). `order` is absolute `[control, control, target]`,
+ * directly matching the backend's `qubit_orders.py` constants (e.g. `C0_C1_T2`).
+ * Deliberately has no `baseWire` field — code that needs to distinguish this from
+ * `PlacedTwoQubitGate` should check `"baseWire" in g`, not just `"order" in g`.
+ */
+export type PlacedThreeQubitGate = {
+  id: string;
+  type: ThreeQubitGate;
+  order: ThreeQubitOrder;
+  column: number;
+};
+
 /** Any placed gate on the canvas. */
-export type PlacedGate = PlacedSingleQubitGate | PlacedTwoQubitGate;
+export type PlacedGate = PlacedSingleQubitGate | PlacedTwoQubitGate | PlacedThreeQubitGate;
