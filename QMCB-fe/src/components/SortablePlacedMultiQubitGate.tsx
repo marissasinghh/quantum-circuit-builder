@@ -345,7 +345,12 @@ export function multiQubitGlyphDimensions(
 ): { width: number; height: number } {
   const width = 80;
   if (gateType === Gate.TOFFOLI || gateType === Gate.FREDKIN) {
-    return { width, height: numberOfQubits >= 3 ? 90 : width };
+    // Must reach the real canvas wireSpan (wire 0 → wire 2), not a fixed guess —
+    // a hardcoded height here would leave the bottom wire visually untouched by
+    // the glyph even though the underlying `order` data spans all 3 wires.
+    // 90 is only a fallback for degenerate/preview contexts with no real span
+    // (e.g. numberOfQubits < 3), matching ToffoliGlyph's own default height.
+    return { width, height: wireSpan > 0 ? wireSpan + 24 : 90 };
   }
   return { width, height: wireSpan > 0 ? wireSpan + 24 : 52 };
 }

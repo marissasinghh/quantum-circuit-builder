@@ -7,6 +7,7 @@ import {
   CNOTGlyph,
   ControlledZGlyph,
   SwapGlyph,
+  ToffoliGlyph,
   HGlyph,
   TGlyph,
   SGlyph,
@@ -74,6 +75,15 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
           )
         : { width: 84, height: 64 };
 
+    // Toffoli always spans all 3 wires — size preview to the full 0–2 span
+    // (only reachable when numberOfQubits >= 3; that's the only canvas it's
+    // ever toolbox-draggable on).
+    const threeQDims = multiQubitGlyphDimensions(
+      Gate.TOFFOLI,
+      numberOfQubits,
+      twoQubitOverlaySpan(numberOfQubits, [0, 2])
+    );
+
     switch (activeId) {
       case "tool-x":
         return <XGlyph width={64} height={44} />;
@@ -117,6 +127,10 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
         return <YGlyph width={64} height={44} />;
       case "tool-y-dag":
         return <YDagGlyph width={64} height={44} />;
+      case "tool-toffoli":
+        return (
+          <ToffoliGlyph order={[0, 1, 2]} width={threeQDims.width} height={threeQDims.height} />
+        );
       default:
         return null;
     }
