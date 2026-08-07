@@ -134,3 +134,123 @@ describe("CircuitCanvas — placed Toffoli spans the real 3-qubit wire geometry"
     expect(top + height).toBeGreaterThanOrEqual(wireYs[2]);
   });
 });
+
+/**
+ * Regression test for the dashed placement-preview span bug: dragging a Toffoli
+ * (either a fresh toolbox chip or an already-placed one being reordered) must
+ * show a dashed box spanning the FULL 3-wire range, not the old hardcoded
+ * adjacent-pair (2-wire) box that pairDropPreview used for every multi-qubit
+ * gate regardless of arity.
+ */
+describe("CircuitCanvas — Toffoli drag shows a full 3-wire dashed preview", () => {
+  const SQ_H = 40;
+
+  function extractPreviewBox(markup: string): { top: number; height: number } | null {
+    // Locate the dashed-preview div via its distinctive outline style, then read
+    // its top/height back off the same inline style string.
+    const idx = markup.indexOf("outline:2px dashed");
+    if (idx === -1) return null;
+    const tagStart = markup.lastIndexOf("<div", idx);
+    const tagEnd = markup.indexOf(">", idx);
+    const openingTag = markup.slice(tagStart, tagEnd);
+    const topMatch = openingTag.match(/top:([\d.]+)px/);
+    const heightMatch = openingTag.match(/height:([\d.]+)px/);
+    if (!topMatch || !heightMatch) return null;
+    return { top: Number(topMatch[1]), height: Number(heightMatch[1]) };
+  }
+
+  it("toolbox drag of a fresh Toffoli spans wires 0–2, not just an adjacent pair", () => {
+    const numberOfQubits = 3;
+    const wireYs = computeWireYs(numberOfQubits, canvasHeightFor(numberOfQubits));
+    expect(wireYs).toEqual([60, 120, 180]);
+
+    const markup = renderToStaticMarkup(
+      <TooltipProvider>
+        <CircuitCanvas
+          gates={[]}
+          numberOfQubits={numberOfQubits}
+          activeId="tool-toffoli"
+          hoveredCellId="cell-col0-wire1"
+          onRemoveGate={vi.fn()}
+          onSetGateOrder={vi.fn()}
+          onSetThreeQubitTarget={vi.fn()}
+          onSetGateTheta={vi.fn()}
+          onClear={vi.fn()}
+          isChecking={false}
+        />
+      </TooltipProvider>
+    );
+
+    const box = extractPreviewBox(markup);
+    expect(box, "expected a dashed preview box to render for a Toffoli toolbox drag").not.toBeNull();
+    // Full span regardless of which wire is hovered — must reach wire 0's top and wire 2's bottom
+    // (box top/bottom are pairDropPreview's own SQ_H/2-based inset, per its `top:
+    // wireYs[baseWire] - SQ_H/2` computation — not the glyph-container's TWO_QUBIT_GLYPH_Y_PAD).
+    expect(box!.top).toBeCloseTo(wireYs[0] - SQ_H / 2, 5);
+    expect(box!.top + box!.height).toBeCloseTo(wireYs[2] + SQ_H / 2, 5);
+  });
+
+  it("reordering an already-placed Toffoli also spans wires 0–2 (not the old 2-wire pair box)", () => {
+    const numberOfQubits = 3;
+    const wireYs = computeWireYs(numberOfQubits, canvasHeightFor(numberOfQubits));
+
+    const toffoli: PlacedThreeQubitGate = {
+      id: "toffoli-reorder-test",
+      type: Gate.TOFFOLI,
+      order: [0, 1, 2],
+      column: 0,
+    };
+
+    const markup = renderToStaticMarkup(
+      <TooltipProvider>
+        <CircuitCanvas
+          gates={[toffoli]}
+          numberOfQubits={numberOfQubits}
+          activeId={toffoli.id}
+          hoveredCellId="cell-col1-wire1"
+          onRemoveGate={vi.fn()}
+          onSetGateOrder={vi.fn()}
+          onSetThreeQubitTarget={vi.fn()}
+          onSetGateTheta={vi.fn()}
+          onClear={vi.fn()}
+          isChecking={false}
+        />
+      </TooltipProvider>
+    );
+
+    const box = extractPreviewBox(markup);
+    expect(box, "expected a dashed preview box when reordering a placed Toffoli").not.toBeNull();
+    expect(box!.top).toBeCloseTo(wireYs[0] - SQ_H / 2, 5);
+    expect(box!.top + box!.height).toBeCloseTo(wireYs[2] + SQ_H / 2, 5);
+  });
+
+  it("CNOT drag preview is unchanged — still a 2-wire adjacent-pair box", () => {
+    const numberOfQubits = 3;
+    const wireYs = computeWireYs(numberOfQubits, canvasHeightFor(numberOfQubits));
+
+    const markup = renderToStaticMarkup(
+      <TooltipProvider>
+        <CircuitCanvas
+          gates={[]}
+          numberOfQubits={numberOfQubits}
+          activeId="tool-cnot"
+          hoveredCellId="cell-col0-wire0"
+          onRemoveGate={vi.fn()}
+          onSetGateOrder={vi.fn()}
+          onSetThreeQubitTarget={vi.fn()}
+          onSetGateTheta={vi.fn()}
+          onClear={vi.fn()}
+          isChecking={false}
+        />
+      </TooltipProvider>
+    );
+
+    const box = extractPreviewBox(markup);
+    expect(box, "expected a dashed preview box for a CNOT drag").not.toBeNull();
+    // Adjacent-pair span (wires 0-1), NOT the full 0-2 Toffoli span.
+    expect(box!.top).toBeCloseTo(wireYs[0] - SQ_H / 2, 5);
+    const bottomEdge = box!.top + box!.height;
+    expect(bottomEdge).toBeLessThan(wireYs[2]);
+    expect(bottomEdge).toBeCloseTo(wireYs[1] + SQ_H / 2, 5);
+  });
+});

@@ -46,9 +46,13 @@ const XMark = ({ cx, cy, size = 7 }: { cx: number; cy: number; size?: number }) 
  * Exported so the target-wire picker (SortablePlacedMultiQubitGate) can align
  * its per-wire buttons exactly with the glyph's wire lines.
  */
-export function threeWireYs(height: number, pad = 10): [number, number, number] {
-  const y0 = pad + 8;
-  const y2 = height - pad - 8;
+export function threeWireYs(height: number, pad = 12): [number, number, number] {
+  // `pad` is the vertical edge-inset in the SAME convention as TWO_QUBIT_GLYPH_Y_PAD
+  // (canvasGeometry.ts) — the container positions the glyph's box at
+  // `wireYs[0] - TWO_QUBIT_GLYPH_Y_PAD`, so wire 0 here must land exactly `pad` px
+  // from the box's top edge (matching CNOTGlyph's own `yTop = 12`), not pad+8.
+  const y0 = pad;
+  const y2 = height - pad;
   const y1 = (y0 + y2) / 2;
   return [y0, y1, y2];
 }
@@ -223,19 +227,30 @@ export function ToffoliGlyph({
   order = [0, 1, 2],
   width = 80,
   height = 90,
+  controlRadius = 5,
+  targetRadius = 9,
 }: {
   order?: ThreeQubitOrder;
   width?: number;
   height?: number;
+  /** Control-dot radius. Canvas default 5; toolbox passes a smaller value (see SwapGlyph's markSize precedent). */
+  controlRadius?: number;
+  /** Target ⊕ backing-circle radius. Canvas default 9; toolbox passes a smaller value. */
+  targetRadius?: number;
 }) {
+  // Horizontal wire inset (x-axis) is independent of the vertical wire-position
+  // inset used by threeWireYs — don't conflate the two, or the vertical fix here
+  // would inadvertently shift the wires' horizontal endpoints too.
   const pad = 10;
-  const wireYs = threeWireYs(height, pad);
+  const wireYs = threeWireYs(height);
   const cx = width / 2;
 
   const [control0, control1, target] = order;
   const controlY0 = wireYs[control0];
   const controlY1 = wireYs[control1];
   const targetY = wireYs[target];
+  // Plus mark scales with the target circle so it stays proportionally sized inside it.
+  const plusRadius = targetRadius * (5 / 9);
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="Toffoli">
@@ -247,10 +262,10 @@ export function ToffoliGlyph({
           regardless of which wires are controls vs. target. */}
       <line x1={cx} y1={wireYs[0]} x2={cx} y2={wireYs[2]} stroke={colors.cyan} strokeWidth={2} />
 
-      <circle cx={cx} cy={controlY0} r={5} fill={colors.cyan} />
-      <circle cx={cx} cy={controlY1} r={5} fill={colors.cyan} />
-      <circle cx={cx} cy={targetY} r={9} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
-      <Plus cx={cx} cy={targetY} r={5} />
+      <circle cx={cx} cy={controlY0} r={controlRadius} fill={colors.cyan} />
+      <circle cx={cx} cy={controlY1} r={controlRadius} fill={colors.cyan} />
+      <circle cx={cx} cy={targetY} r={targetRadius} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
+      <Plus cx={cx} cy={targetY} r={plusRadius} />
     </svg>
   );
 }
@@ -263,8 +278,10 @@ export function FredkinGlyph({
   width?: number;
   height?: number;
 }) {
+  // See ToffoliGlyph: horizontal wire inset is independent of the vertical
+  // wire-position inset used by threeWireYs.
   const pad = 10;
-  const [y0, y1, y2] = threeWireYs(height, pad);
+  const [y0, y1, y2] = threeWireYs(height);
   const cx = width / 2;
   const bridgeHalf = (y2 - y1) * 0.38;
 

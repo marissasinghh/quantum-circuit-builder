@@ -3,6 +3,7 @@ import type { Active, ClientRect, DroppableContainer } from "@dnd-kit/core";
 
 import {
   cellFirstCollision,
+  isThreeQubitActiveDrag,
   isTwoQubitActiveDrag,
   resolvePairBaseWireFromPointerY,
 } from "./collisionDetection";
@@ -55,6 +56,39 @@ describe("isTwoQubitActiveDrag", () => {
     ).toBe(true);
     expect(
       isTwoQubitActiveDrag(asActive({ id: "tool-rz", data: { current: undefined } })),
+    ).toBe(false);
+  });
+
+  it("a Toffoli (3-qubit) drag is excluded from the 2-qubit pair-midpoint path", () => {
+    // Placed Toffoli reorder: multiQubit=true (shared flag) but threeQubit=true too.
+    expect(
+      isTwoQubitActiveDrag(
+        asActive({ id: "toffoli-1", data: { current: { multiQubit: true, threeQubit: true } } }),
+      ),
+    ).toBe(false);
+    // Toolbox Toffoli drag: inferred via TOOL_TO_GATE, no explicit data.
+    expect(
+      isTwoQubitActiveDrag(asActive({ id: "tool-toffoli", data: { current: undefined } })),
+    ).toBe(false);
+  });
+});
+
+describe("isThreeQubitActiveDrag", () => {
+  it("reads threeQubit from drag data", () => {
+    expect(
+      isThreeQubitActiveDrag(asActive({ id: "toffoli-1", data: { current: { threeQubit: true } } })),
+    ).toBe(true);
+    expect(
+      isThreeQubitActiveDrag(asActive({ id: "cnot-1", data: { current: { threeQubit: false } } })),
+    ).toBe(false);
+  });
+
+  it("infers toolbox 3q from tool id when data is absent", () => {
+    expect(
+      isThreeQubitActiveDrag(asActive({ id: "tool-toffoli", data: { current: undefined } })),
+    ).toBe(true);
+    expect(
+      isThreeQubitActiveDrag(asActive({ id: "tool-cnot", data: { current: undefined } })),
     ).toBe(false);
   });
 });

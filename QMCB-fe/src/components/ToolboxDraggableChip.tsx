@@ -26,8 +26,21 @@ export const TOOLBOX_CHIP_LABEL_CLASS =
 const TOOLBOX_GLYPH_W = 40;
 const TOOLBOX_GLYPH_H = 48;
 
-/** Taller footprint for 3-wire glyphs (Toffoli) so wires stay legibly spaced. */
-const TOOLBOX_GLYPH_THREE_Q_H = 60;
+/**
+ * Taller footprint for 3-wire glyphs (Toffoli) so wires stay legibly spaced.
+ * Grown from 60 to use more of the TOOLBOX_CHIP_THREE_Q_H (72px) chip's height
+ * that was previously left unused — more vertical room means the symbols
+ * (below) can shrink less aggressively while still not crowding each other.
+ */
+const TOOLBOX_GLYPH_THREE_Q_H = 66;
+
+/**
+ * Toffoli symbol sizes at toolbox scale — smaller than the canvas defaults
+ * (5/9) so the control dots and target circle don't crowd each other at this
+ * glyph's tighter wire spacing. Same precedent as SwapGlyph's `markSize` prop.
+ */
+const TOOLBOX_TOFFOLI_CONTROL_R = 4;
+const TOOLBOX_TOFFOLI_TARGET_R = 7;
 
 /** Gates that render a circuit glyph instead of a text label. */
 function isGlyphToolboxGate(gate: Gate): boolean {
@@ -68,6 +81,8 @@ function ToolboxGateContent({ gate }: { gate: Gate }) {
           order={[0, 1, 2]}
           width={TOOLBOX_GLYPH_W}
           height={TOOLBOX_GLYPH_THREE_Q_H}
+          controlRadius={TOOLBOX_TOFFOLI_CONTROL_R}
+          targetRadius={TOOLBOX_TOFFOLI_TARGET_R}
         />
       );
     default:

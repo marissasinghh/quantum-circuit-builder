@@ -29,13 +29,14 @@ import {
 } from "../utils/canvasGeometry";
 import { baseWireFromDropWire } from "../utils/wireValidation";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
-import { isTwoQubitToolboxGate } from "../config/gates";
+import { isTwoQubitToolboxGate, isThreeQubitToolboxGate } from "../config/gates";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
 import { useCircuitPreview } from "../hooks/useCircuitPreview";
 
 const CELL_HOVER_RE = /^cell-col(\d+)-wire(\d+)$/;
 
+/** True when the active drag is a 2-wire (adjacent-pair) multi-qubit gate — CNOT/CZ/SWAP. */
 function isActiveTwoQubitDrag(activeId: string | null, gates: PlacedGate[]): boolean {
   if (!activeId) return false;
   if (isToolboxDragId(activeId)) {
@@ -43,7 +44,18 @@ function isActiveTwoQubitDrag(activeId: string | null, gates: PlacedGate[]): boo
     return gate != null && isTwoQubitToolboxGate(gate);
   }
   const gate = gates.find((g) => g.id === activeId);
-  return gate !== undefined && "order" in gate;
+  return gate !== undefined && "order" in gate && !isPlacedThreeQubitGate(gate);
+}
+
+/** True when the active drag is a 3-wire gate (Toffoli) — always spans the full canvas. */
+function isActiveThreeQubitDrag(activeId: string | null, gates: PlacedGate[]): boolean {
+  if (!activeId) return false;
+  if (isToolboxDragId(activeId)) {
+    const gate = TOOL_TO_GATE[activeId];
+    return gate != null && isThreeQubitToolboxGate(gate);
+  }
+  const gate = gates.find((g) => g.id === activeId);
+  return gate !== undefined && isPlacedThreeQubitGate(gate);
 }
 
 interface CircuitCanvasProps {
@@ -145,18 +157,24 @@ export function CircuitCanvas({
   const wireYs = computeWireYs(numberOfQubits, canvasH);
 
   const twoQubitDrag = isActiveTwoQubitDrag(activeId, gates);
+  const threeQubitDrag = isActiveThreeQubitDrag(activeId, gates);
 
-  // Pair-spanning dashed box for 2q drops; 1q still uses per-cell isActiveTarget.
+  // Multi-wire dashed drop preview: full 3-wire span for Toffoli, adjacent-pair
+  // for CNOT/CZ/SWAP; 1q still uses per-cell isActiveTarget.
   let pairDropPreview: { left: number; top: number; width: number; height: number } | null =
     null;
-  if (twoQubitDrag && hoveredCellId) {
+  if ((twoQubitDrag || threeQubitDrag) && hoveredCellId) {
     const m = hoveredCellId.match(CELL_HOVER_RE);
     if (m) {
       const col = parseInt(m[1], 10);
-      const wire = parseInt(m[2], 10);
-      const baseWire = baseWireFromDropWire(wire, numberOfQubits);
-      // Drop targeting remains adjacent-pair only (Phase 3+ may extend).
-      const { wireSpan } = twoQubitGlyphLayout(wireYs, [baseWire, baseWire + 1]);
+      // Toffoli always occupies wires 0..n-1 regardless of hovered wire — same
+      // "always full span" rule the committed ToffoliGlyph/layout code already
+      // follows (see the isPlacedThreeQubitGate branch below).
+      const baseWire = threeQubitDrag
+        ? 0
+        : baseWireFromDropWire(parseInt(m[2], 10), numberOfQubits);
+      const hiWire = threeQubitDrag ? numberOfQubits - 1 : baseWire + 1;
+      const { wireSpan } = twoQubitGlyphLayout(wireYs, [baseWire, hiWire]);
       pairDropPreview = {
         left: PAD_X + col * COL_W - SQ_W / 2,
         top: (wireYs[baseWire] ?? 0) - SQ_H / 2,
@@ -209,7 +227,7 @@ export function CircuitCanvas({
                   top={y - SQ_H / 2}
                   width={SQ_W}
                   height={SQ_H}
-                  isActiveTarget={!twoQubitDrag && hoveredCellId === cellId}
+                  isActiveTarget={!twoQubitDrag && !threeQubitDrag && hoveredCellId === cellId}
                 />
               );
             })
