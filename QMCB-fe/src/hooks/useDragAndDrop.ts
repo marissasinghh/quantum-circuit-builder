@@ -27,15 +27,39 @@
 import { useState, useCallback, useRef } from "react";
 import type { DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core";
 import {
+  Gate,
   type TwoQubitGate,
   type SingleQubitGate,
   type PlacedGate,
   type SingleWire,
+  type ControlTargetOrder,
 } from "../types/global";
 import { isToolboxDragId, isPlacedGateId } from "../utils/placedGateDrag";
 import { isValidSingleWire, baseWireFromDropWire } from "../utils/wireValidation";
 import { isTwoQubitToolboxGate } from "../config/gates";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
+import { C1_T0 } from "../utils/constants";
+
+/**
+ * Level-specific spawn-order overrides for two-qubit toolbox chips.
+ *
+ * Narrow, targeted escape hatch — NOT a general toolbox-config system.
+ * Level 2.1 (CNOT_FLIPPED) requires its canonical H-sandwich CNOT step to be
+ * at C1_T0, but the on-chip flip control is gated behind cnotFlipUnlocked,
+ * which only becomes true once 2.1 is cleared. Without this override the
+ * level would be unsolvable (no way to reach C1_T0 before clearing it).
+ * Every other level continues to fall through to DEFAULT_QUBIT_ORDER.
+ */
+const LEVEL_SPECIFIC_TWO_QUBIT_SPAWN_ORDER: Partial<
+  Record<string, Partial<Record<TwoQubitGate, ControlTargetOrder>>>
+> = {
+  [Gate.CNOT_FLIPPED]: { [Gate.CNOT]: C1_T0 },
+};
+
+function spawnOrderFor(levelId: string | undefined, gate: TwoQubitGate): ControlTargetOrder | undefined {
+  if (!levelId) return undefined;
+  return LEVEL_SPECIFIC_TWO_QUBIT_SPAWN_ORDER[levelId]?.[gate];
+}
 
 const TOUCH_DND_ACTIVE_CLASS = "touch-dnd-active";
 
@@ -77,9 +101,15 @@ export function useDragAndDrop(
   gates: PlacedGate[],
   numberOfQubits: number,
   addSingleQubitGate: (gate: SingleQubitGate, wire: SingleWire, column?: number) => void,
-  addTwoQubitGate: (gate: TwoQubitGate, column?: number, baseWire?: 0 | 1) => void,
+  addTwoQubitGate: (
+    gate: TwoQubitGate,
+    column?: number,
+    baseWire?: 0 | 1,
+    initialOrder?: ControlTargetOrder
+  ) => void,
   moveGate: (id: string, to: number, wire?: SingleWire) => void,
-  removeGate: (id: string) => void
+  removeGate: (id: string) => void,
+  levelId?: string
 ) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
@@ -195,12 +225,13 @@ export function useDragAndDrop(
 
       if (isTwoQubitToolboxGate(gateType)) {
         const baseWire = baseWireFromDropWire(wire, numberOfQubits);
-        addTwoQubitGate(gateType, col, baseWire);
+        const initialOrder = spawnOrderFor(levelId, gateType);
+        addTwoQubitGate(gateType, col, baseWire, initialOrder);
       } else if (isValidSingleWire(wire, numberOfQubits)) {
         addSingleQubitGate(gateType as SingleQubitGate, wire, col);
       }
     },
-    [gates, numberOfQubits, moveGate, removeGate, addTwoQubitGate, addSingleQubitGate]
+    [gates, numberOfQubits, moveGate, removeGate, addTwoQubitGate, addSingleQubitGate, levelId]
   );
 
   return {
