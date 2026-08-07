@@ -78,10 +78,17 @@ const SPAN_CONTROL_GATES = new Set<Gate>([
  */
 const THREE_QUBIT_TARGET_PICKER_GATES = new Set<Gate>([Gate.TOFFOLI]);
 
-/** Diameter of each per-wire target-picker button (px) — keep in sync with the class below. */
+/**
+ * Diameter of each per-wire target-picker button (px) — keep in sync with the class below.
+ * Anchored flush with the chip's own right edge (`right-0`), same convention as the
+ * flip icon (CHIP_CTRL_BTN, `top-0 right-0`) — NOT an arbitrary outward offset. The
+ * real horizontal gap to the next gate column is CANVAS_COL_W(90) - chip width(80) =
+ * 10px, too small to safely sit outside the chip without drifting into the next
+ * column, so the picker stays inside/flush with the chip's own bounds instead.
+ */
 const TARGET_PICKER_BTN_SIZE = 16;
 const TARGET_PICKER_BTN_BASE =
-  "absolute -right-[20px] z-10 w-[16px] h-[16px] flex items-center justify-center rounded-full border font-mono text-[9px] leading-none cursor-pointer";
+  "absolute right-0 z-10 w-[16px] h-[16px] flex items-center justify-center rounded-full border font-mono text-[9px] leading-none cursor-pointer";
 
 /** Shared chip-control chrome — flip stays at this size. */
 const CHIP_CTRL_BTN =
@@ -166,7 +173,14 @@ export function SortablePlacedMultiQubitGate({
 }: SortablePlacedMultiQubitGateProps) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: gate.id,
-    data: { type: "placed", wire: 0, multiQubit: true },
+    data: {
+      type: "placed",
+      wire: 0,
+      multiQubit: true,
+      // Distinguishes Toffoli (full-span, no adjacent-pair concept) from 2-wire
+      // gates for collisionDetection's hover-cell resolution.
+      threeQubit: isPlacedThreeQubitGate(gate),
+    },
   });
 
   const handleDoubleTap = useDoubleTap(() => onRemoveGate(gate.id));
@@ -345,7 +359,12 @@ export function multiQubitGlyphDimensions(
 ): { width: number; height: number } {
   const width = 80;
   if (gateType === Gate.TOFFOLI || gateType === Gate.FREDKIN) {
-    return { width, height: numberOfQubits >= 3 ? 90 : width };
+    // Must reach the real canvas wireSpan (wire 0 → wire 2), not a fixed guess —
+    // a hardcoded height here would leave the bottom wire visually untouched by
+    // the glyph even though the underlying `order` data spans all 3 wires.
+    // 90 is only a fallback for degenerate/preview contexts with no real span
+    // (e.g. numberOfQubits < 3), matching ToffoliGlyph's own default height.
+    return { width, height: wireSpan > 0 ? wireSpan + 24 : 90 };
   }
   return { width, height: wireSpan > 0 ? wireSpan + 24 : 52 };
 }

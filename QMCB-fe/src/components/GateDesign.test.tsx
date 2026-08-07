@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ToffoliGlyph, SwapGlyph } from "./GateDesign";
+import { ToffoliGlyph, SwapGlyph, threeWireYs } from "./GateDesign";
 import { Gate } from "../types/global";
 import { append, serializeOrders, setThreeQubitOrder } from "../utils/circuit";
 import { threeQubitOrderForTarget } from "../utils/constants";
@@ -99,6 +99,78 @@ describe("ToffoliGlyph", () => {
     // this is literally what gets POSTed as `qubit_order` and fed to the backend's
     // `CirqGateMapper.apply()`, which is positional in the identical way (see docblock).
     expect(serializeOrders(gates)).toEqual([order]);
+  });
+
+  /**
+   * Alignment fix (post-multiQubitGlyphDimensions height fix): threeWireYs's
+   * vertical inset must match TWO_QUBIT_GLYPH_Y_PAD (12px, canvasGeometry.ts) —
+   * the SAME convention CNOTGlyph's own `yTop = 12` already uses — not the old
+   * `pad + 8 = 18` inset. Checked EXACTLY (not "close to") at two different
+   * heights so the fix isn't correct only by coincidence at one glyph size.
+   */
+  it("threeWireYs wire-0/wire-2 land at exactly pad px from top/bottom (matches CNOTGlyph's 12px convention)", () => {
+    // Canvas-typical: container top = wireYs[0] - 12, height = wireSpan + 24.
+    // For wireYs = [60, 120, 180]: top = 48, height = 144.
+    expect(threeWireYs(144)).toEqual([12, 72, 132]);
+
+    // Toolbox-typical height.
+    expect(threeWireYs(60)).toEqual([12, 30, 48]);
+  });
+
+  it("ToffoliGlyph's rendered <circle> cy values land exactly on the real canvas wire y-coordinates", () => {
+    const containerTop = 48;
+    const height = 144;
+    const realWireYs = [60, 120, 180]; // wireYs[0..2] for a 3-qubit canvas
+
+    const markup = renderToStaticMarkup(<ToffoliGlyph order={[0, 1, 2]} width={80} height={height} />);
+    const cys = circleCys(markup);
+    expect(cys).toHaveLength(3);
+
+    const absoluteCys = cys.map((cy) => containerTop + cy);
+    expect(absoluteCys).toEqual(realWireYs);
+  });
+
+  /**
+   * Toolbox-glyph crowding fix: ToffoliGlyph's dot/target radii were hardcoded
+   * absolute pixels (5/5/9), never scaled down for the toolbox's compact
+   * height — guaranteeing overlap at small sizes. `controlRadius`/`targetRadius`
+   * (mirroring SwapGlyph's `markSize` precedent) let the toolbox pass smaller
+   * values. Verify no two adjacent symbols' bounding circles overlap at
+   * toolbox scale, and that canvas rendering (defaults) is unchanged.
+   */
+  it("at toolbox dimensions with smaller radii, no two adjacent symbols overlap", () => {
+    const height = 66;
+    const controlRadius = 4;
+    const targetRadius = 7;
+    const wireYs = threeWireYs(height); // [12, 33, 54] — spacing 21px
+
+    const markup = renderToStaticMarkup(
+      <ToffoliGlyph
+        order={[0, 1, 2]}
+        width={40}
+        height={height}
+        controlRadius={controlRadius}
+        targetRadius={targetRadius}
+      />
+    );
+    const cys = circleCys(markup);
+    expect(cys).toEqual(wireYs);
+
+    // Adjacent pairs: (control0, control1) and (control1, target).
+    const radii = [controlRadius, controlRadius, targetRadius];
+    for (let i = 0; i < cys.length - 1; i++) {
+      const centerDistance = cys[i + 1] - cys[i];
+      const radiusSum = radii[i] + radii[i + 1];
+      expect(centerDistance).toBeGreaterThanOrEqual(radiusSum);
+    }
+  });
+
+  it("canvas rendering is unchanged by the new radius props (defaults match the old hardcoded 5/5/9)", () => {
+    const withDefaults = renderToStaticMarkup(<ToffoliGlyph order={[0, 1, 2]} width={80} height={144} />);
+    const withExplicitOldValues = renderToStaticMarkup(
+      <ToffoliGlyph order={[0, 1, 2]} width={80} height={144} controlRadius={5} targetRadius={9} />
+    );
+    expect(withDefaults).toEqual(withExplicitOldValues);
   });
 });
 

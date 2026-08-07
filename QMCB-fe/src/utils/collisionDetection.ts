@@ -22,13 +22,30 @@
 
 import type { Active, CollisionDetection } from "@dnd-kit/core";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
-import { isTwoQubitToolboxGate } from "../config/gates";
+import { isTwoQubitToolboxGate, isThreeQubitToolboxGate } from "../config/gates";
 
 const CELL_ID_RE = /^cell-col(\d+)-wire(\d+)$/;
+
+/**
+ * True when the active drag is a 3-wire gate (Toffoli). Its cell resolution
+ * doesn't need pair-midpoint Y targeting at all — it always occupies the full
+ * wire span regardless of which wire is hovered (moveGate/addThreeQubitGate
+ * discard the resolved wire for 3-qubit gates), so it's excluded from
+ * `isTwoQubitActiveDrag`'s pair logic below rather than routed through it.
+ */
+export function isThreeQubitActiveDrag(active: Active | null | undefined): boolean {
+  if (!active) return false;
+  const data = active.data.current as { threeQubit?: boolean } | undefined;
+  if (data?.threeQubit === true) return true;
+  if (data?.threeQubit === false) return false;
+  const gate = TOOL_TO_GATE[String(active.id)];
+  return gate != null && isThreeQubitToolboxGate(gate);
+}
 
 /** True when the active drag should use pair-midpoint Y targeting. */
 export function isTwoQubitActiveDrag(active: Active | null | undefined): boolean {
   if (!active) return false;
+  if (isThreeQubitActiveDrag(active)) return false;
   const data = active.data.current as { multiQubit?: boolean } | undefined;
   if (data?.multiQubit === true) return true;
   if (data?.multiQubit === false) return false;

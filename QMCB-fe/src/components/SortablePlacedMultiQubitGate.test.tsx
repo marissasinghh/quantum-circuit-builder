@@ -85,6 +85,30 @@ describe("SortablePlacedMultiQubitGate target-wire picker", () => {
     expect(markup).not.toContain("the target");
   });
 
+  it("anchors the picker flush with the chip's own right edge (right-0), not outside it", () => {
+    // Fix C regression guard: the old `-right-[20px]` offset overshot the real
+    // ~10px inter-column gap (CANVAS_COL_W 90 - chip width 80) and visually
+    // drifted into the next gate's column. The picker must now sit at right-0,
+    // the same anchor convention CHIP_CTRL_BTN/the flip icon already use.
+    const markup = renderToStaticMarkup(
+      <SortablePlacedMultiQubitGate
+        gate={toffoli}
+        left={0}
+        top={0}
+        width={80}
+        height={90}
+        numberOfQubits={3}
+        onRemoveGate={vi.fn()}
+        onSetThreeQubitTarget={vi.fn()}
+      />
+    );
+    expect(markup).not.toContain("-right-[20px]");
+    // Flush "right-0" anchor (no flip icon rendered here — onSetGateOrder isn't
+    // passed — so all 3 occurrences must be the picker's own buttons).
+    const rightZeroCount = (markup.match(/right-0/g) ?? []).length;
+    expect(rightZeroCount).toBe(3);
+  });
+
   it("does not render the picker for a 2-qubit gate (CNOT) even if the handler is provided", () => {
     const markup = renderToStaticMarkup(
       <SortablePlacedMultiQubitGate

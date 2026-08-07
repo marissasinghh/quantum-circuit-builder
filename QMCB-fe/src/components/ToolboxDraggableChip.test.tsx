@@ -25,6 +25,14 @@ describe("ToolboxDraggableChip — 3-qubit plumbing does not leak from TOFFOLI t
     );
     expect(markup).toContain('aria-label="Toffoli"');
     expect(markup).toContain("h-[72px]");
+
+    // Crowding fix: toolbox chip renders smaller control/target radii (4/7,
+    // not the canvas's 5/9) so the 3 symbols don't overlap at this compact
+    // glyph height — see GateDesign.test.tsx for the geometric non-overlap check.
+    const radii = [...markup.matchAll(/<circle cx="[\d.]+" cy="[\d.]+" r="([\d.]+)"/g)].map((m) =>
+      Number(m[1])
+    );
+    expect(radii).toEqual([4, 4, 7]);
   });
 
   it("renders FREDKIN as a plain text-label chip (no Toffoli glyph, no taller chip height)", () => {
