@@ -19,9 +19,9 @@ import { useMemo } from "react";
 import { insertAt, moveGate } from "../utils/circuit";
 import { isPlacedGateId, isSingleQubitGate, isToolboxDragId } from "../utils/placedGateDrag";
 import { isValidSingleWire, baseWireFromDropWire } from "../utils/wireValidation";
-import { isTwoQubitToolboxGate, isThreeQubitToolboxGate } from "../config/gates";
+import { isTwoQubitToolboxGate } from "../config/gates";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
-import { DEFAULT_QUBIT_ORDER, DEFAULT_THREE_QUBIT_ORDER } from "../utils/constants";
+import { DEFAULT_QUBIT_ORDER } from "../utils/constants";
 import type { PlacedGate, SingleQubitGate, SingleWire } from "../types/global";
 
 const CELL_RE = /^cell-col(\d+)-wire(\d+)$/;
@@ -66,14 +66,7 @@ export function useCircuitPreview(
       if (!gateType) return null;
 
       let temp: PlacedGate;
-      if (isThreeQubitToolboxGate(gateType)) {
-        temp = {
-          id: TOOLBOX_PREVIEW_ID,
-          type: gateType,
-          order: DEFAULT_THREE_QUBIT_ORDER,
-          column: 0,
-        };
-      } else if (isTwoQubitToolboxGate(gateType)) {
+      if (isTwoQubitToolboxGate(gateType)) {
         temp = {
           id: TOOLBOX_PREVIEW_ID,
           type: gateType,

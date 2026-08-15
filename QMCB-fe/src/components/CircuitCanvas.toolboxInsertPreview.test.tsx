@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { Gate, type PlacedGate, type PlacedSingleQubitGate, type PlacedTwoQubitGate } from "../types/global";
+import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/global";
 import { CircuitCanvas } from "./CircuitCanvas";
 import { TooltipProvider } from "./Tooltip";
 import { CANVAS_COL_W, CANVAS_PAD_X } from "../utils/canvasGeometry";
@@ -15,7 +15,6 @@ import { formatGateDisplayName } from "../utils/gateDisplayNames";
 
 const SQ_W = 44;
 const SQ_H = 40;
-const MULTI_W = 80;
 
 function leftForColumn(col: number, chipWidth: number): number {
   return CANVAS_PAD_X + col * CANVAS_COL_W - chipWidth / 2;
@@ -85,13 +84,6 @@ function extractChipTop(markup: string, ariaLabel: string): number {
 const x0: PlacedSingleQubitGate = { id: "x0", type: Gate.X, wire: 0, column: 0 };
 const z1: PlacedSingleQubitGate = { id: "z1", type: Gate.Z, wire: 0, column: 1 };
 const hWire1: PlacedSingleQubitGate = { id: "h1", type: Gate.H, wire: 1, column: 1 };
-const cnot0: PlacedTwoQubitGate = {
-  id: "cnot0",
-  type: Gate.CNOT,
-  order: [0, 1],
-  baseWire: 0,
-  column: 0,
-};
 
 describe("CircuitCanvas — toolbox hover slides neighbors (insert preview)", () => {
   it("1q toolbox hover mid-circuit shifts later chips one column right", () => {
@@ -119,15 +111,6 @@ describe("CircuitCanvas — toolbox hover slides neighbors (insert preview)", ()
       leftForColumn(0, SQ_W),
     );
     expect(extractChipLeft(hovering, `${formatGateDisplayName(Gate.H)} gate on wire 1`)).toBe(
-      leftForColumn(2, SQ_W),
-    );
-  });
-
-  it("3q toolbox hover mid-circuit shifts later chips including a placed CNOT", () => {
-    const later: PlacedSingleQubitGate = { id: "z2", type: Gate.Z, wire: 2, column: 1 };
-    const hovering = renderCanvas([cnot0, later], 3, "tool-toffoli", "cell-col1-wire1");
-    expect(extractChipLeft(hovering, `${Gate.CNOT} gate`)).toBe(leftForColumn(0, MULTI_W));
-    expect(extractChipLeft(hovering, `${formatGateDisplayName(Gate.Z)} gate on wire 2`)).toBe(
       leftForColumn(2, SQ_W),
     );
   });
