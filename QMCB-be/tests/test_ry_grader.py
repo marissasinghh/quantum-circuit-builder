@@ -1,39 +1,28 @@
 """
 RY grader diagnostic and regression tests.
 
-Run from QMCB-be:
-    pytest testing/test_ry_grader.py -v
+Run from the QMCB-be folder:
+    python -m pytest tests/test_ry_grader.py -v
 """
 
 from __future__ import annotations
 
 import math
-import os
-import sys
 
 import cirq
 import numpy as np
 import pytest
 
-_BACKEND_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if _BACKEND_ROOT not in sys.path:
-    sys.path.insert(0, _BACKEND_ROOT)
-
-from app.controllers.simulate import _substitute_theta_in_gates, simulate_unitaries
-from app.dto.simulate_request import SimulateRequestDTO, TargetParamsDTO
+from app.controllers.simulate import _substitute_theta_in_gates
 from app.dto.unitary import UnitaryDTO
 from app.services.circuit_builder import CircuitBuilder
 from app.utils.constants import Gate
 from app.utils.helpers import initialize_qubit_sequence
+from tests.simulate_helpers import run_simulate
 
 
 def _run(trial: UnitaryDTO, target_name: str):
-    request = SimulateRequestDTO(
-        target_unitary=target_name,
-        trial=trial,
-        target_params=TargetParamsDTO(),
-    )
-    return simulate_unitaries(request, validate_target=False)
+    return run_simulate(trial, target_name, validate_target=False)
 
 
 @pytest.fixture
