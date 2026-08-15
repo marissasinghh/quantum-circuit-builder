@@ -1,22 +1,26 @@
 """
-Verification script: print the exact cirq.dirac_notation output for every
-level / basis-state combination, using the same code path as production.
+Print the exact cirq.dirac_notation output for every level / basis-state
+combination, using the same code path as production.
+
+Use this when adding a TARGET_LIBRARY entry: copy the repr() strings into
+expected_outputs. Not a pytest file — live checks already live in tests/.
 
 Run from the QMCB-be directory:
-    python -m testing.verify_dirac
+    python scripts/verify_dirac.py
 """
 
-import sys
+import logging
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from app.config.target_library import TARGET_LIBRARY
 from app.services.circuit_builder import CircuitBuilder
 from app.services.simulator import CircuitSimulator
 from app.services.target_builder import TargetUnitaryBuilder
-from app.utils.helpers import initialize_qubit_sequence, generate_basis_states, format_ket
-from app.config.target_library import TARGET_LIBRARY
 from app.utils.constants import TargetLibraryField
+from app.utils.helpers import format_ket, generate_basis_states, initialize_qubit_sequence
 
 
 def verify_level(level_name: str) -> None:
@@ -42,15 +46,11 @@ def verify_level(level_name: str) -> None:
 
 
 if __name__ == "__main__":
-    import logging
-    import io
-
     logging.disable(logging.CRITICAL)
 
     # Write to file to avoid Windows cp1252 encoding issues with ⟩ character
     out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dirac_results.txt")
     with open(out_path, "w", encoding="utf-8") as f:
-        # Redirect print to both file and stdout-safe buffer
         original_stdout = sys.stdout
         sys.stdout = f
 

@@ -277,10 +277,11 @@ reintroduce it.)
   constant — verify current enforcement status before assuming it's wired everywhere.
 
 ### Testing
-- Backend: pytest, `QMCB-be/tests/`.
-- Frontend: Vitest exists now for gate-math golden tests (confirm current coverage before
-  assuming a given gate/level has tests).
-- Always verify AI-generated quantum math against a reference before committing.
+- Pytest lives in `QMCB-be/tests/` only — do not add a `testing/` folder
+- k6 load tests live in `QMCB-be/load-tests/`
+- One-off backend scripts live in `QMCB-be/scripts/`
+- Frontend tests are Vitest (`*.test.ts` / `*.test.tsx` next to source)
+- Always verify AI-generated quantum math against a reference (Nielsen & Chuang, or known Cirq output)
 
 ### What NOT to do
 - Do not suggest a second CORS wrapper (single application in `__init__.py` — verify `main.py`
@@ -310,12 +311,15 @@ reintroduce it.)
 | `get_unitary()` dead code | `target_builder.py` | Still present, still legacy — leave alone |
 | `run_and_measure` path unused | `simulator.py` | Still present, still unused — leave alone |
 
-## Not Re-Verified This Pass (check before relying on)
-`testing/mwe.py`, `testing/bug_testing.py`, `index.html` title, README `/simulate` path,
-`Toolbox.tsx` `activeId` prop usage, exact current enforcement of `uiMaxGates`. These were
-flagged fixed in earlier project logs but weren't independently re-confirmed in the audit that
-produced this file — if any of these come up in a task, do a quick existence/state check first
-rather than trusting either "fixed" or "still broken" claims from older docs.
+| Bug | Location | Status |
+|-----|----------|--------|
+| `"validation_mode:"` trailing colon in response key | `controllers/simulate.py` | Fix in Week 1 |
+| Double CORS application | `main.py` + `__init__.py` | Remove from `main.py` in Week 1 |
+| Stale `index.html` title "SWAP Prototype" | `index.html` | Fix in Week 1 |
+| README documents `/simulate` but actual path is `/api/simulate` | `README.md` | Fix in Week 1 |
+| `DragOverlay` in `App.tsx` only handles 3 tool IDs | `App.tsx` | Fix in Week 5 |
+| `Toolbox.tsx` receives `activeId` prop it never uses | `Toolbox.tsx` | Fix in Week 5 |
+| `MAX_GATES` defined but not enforced | `useCircuit.ts` | Fix in Week 5 |
 
 ---
 
