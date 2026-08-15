@@ -268,13 +268,17 @@ function SolveLevelContent({
     }
   }, [mutation.status]);
 
-  const isSLevel = currentLevel.target_unitary === Gate.S;
+  const showsOrderTip =
+    currentLevel.target_unitary === Gate.X ||
+    currentLevel.target_unitary === Gate.Z ||
+    currentLevel.target_unitary === Gate.S ||
+    currentLevel.target_unitary === Gate.T;
   const [showOrderTip, setShowOrderTip] = React.useState(false);
   const prevGateCountRef = React.useRef(0);
   const prevRzThetaSigRef = React.useRef("");
 
   React.useEffect(() => {
-    if (!isSLevel) {
+    if (!showsOrderTip) {
       prevGateCountRef.current = gates.length;
       prevRzThetaSigRef.current = "";
       return;
@@ -296,7 +300,7 @@ function SolveLevelContent({
 
     prevGateCountRef.current = gateCount;
     prevRzThetaSigRef.current = onlyRz ? thetaSig : "";
-  }, [gates, isSLevel]);
+  }, [gates, showsOrderTip]);
 
   React.useEffect(() => {
     // allCorrect is derived from mutation.data?.all_match, so it's only true when
@@ -453,7 +457,7 @@ function SolveLevelContent({
         setInitialState={setInitialState}
         showOrderTip={showOrderTip}
         setShowOrderTip={setShowOrderTip}
-        isSLevel={isSLevel}
+        showsOrderTip={showsOrderTip}
         circuitOutputRef={circuitOutputRef}
         handleSkipLevel={handleSkipLevel}
         showSkip={showSkip}
@@ -534,7 +538,7 @@ function SolveLevelContent({
                       targetTheta={targetBlochState?.theta}
                       targetPhi={targetBlochState?.phi}
                     />
-                    {showOrderTip && isSLevel && (
+                    {showOrderTip && showsOrderTip && (
                       <div className="relative w-full mt-[14px] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                         <button
                           type="button"
