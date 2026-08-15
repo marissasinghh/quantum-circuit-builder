@@ -52,7 +52,7 @@ Ramps virtual users (VUs) to a ~30-student classroom, then cools down:
 | full classroom | 1m | 30 |
 | cooldown | 30s | 0 |
 
-Each VU POSTs a CNOT-flipped simulate request, then sleeps 1–4s.
+Each VU POSTs a CNOT-flipped simulate request (`qubit_order: [[1, 0]]`, not the legacy `"C1_T0"` string), then sleeps 1–4s.
 
 Thresholds (k6 exits non-zero if these fail):
 
