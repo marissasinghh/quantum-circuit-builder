@@ -81,8 +81,8 @@ export const X_LEVEL: LevelDefinition = {
 
   description:
     "The X gate flips a qubit: $|0\\rangle \\mapsto |1\\rangle$ and $|1\\rangle \\mapsto |0\\rangle$. It is the quantum NOT gate. Synthesize a circuit whose unitary matches X exactly.",
-  hint1: "Check how Sqrt_X moves the state on the Bloch sphere.",
-  hint2: "How could you use Sqrt_X to move the state further south?",
+  hint1: "Try placing Sqrt_X on the wire and watch how the state vector moves on the Bloch sphere. Your goal is the south pole.",
+  hint2: "Sqrt_X rotates the state 90° around the X-axis — one application gets you a quarter of the way there. What happens if you use it again?",
 } as const;
 
 // ========================
@@ -107,9 +107,9 @@ export const SQRT_X_DAG_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "$\\sqrt{X^\\dagger}$ is the inverse of the square-root-of-X gate — apply it twice and you undo a half-X rotation. Build it using only the gates you have so far.",
-  hint1: "$Rx(\\pi/2)$ is already a square root of X. What happens if you follow it with a full X flip?",
-  hint2: "Try $Rx(\\pi/2)$, then X, in that order.",
+    "$\\sqrt{X^\\dagger}$ is a quarter-turn rotation around the X-axis, in the opposite direction from $\\sqrt{X}$. Build a circuit whose unitary matches it, using only the gates you have so far.",
+  hint1: "Watch the path the state vector takes when you apply $\\sqrt{X}$. Where does your target sit along that path?",
+  hint2: "The target sits three quarter-turns along that path. You already have a gate that covers two of those turns in one move — can you combine it with what's left?",
 } as const;
 
 // ========================
@@ -134,9 +134,9 @@ export const X_DAG_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "X-dag is the inverse of the X gate. But X is its own inverse — applying it twice gets you back to where you started. So X-dag and X are the exact same operation.",
-  hint1: "What is the inverse of a bit-flip?",
-  hint2: "X flips $|0\\rangle \\leftrightarrow |1\\rangle$. Applying X again flips it back. So $X^{-1} = X$.",
+    "$X^\\dagger$ is the inverse of the X gate — the operation that undoes it. Synthesize a circuit whose unitary matches $X^\\dagger$ exactly.",
+  hint1: "Look at where the target sits on the Bloch sphere compared to Level 1.0's target. What do you notice?",
+  hint2: "X flips $|0\\rangle \\leftrightarrow |1\\rangle$. Apply X again and it flips right back. So X is its own inverse — $X^\\dagger$ and X are the same gate.",
   insight:
     "Notice! The target vector for $X^\\dagger$ is identical to the target vector for $X$. That's because Pauli gates are their own inverses ($X^2 = I$), so there's nothing new for $X^\\dagger$ to add — you already built it. This is why $X^\\dagger$ won't appear in your toolbox. The same logic holds for all three Pauli gates ($X$, $Y$, $Z$): whenever you see a dagger on one of them, you already have it — no pauli-daggers needed!",
 } as const;
@@ -161,9 +161,9 @@ export const Z_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The Z gate flips the phase of $|1\\rangle$ and leaves $|0\\rangle$ untouched. You already have a general Z-axis rotation — dial it to the right angle.",
-  hint1: "Z doesn't change measurement probabilities on its own — it's a pure phase flip. Which of your gates rotates around the Z-axis?",
-  hint2: "$Rz(\\theta)$ at $\\theta = \\pi$ gives you a Z-axis half-turn.",
+    "The Z gate leaves $|0\\rangle$ unchanged and flips the sign of $|1\\rangle$ — a half-turn ($\\pi$) phase rotation around the Z-axis. Synthesize a circuit whose unitary matches Z exactly.",
+  hint1: "Place Sqrt_X on the wire first — this moves you onto the equator, where you can actually see Rz rotate. Now add Rz and watch how far the vector travels as you change $\\theta$.",
+  hint2: "You're looking for a phase flip on $|1\\rangle$ — that's a half rotation, all the way around to the opposite side. How many degrees is a half-turn, and what fraction of $\\pi$ is that?",
 } as const;
 
 // ========================
@@ -188,9 +188,9 @@ export const Z_DAG_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "Z-dag is the inverse of Z. Since Z applies a phase of $-1$, applying it again cancels that phase — Z is its own inverse too.",
-  hint1: "Z multiplies $|1\\rangle$ by $-1$. What do you get if you apply $-1$ twice?",
-  hint2: "$Z^2 = I$, so $Z^{-1} = Z$.",
+    "$Z^\\dagger$ is the inverse of Z. Like the other Pauli gates, Z is its own inverse — applying it twice returns you to where you started.",
+  hint1: "You've seen this pattern before with X and $X^\\dagger$. Does the same logic apply here?",
+  hint2: "Z applied twice returns the identity — $Z^2 = I$. So $Z^{-1} = Z$, and $Z^\\dagger$ and Z are the same gate.",
 } as const;
 
 // ========================
@@ -213,9 +213,9 @@ export const S_DAG_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "S-dag undoes an S gate — a quarter-turn phase rotation in the opposite direction. Use your general Z-rotation to dial in the exact angle.",
-  hint1: "S rotates by $+90°$ around the Z-axis. S-dag rotates the other way.",
-  hint2: "Set $Rz$ to $-\\pi/2$ ($-90°$).",
+    "$S^\\dagger$ undoes an S gate — a quarter-turn ($\\pi/2$) phase rotation in the opposite direction. Synthesize a circuit whose unitary matches $S^\\dagger$ exactly.",
+  hint1: "You already know S is $Rz(\\pi/2)$. Which direction does $S^\\dagger$ need to rotate?",
+  hint2: "$S^\\dagger$ rotates the same distance as S but the opposite way. If S is a positive quarter-turn, what sign and size should $S^\\dagger$'s angle be?",
 } as const;
 
 // ========================
@@ -238,9 +238,9 @@ export const T_DAG_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "T-dag undoes a T gate — an eighth-turn phase rotation in reverse.",
-  hint1: "T rotates by $+45°$ around the Z-axis. T-dag is the reverse of that.",
-  hint2: "Set $Rz$ to $-\\pi/4$ ($-45°$).",
+    "$T^\\dagger$ undoes a T gate — an eighth-turn ($\\pi/4$) phase rotation in the opposite direction.",
+  hint1: "You already know T is $Rz(\\pi/4)$. Which direction does $T^\\dagger$ need to rotate?",
+  hint2: "$T^\\dagger$ is T's rotation, reversed. Same reasoning as $S^\\dagger$: flip the sign, keep the size.",
 } as const;
 
 // ========================
@@ -343,9 +343,9 @@ export const S_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The S gate applies a $\\frac{\\pi}{2}$ phase rotation: $|0\\rangle \\mapsto |0\\rangle$ and $|1\\rangle \\mapsto i|1\\rangle$. Synthesize a circuit whose unitary matches S exactly.",
-  hint1: "S is a pure Z-axis rotation; to better visualize this rotation, place a Sqrt_X gate first to see how Rz(θ) rotates the state.",
-  hint2: "What angle do you need to use to make the π/2 phase rotation?",
+    "The S gate applies a quarter-turn ($\\pi/2$) phase rotation around the Z-axis: $|0\\rangle \\mapsto |0\\rangle$ and $|1\\rangle \\mapsto i|1\\rangle$. Synthesize a circuit whose unitary matches S exactly.",
+  hint1: "Place Sqrt_X first so you can see Rz rotate, then add Rz and watch how far it travels as you change $\\theta$.",
+  hint2: "S applies a quarter-phase change — a quarter of a full rotation. What angle, as a fraction of $\\pi$, gets you a quarter-turn?",
 } as const;
 
 // ========================
@@ -368,9 +368,9 @@ export const T_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The T gate applies a $\\frac{\\pi}{4}$ phase rotation: $|0\\rangle \\mapsto |0\\rangle$ and $|1\\rangle \\mapsto e^{i\\pi/4}|1\\rangle$. Synthesize a circuit whose unitary matches T exactly.",
-  hint1: "The T gate is very similar to the S gate — use the same method for visualizing the Rz rotation.",
-  hint2: "T is Rz at precisely half the angle you used for S.",
+    "The T gate applies an eighth-turn ($\\pi/4$) phase rotation around the Z-axis: $|0\\rangle \\mapsto |0\\rangle$ and $|1\\rangle \\mapsto e^{i\\pi/4}|1\\rangle$. Synthesize a circuit whose unitary matches T exactly.",
+  hint1: "Same approach as S — place Sqrt_X first, then add Rz and watch how far it travels.",
+  hint2: "T is a smaller phase change than S — an eighth-turn instead of a quarter. If S was $\\pi/2$, what's half of that?",
 } as const;
 
 // ========================

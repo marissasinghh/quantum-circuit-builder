@@ -99,7 +99,7 @@ interface MobileSolveLayoutProps {
   setInitialState: (val: 0 | 1) => void;
   showOrderTip: boolean;
   setShowOrderTip: (val: boolean) => void;
-  isSLevel: boolean;
+  showsOrderTip: boolean;
 
   // Scroll ref (passed through from SolveLevelContent)
   circuitOutputRef: React.RefObject<HTMLDivElement>;
@@ -163,7 +163,7 @@ export function MobileSolveLayout({
   setInitialState,
   showOrderTip,
   setShowOrderTip,
-  isSLevel,
+  showsOrderTip,
   circuitOutputRef,
 }: MobileSolveLayoutProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>("info");
@@ -294,7 +294,7 @@ export function MobileSolveLayout({
                         targetTheta={targetBlochState?.theta}
                         targetPhi={targetBlochState?.phi}
                       />
-                      {showOrderTip && isSLevel && (
+                      {showOrderTip && showsOrderTip && (
                         <div className="relative w-full mt-[14px] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                           <button
                             type="button"
