@@ -20,9 +20,10 @@ export const options = {
   },
 };
 
+// qubit_order must be numeric wire lists ([[1, 0]]), not named strings ("C1_T0").
 const payload = JSON.stringify({
   gates: ["CNOT"],
-  qubit_order: ["C1_T0"],
+  qubit_order: [[1, 0]],
   number_of_qubits: 2,
   target_unitary: "CNOT_FLIPPED",
 });
