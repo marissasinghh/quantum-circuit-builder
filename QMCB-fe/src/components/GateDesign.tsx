@@ -1,5 +1,5 @@
 import React from "react";
-import type { ControlTargetOrder } from "../types/global";
+import type { ControlTargetOrder, ThreeQubitOrder } from "../types/global";
 import { colors, fonts } from "../design-tokens";
 
 const WIRE_COLOR = colors.grid;
@@ -41,10 +41,18 @@ const XMark = ({ cx, cy, size = 7 }: { cx: number; cy: number; size?: number }) 
   </>
 );
 
-/** Evenly spaced wire y-positions for multi-qubit glyphs */
-function threeWireYs(height: number, pad = 10): [number, number, number] {
-  const y0 = pad + 8;
-  const y2 = height - pad - 8;
+/**
+ * Evenly spaced wire y-positions for multi-qubit glyphs.
+ * Exported so the target-wire picker (SortablePlacedMultiQubitGate) can align
+ * its per-wire buttons exactly with the glyph's wire lines.
+ */
+export function threeWireYs(height: number, pad = 12): [number, number, number] {
+  // `pad` is the vertical edge-inset in the SAME convention as TWO_QUBIT_GLYPH_Y_PAD
+  // (canvasGeometry.ts) — the container positions the glyph's box at
+  // `wireYs[0] - TWO_QUBIT_GLYPH_Y_PAD`, so wire 0 here must land exactly `pad` px
+  // from the box's top edge (matching CNOTGlyph's own `yTop = 12`), not pad+8.
+  const y0 = pad;
+  const y2 = height - pad;
   const y1 = (y0 + y2) / 2;
   return [y0, y1, y2];
 }
@@ -208,30 +216,56 @@ export function ControlledZGlyph({
   );
 }
 
-/** Toffoli (CCX) glyph: controls on wires 0 & 1, ⊕ target on wire 2 */
+/**
+ * Toffoli (CCX) glyph: control dots on the two control wires, ⊕ target on the
+ * target wire — positions driven by `order` (`[control, control, target]`,
+ * absolute wire indices; see `ThreeQubitOrder`). Defaults to `[0, 1, 2]`
+ * (controls on wires 0 & 1, target on wire 2), matching the pre-existing
+ * hardcoded appearance exactly.
+ */
 export function ToffoliGlyph({
+  order = [0, 1, 2],
   width = 80,
   height = 90,
+  controlRadius = 5,
+  targetRadius = 9,
 }: {
+  order?: ThreeQubitOrder;
   width?: number;
   height?: number;
+  /** Control-dot radius. Canvas default 5; toolbox passes a smaller value (see SwapGlyph's markSize precedent). */
+  controlRadius?: number;
+  /** Target ⊕ backing-circle radius. Canvas default 9; toolbox passes a smaller value. */
+  targetRadius?: number;
 }) {
+  // Horizontal wire inset (x-axis) is independent of the vertical wire-position
+  // inset used by threeWireYs — don't conflate the two, or the vertical fix here
+  // would inadvertently shift the wires' horizontal endpoints too.
   const pad = 10;
-  const [y0, y1, y2] = threeWireYs(height, pad);
+  const wireYs = threeWireYs(height);
   const cx = width / 2;
+
+  const [control0, control1, target] = order;
+  const controlY0 = wireYs[control0];
+  const controlY1 = wireYs[control1];
+  const targetY = wireYs[target];
+  // Plus mark scales with the target circle so it stays proportionally sized inside it.
+  const plusRadius = targetRadius * (5 / 9);
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="Toffoli">
-      <Wire x1={pad} x2={width - pad} y={y0} />
-      <Wire x1={pad} x2={width - pad} y={y1} />
-      <Wire x1={pad} x2={width - pad} y={y2} />
+      <Wire x1={pad} x2={width - pad} y={wireYs[0]} />
+      <Wire x1={pad} x2={width - pad} y={wireYs[1]} />
+      <Wire x1={pad} x2={width - pad} y={wireYs[2]} />
 
-      <line x1={cx} y1={y0} x2={cx} y2={y2} stroke={colors.cyan} strokeWidth={2} />
+      {/* Toffoli always occupies all 3 wires, so the connector always spans top-to-bottom
+          regardless of which wires are controls vs. target. */}
+      <line x1={cx} y1={wireYs[0]} x2={cx} y2={wireYs[2]} stroke={colors.cyan} strokeWidth={2} />
 
-      <circle cx={cx} cy={y0} r={5} fill={colors.cyan} />
-      <circle cx={cx} cy={y1} r={5} fill={colors.cyan} />
-      <circle cx={cx} cy={y2} r={9} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
-      <Plus cx={cx} cy={y2} r={5} />
+      <circle cx={cx} cy={controlY0} r={controlRadius} fill={colors.cyan} />
+      <circle cx={cx} cy={controlY1} r={controlRadius} fill={colors.cyan} />
+      <circle cx={cx} cy={targetY} r={targetRadius} fill={colors.navy} stroke={colors.cyan} strokeWidth={2} />
+      <Plus cx={cx} cy={targetY} r={plusRadius} />
     </svg>
   );
 }
@@ -244,8 +278,10 @@ export function FredkinGlyph({
   width?: number;
   height?: number;
 }) {
+  // See ToffoliGlyph: horizontal wire inset is independent of the vertical
+  // wire-position inset used by threeWireYs.
   const pad = 10;
-  const [y0, y1, y2] = threeWireYs(height, pad);
+  const [y0, y1, y2] = threeWireYs(height);
   const cx = width / 2;
   const bridgeHalf = (y2 - y1) * 0.38;
 
@@ -285,57 +321,34 @@ export function FredkinGlyph({
   );
 }
 
-/** SWAP glyph: × on both wires. Flip mirrors which wire gets the larger mark (UI cue;
- *  SWAP(a,b)≡SWAP(b,a) physically — both marks stay on the vertical centerline). */
+/**
+ * SWAP glyph: standard textbook symbol — one × mark per wire (equal size), joined by
+ * a single straight vertical line. SWAP(a,b) ≡ SWAP(b,a) physically, so there is no
+ * "primary"/"secondary" wire distinction — both marks always render identically,
+ * regardless of any control/target-style order (SWAP has no such `order` prop).
+ */
 export function SwapGlyph({
-  order = [0, 1],
   width = 80,
   height = 60,
-  primaryMarkSize = 8,
-  secondaryMarkSize = 6,
+  markSize = 8,
 }: {
-  order?: ControlTargetOrder;
   width?: number;
   height?: number;
-  /** Primary-wire × half-span; canvas default 8. Toolbox may pass a smaller value. */
-  primaryMarkSize?: number;
-  /** Secondary-wire × half-span; canvas default 6. */
-  secondaryMarkSize?: number;
+  /** × half-span for both marks; canvas default 8. Toolbox may pass a smaller value. */
+  markSize?: number;
 }) {
   const pad = 10;
   const yTop = 12;
   const yBot = height - 12;
   const cx = width / 2;
-  const bridgeHalf = (yBot - yTop) * 0.38;
-  // order[0] = "primary" wire for UI only — larger × swaps top↔bottom on flip.
-  const primaryY = order[0] === 0 ? yTop : yBot;
-  const secondaryY = order[0] === 0 ? yBot : yTop;
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-label="SWAP">
       <Wire x1={pad} x2={width - pad} y={yTop} />
       <Wire x1={pad} x2={width - pad} y={yBot} />
-      <line
-        x1={cx - bridgeHalf}
-        y1={yTop}
-        x2={cx + bridgeHalf}
-        y2={yBot}
-        stroke={colors.cyan}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-      />
-      <line
-        x1={cx + bridgeHalf}
-        y1={yTop}
-        x2={cx - bridgeHalf}
-        y2={yBot}
-        stroke={colors.cyan}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-      />
-      {/* Secondary first so the primary × paints on top after flip. */}
-      <XMark cx={cx} cy={secondaryY} size={secondaryMarkSize} />
-      <XMark cx={cx} cy={primaryY} size={primaryMarkSize} />
+      <line x1={cx} y1={yTop} x2={cx} y2={yBot} stroke={colors.cyan} strokeWidth={1.5} />
+      <XMark cx={cx} cy={yTop} size={markSize} />
+      <XMark cx={cx} cy={yBot} size={markSize} />
     </svg>
   );
 }

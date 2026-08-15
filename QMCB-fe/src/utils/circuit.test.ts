@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import { Gate, type PlacedGate } from "../types/global";
-import { gatesInColumnOrder, moveGate, serializeOrders, setBaseWire, setTwoQubitSpan, validateCircuitForSimulate } from "./circuit";
+import {
+  append,
+  gatesInColumnOrder,
+  isPlacedThreeQubitGate,
+  moveGate,
+  serializeOrders,
+  setBaseWire,
+  setThreeQubitOrder,
+  setTwoQubitSpan,
+  validateCircuitForSimulate,
+} from "./circuit";
 
 function fixture(): PlacedGate[] {
   return [
@@ -60,7 +70,7 @@ describe("moveGate", () => {
     const cnot = ordered.find((g) => g.id === "cnot");
     expect(cnot).toBeDefined();
     expect("wire" in cnot!).toBe(false);
-    expect("order" in cnot! && cnot.baseWire).toBe(1);
+    expect("baseWire" in cnot! && cnot.baseWire).toBe(1);
     assertGaplessColumns(result);
   });
 
@@ -69,7 +79,7 @@ describe("moveGate", () => {
     const result = moveGate(gates, "cnot", 0, 1);
     const cnot = gatesInColumnOrder(result).find((g) => g.id === "cnot");
     expect(cnot?.column).toBe(0);
-    expect("order" in cnot! && cnot.baseWire).toBe(1);
+    expect("baseWire" in cnot! && cnot.baseWire).toBe(1);
   });
   it("preserves gate count on every move", () => {
     const gates = fixture();
@@ -92,8 +102,8 @@ describe("moveGate", () => {
     const result = moveGate(gates, "cnot", 0, 1);
     const cnot = gatesInColumnOrder(result).find((g) => g.id === "cnot");
     expect(cnot).toBeDefined();
-    expect("order" in cnot! && cnot.baseWire).toBe(1);
-    expect("order" in cnot! && cnot.extended).toBeUndefined();
+    expect("baseWire" in cnot! && cnot.baseWire).toBe(1);
+    expect("baseWire" in cnot! && cnot.extended).toBeUndefined();
   });
 
   it("preserves extended on column-only reorder (no wire argument)", () => {
@@ -104,7 +114,7 @@ describe("moveGate", () => {
     const result = moveGate(gates, "cnot", 1);
     const cnot = gatesInColumnOrder(result).find((g) => g.id === "cnot");
     expect(cnot).toBeDefined();
-    expect("order" in cnot! && cnot.extended).toBe(true);
+    expect("baseWire" in cnot! && cnot.extended).toBe(true);
   });
 });
 
@@ -116,8 +126,8 @@ describe("setBaseWire", () => {
     const result = setBaseWire(gates, "cnot", 1);
     const cnot = result.find((g) => g.id === "cnot");
     expect(cnot).toBeDefined();
-    expect("order" in cnot! && cnot.baseWire).toBe(1);
-    expect("order" in cnot! && cnot.extended).toBeUndefined();
+    expect("baseWire" in cnot! && cnot.baseWire).toBe(1);
+    expect("baseWire" in cnot! && cnot.extended).toBeUndefined();
   });
 });
 
@@ -128,8 +138,8 @@ describe("setTwoQubitSpan", () => {
     ];
     const result = setTwoQubitSpan(gates, "cnot", { baseWire: 1, extended: true });
     const cnot = result.find((g) => g.id === "cnot");
-    expect("order" in cnot! && cnot.extended).toBe(true);
-    expect("order" in cnot! && cnot.baseWire).toBe(1);
+    expect("baseWire" in cnot! && cnot.extended).toBe(true);
+    expect("baseWire" in cnot! && cnot.baseWire).toBe(1);
   });
 
   it("retracts to an explicit baseWire and clears extended", () => {
@@ -137,12 +147,12 @@ describe("setTwoQubitSpan", () => {
       { id: "cnot", type: Gate.CNOT, order: [0, 1], baseWire: 0, extended: true, column: 0 },
     ];
     const to01 = setTwoQubitSpan(gates, "cnot", { baseWire: 0, extended: false });
-    expect("order" in to01[0]! && to01[0].baseWire).toBe(0);
-    expect("order" in to01[0]! && to01[0].extended).toBeUndefined();
+    expect("baseWire" in to01[0]! && to01[0].baseWire).toBe(0);
+    expect("baseWire" in to01[0]! && to01[0].extended).toBeUndefined();
 
     const to12 = setTwoQubitSpan(gates, "cnot", { baseWire: 1, extended: false });
-    expect("order" in to12[0]! && to12[0].baseWire).toBe(1);
-    expect("order" in to12[0]! && to12[0].extended).toBeUndefined();
+    expect("baseWire" in to12[0]! && to12[0].baseWire).toBe(1);
+    expect("baseWire" in to12[0]! && to12[0].extended).toBeUndefined();
   });
 });
 
@@ -198,6 +208,43 @@ describe("serializeOrders", () => {
       [0, 1],
       [0, 1],
       [1, 2],
+    ]);
+  });
+});
+
+describe("3-qubit placed gate (Toffoli)", () => {
+  it("spawns at default order C0_C1_T2 and serializes as absolute [c,c,t]", () => {
+    const gates = append([], {
+      id: "toffoli",
+      type: Gate.TOFFOLI,
+      order: [0, 1, 2],
+      column: 0,
+    });
+    const chip = gates.find((g) => g.id === "toffoli");
+    expect(chip).toBeDefined();
+    expect(isPlacedThreeQubitGate(chip!)).toBe(true);
+    expect(serializeOrders(gates)).toEqual([[0, 1, 2]]);
+  });
+
+  it("reconfigures target wire to Q1, producing C0_C2_T1", () => {
+    const gates = append([], {
+      id: "toffoli",
+      type: Gate.TOFFOLI,
+      order: [0, 1, 2],
+      column: 0,
+    });
+    const result = setThreeQubitOrder(gates, "toffoli", [0, 2, 1]);
+    const chip = result.find((g) => g.id === "toffoli");
+    expect(isPlacedThreeQubitGate(chip!) && chip.order).toEqual([0, 2, 1]);
+    expect(serializeOrders(result)).toEqual([[0, 2, 1]]);
+  });
+
+  it("does not disturb 2-qubit gates in the same circuit", () => {
+    let gates = append([], { id: "cnot", type: Gate.CNOT, order: [0, 1], baseWire: 0, column: 0 });
+    gates = append(gates, { id: "toffoli", type: Gate.TOFFOLI, order: [0, 1, 2], column: 1 });
+    expect(serializeOrders(gates)).toEqual([
+      [0, 1],
+      [0, 1, 2],
     ]);
   });
 });

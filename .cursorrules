@@ -1,17 +1,19 @@
 # CNOT Game (.cursorrules)
 # Repo: marissasinghh/quantum-circuit-builder
 # Place this file at the monorepo root (same level as QMCB-be/ and QMCB-fe/)
-# Last updated: April 2026
+# Last updated: August 2026 (rewritten after staleness audit — see note at bottom)
 
 ---
 
 ## Project Identity
 
 - **Name:** QMCB — Quantum Circuit Builder / The CNOT Game
-- **Concept:** Browser-based puzzle game where students build quantum gates progressively
-  using a universal gateset of {CNOT, X, Rz(θ)}. Inspired by The NAND Game.
-- **Live site:** cnotgame.com
-- **Deadlines:** Berkeley Summer Camp alpha July 6, 2026 | Quantum Motor City beta July 29, 2026
+- **Concept:** Browser-based puzzle game where students build quantum gates progressively,
+  unlocking each built gate as a reusable component. Inspired by The NAND Game.
+- **Live site:** cnotgame.com (frontend on Vercel, backend on Render)
+- **Deadlines:** Berkeley Summer Camp alpha — shipped July 6, 2026 | Quantum Motor City beta — July 29, 2026
+- **Current state:** All three tiers (1–3) are implemented. Active work is Tier 3 frontend
+  polish, feedback/metrics instrumentation, and small fixes — not new-tier content.
 
 ---
 
@@ -37,21 +39,27 @@ quantum-circuit-builder/
 - **pymongo** — wired (MONGO_URI in settings) but no MongoDB code exists yet
 - **Entry point:** `python -m app.main`
 - **Only live endpoint:** `POST /api/simulate`
+- Hosted on **Render** (paid tier as of Week 10; UptimeRobot pings `/api/docs` every 5 min to prevent cold starts)
 
 ### Frontend (QMCB-fe/)
 - **React 18** + **Vite 5** + **TypeScript** (strict mode, ES2020)
 - **Tailwind CSS 3** + PostCSS + Autoprefixer
-- **TanStack Query v5** — `useMutation` only (no queries yet)
+- **TanStack Query v5** — `useMutation` for the simulate call
 - **@dnd-kit/core v6** — drag-and-drop circuit building
-- **@dnd-kit/sortable** — installed but UNUSED; do not suggest using it
-- **No client-side router yet** — single page, level is in-app React state
+- **@dnd-kit/sortable** — `arrayMove` is now actively used (in `utils/placedGateDrag.ts`). Note:
+  components named `SortablePlacedGate.tsx` / `SortablePlacedMultiQubitGate.tsx` are misleadingly
+  named — they use `useDraggable` from `@dnd-kit/core`, not the sortable API. Don't assume these
+  components use sortable-context patterns just because of the filename.
+- **React Router** — routing exists now (`/level/:id` etc.). `App.tsx` is a routing shell only;
+  it no longer owns DnD/circuit-building wiring directly (see Key Files below).
 
 ---
 
 ## Core Data Flow (end-to-end)
 
 ```
-1. Student drags gates onto CircuitCanvas (dnd-kit → useDragAndDrop → useCircuit)
+1. Student drags gates onto CircuitCanvas (dnd-kit → useDragAndDrop → useCircuit),
+   wired from SolveLevelPage.tsx / MobileSolveLayout.tsx (not App.tsx)
 2. "Check Solution" click → useCircuitValidation.handleCheck()
 3. buildRequestFromLevel(level, gates) in controllers/simulate.ts → UnitaryRequestDTO
 4. POST /api/simulate via services/simulate.ts (TanStack useMutation)
@@ -59,8 +67,9 @@ quantum-circuit-builder/
 6. simulate_unitaries() loops over all 2^n basis states:
      - CircuitBuilder.construct_unitary_circuit() → Cirq circuit
      - CircuitSimulator.simulate_wavefunction() → output state
-     - Compares to target expected_outputs or re-simulates target circuit
-7. Returns truth table rows (trial + target, per basis state)
+     - Compares to target expected_outputs, or grades via unitary/global-phase
+       comparison or random-theta sampling depending on grading_mode
+7. Returns a plain response dict (see DTO section) with truth tables + all_match
 8. Frontend toTruthRows() → OutputTable renders per-row match/mismatch
 9. If all rows match → LevelCompleteModal shown
 ```
@@ -68,6 +77,11 @@ quantum-circuit-builder/
 **Key insight:** Verification works by linearity — if the student's circuit produces
 the correct output for all 2^n basis states, it implements the correct unitary for all
 inputs. This is the core pedagogical mechanic of the game.
+
+**Grading is not one-size-fits-all.** Depending on the level, grading uses one of:
+`unitary_global_phase` comparison, `random_theta` sampling (for parameterized gates), or a
+fixed truth-table match. Don't assume every level is graded the same way — check
+`grading_mode` in the response and the level's `parameterMode` field.
 
 ---
 
@@ -80,102 +94,161 @@ inputs. This is the core pedagogical mechanic of the game.
 TARGET_LIBRARY = {
     "CNOT_FLIPPED": {
         "num_qubits": 2,
-        "steps": [{"gate": "CNOT", "qubit_order": "C1_T0"}],
-        "expected_outputs": [
-            {"input": [0, 0], "output": [0, 0]},
-            {"input": [0, 1], "output": [1, 1]},
-            {"input": [1, 0], "output": [1, 0]},
-            {"input": [1, 1], "output": [0, 1]},
-        ]
+        "steps": [
+            {"gate": "H", "qubit_order": "Q0"},
+            {"gate": "H", "qubit_order": "Q1"},
+            {"gate": "CNOT", "qubit_order": "C1_T0"},
+            {"gate": "H", "qubit_order": "Q0"},
+            {"gate": "H", "qubit_order": "Q1"},
+        ],
+        "expected_outputs": [...],
     },
     # ...
 }
 ```
-- The dict key (e.g. `"CNOT_FLIPPED"`) must exactly match the frontend's `targetUnitary` field.
-- `steps` defines the reference circuit (used when `VALIDATE_TARGET_CIRCUITS=True`)
-- `expected_outputs` is the stored truth table (used when flag is False)
+- The dict key (e.g. `"CNOT_FLIPPED"`) must exactly match the frontend's `target_unitary` field.
+- Some levels (like CNOT_FLIPPED) are composite — expanded via `_COMPOSITE_STUDENT_GATES` /
+  `_expand_composite_ops` in `circuit_builder.py`. Don't assume every TARGET_LIBRARY entry maps
+  1:1 to a single Cirq primitive.
 
 ### Frontend piece: `QMCB-fe/src/config/levels.ts`
+Actual current shape (see `interfaces/levelDefinition.ts`):
 ```typescript
-export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
-  id: "CNOT_FLIPPED",
-  name: "CNOT (Flipped)",
-  tier: 2,
-  description: "...",         // pedagogical explanation text
-  targetUnitary: "CNOT_FLIPPED",  // must match BE key exactly
-  numberOfQubits: 2,
-  toolboxGates: [Gate.CNOT],  // which gates the student has available
-  expectedTruthTable: [...],  // for TaskCard display
-};
+export interface LevelDefinition {
+  name?: string;
+  target_unitary: Gate;          // identifies the level everywhere — routing, progress,
+                                  // localStorage, toolbox unlocks. There is NO separate "id" field.
+  number_of_qubits: number;      // tier is implied by this, not a separate "tier" field
+  toolbox: readonly Gate[];      // was previously called "toolboxGates" — renamed
+  canonical?: readonly GateStep[];
+  expectedTruth?: TruthTableDTO;
+  parameterMode?: ParameterMode;
+  uiMaxGates?: number;
+  thetaSliderStep?: number;
+  description?: string;
+  hint1?: string;
+  hint2?: string;
+  insight?: string;
+  locked?: boolean;
+  noGatesetUnlock?: boolean;     // see "Gate unlock exceptions" below
+  backendTarget?: Gate;
+}
 ```
+Note the mixed casing: wire-aligned fields (`target_unitary`, `number_of_qubits`) are
+snake_case; UI-only fields stayed camelCase. This is intentional, not inconsistent — don't
+"fix" it by renaming one to match the other.
 
-### Implemented levels (as of April 2026)
-| Level | ID | Qubits | Status |
-|-------|----|--------|--------|
-| 2.1 | CNOT_FLIPPED | 2 | ✅ Done |
-| 2.2 | CONTROLLED_Z | 2 | ✅ Done |
-| 2.3 | SWAP | 2 | ✅ Done |
+### Current levels (all implemented — 23 total across 3 tiers)
+| Tier | Qubits | Count | Levels |
+|------|--------|-------|--------|
+| 1 | 1 | 16 | X, √X†, X†, Z, Z†, S, S†, T, T†, H, H†, Y, Y†, Rx, Ry, Arbitrary U (1.0–1.15) |
+| 2 | 2 | 5 | CNOT_FLIPPED, CONTROLLED_Z, SWAP, CONTROLLED_H, CONTROLLED_U (2.0–2.4) |
+| 3 | 3 | 2 | TOFFOLI, FREDKIN (3.0–3.1) |
 
-**Coming next:** Tier 1 single-qubit levels (1.0 X, 1.1 S, 1.2 T, 1.3 H, 1.4 Rx, 1.5 Ry, 1.6 U)
-**Single-qubit glyphs already built in GateDesign.tsx:** HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph
+Display numbering is 0-based within each tier consistently (computed by `getLevelNumber()` in
+`levels.ts` — do not hardcode level numbers anywhere; they're always derived from position
+within `LEVEL_ORDER`).
+
+There is no per-level `status` field stored on the definition — locked/unlocked/completed/skipped
+is computed dynamically (`getLevelStatus`) from `completedLevels`/`skippedLevels` in
+`useLevelProgress.ts`, which persists to localStorage under `cnot_progress`, keyed by
+`target_unitary` strings (never by numeric labels like "2.1").
+
+### Gate unlock exceptions
+Completing a level normally unlocks its `target_unitary` gate into the toolbox
+(`computeAvailableGates()` in `computeToolbox.ts`). Two kinds of exceptions exist:
+- **`noGatesetUnlock: true`** on the level definition — suppresses unlock entirely. Used for
+  dagger gates that equal their non-dagger counterpart (X†, Z†, H†, Y†) and for CONTROLLED_U.
+- **Special-cased substitution** — RANDOM_U_LEVEL is a dagger-style exclusion via
+  `noGatesetUnlock` (as of the Aug 2026 fix); it does NOT unlock `Gate.U`. (Historically this
+  was a separate branch that substituted `Gate.U` — that branch has been removed. If you see
+  code re-adding a RANDOM_U → Gate.U substitution, that's a regression, not a feature.)
+
+S† and T† do NOT have `noGatesetUnlock` — they're genuinely new gates and unlock normally.
+
+### Known toolbox spawn-order override
+`useDragAndDrop.ts` has a `LEVEL_SPECIFIC_TWO_QUBIT_SPAWN_ORDER` lookup, currently containing
+one entry: `Gate.CNOT_FLIPPED → { Gate.CNOT: C1_T0 }`. This makes the CNOT chip on Level 2.1
+spawn pre-set to control=Q1/target=Q0 instead of the shared default (control=Q0/target=Q1).
+**This is intentional, not a bug** — without it, 2.1 is unsolvable, because the on-chip flip
+icon (`cnotFlipUnlocked`) only unlocks *after* 2.1 is cleared. Do not "fix" this back to the
+shared default without understanding why it's there.
 
 ---
 
-## DTO Shapes
+## DTO Shapes (current, verified against source — not framework class names, plain dicts/interfaces)
 
-### Simulate Request (FE → BE): `UnitaryRequestDTO`
+### Simulate Request (FE → BE)
+`QMCB-fe/src/interfaces/unitary.ts` → `UnitaryRequestDTO`:
 ```typescript
 {
-  gates: string[] | Array<{name: string, theta: number}>,  // gate names or parameterized gates
-  qubit_order: string[],       // e.g. ["C0_T1"] per gate
-  number_of_qubits: 2,
-  target_unitary: "CNOT_FLIPPED"  // matches TARGET_LIBRARY key
+  target_unitary: Gate;
+  number_of_qubits: number;
+  gates: UnitaryGateEntry[];        // string | { gate, theta?, alpha?, beta?, gamma? }
+  qubit_order: AnyQubitOrder[];
+  seed?: number;
+  target_params?: TargetParamsDTO;  // { seed?, alpha?, beta?, gamma?, delta?, theta? }
+  parameter_gate_index?: number;
 }
 ```
-> Note: Parameterized gate support (theta) is being added in Week 2. Until then, gates is a flat string[].
-> IMPORTANT: The wire format key is `gates`, not `circuit`. The inventory doc was wrong on this point.
+Parameterized gates (theta on Rx/Ry/Rz trial steps) are fully implemented end-to-end.
 
-### Simulate Response (BE → FE): `SimulationResponseDTO`
-```typescript
+**Known open gap:** `target_params.theta` is defined on both FE and BE DTOs but
+`QMCB-be/app/utils/unitary_payload.py`'s parser never reads `theta` from `target_params`, and
+never unwraps a nested `target_params` object at all — only reads `seed`/`alpha`/`beta`/
+`gamma`/`delta` from the request root. FE-built `target_params.theta` is currently dead on
+arrival; the resolver falls back to extracting theta from the trial circuit instead. This
+hasn't caused visible bugs (the fallback works) but is real tech debt if `target_params.theta`
+is ever relied on directly.
+
+### Simulate Response (BE → FE)
+Built as a plain dict in `controllers/simulate.py` (no DTO class):
+```python
 {
-  "validation_mode": "truth_table",  // NOTE: bug — currently has trailing colon "validation_mode:" — fix in Week 1
-  results: Array<{
-    input: number[],
-    expected: number[],
-    actual: number[],
-    match: boolean
-  }>,
-  all_match: boolean
+    "message": str,
+    "grading_mode": "random_theta" | "unitary_global_phase" | None,
+    "samples_checked": int | None,
+    "samples_passed": int | None,
+    "trial_truth_table": dict | None,
+    "target_truth_table": dict | None,
+    "all_match": bool,
+    "validation_mode": bool,
 }
 ```
+`validation_mode` — confirmed **fixed**, no trailing colon. (This was a Week-1-era bug; do not
+reintroduce it.)
 
 ---
 
-## Key Backend Files (know these before modifying anything)
+## Key Backend Files
 
 | File | Role |
 |------|------|
-| `app/controllers/simulate.py` | `simulate_unitaries()` — the main loop; runs both trial and target through Cirq |
-| `app/services/circuit_builder.py` | `CircuitBuilder` — constructs Cirq circuits from gate dicts |
-| `app/services/simulator.py` | `CircuitSimulator` — runs wavefunction simulation; `run_and_measure` path is UNUSED |
-| `app/config/gates.py` | `CirqGateMapper.apply()` — maps gate name strings → Cirq operations |
-| `app/config/target_library.py` | `TARGET_LIBRARY` — the ground truth for all levels |
-| `app/services/target_builder.py` | `TargetUnitaryBuilder.build()` (active) + `get_unitary()` (legacy dead code — ignore) |
-| `app/utils/helpers.py` | Pure functions: basis state generation, ket formatting, result extraction |
-| `app/utils/qubit_orders.py` | Named qubit orders: Q0, Q1, C0_T1, C1_T0 |
+| `app/controllers/simulate.py` | `simulate_unitaries()` — main loop; builds the response dict |
+| `app/services/circuit_builder.py` | `CircuitBuilder` — constructs Cirq circuits; also expands composite student gates (`_expand_composite_ops`) |
+| `app/services/simulator.py` | `CircuitSimulator` — wavefunction simulation; `run_and_measure` path still UNUSED |
+| `app/config/gates.py` | `CirqGateMapper.apply()` — 18 primitives: X, SQRT_X, SQRT_X_DAG, Y, Z, S, S_DAG, T, T_DAG, H, RX, RY, RZ, U, CONTROLLED_U, CNOT, CONTROLLED_Z, SWAP, TOFFOLI, FREDKIN. (CNOT_FLIPPED and CONTROLLED_H are composites expanded elsewhere, not mapper entries.) |
+| `app/config/target_library.py` | `TARGET_LIBRARY` — ground truth for all 23 levels |
+| `app/services/target_builder.py` | `TargetUnitaryBuilder.build()` (active) + `get_unitary()` (still legacy dead code — ignore) |
+| `app/utils/unitary_payload.py` | Parses request DTOs; has the `target_params.theta` gap noted above |
+| `app/utils/qubit_orders.py` | Named orders: Q0, Q1, C0_T1, C1_T0, C0_C1_T2, C0_T1_T2 (Toffoli/Fredkin) |
 
 ## Key Frontend Files
 
 | File | Role |
 |------|------|
-| `src/App.tsx` | Root; wires all hooks; DndContext + DragOverlay |
-| `src/hooks/useCircuit.ts` | `gates[]` state; addGate, removeGate, clearGates, setGateOrder |
+| `src/App.tsx` | Routing shell only (Routes, LevelsPage, SolveLevelPage). Does NOT own DnD/circuit wiring — that moved out. |
+| `src/pages/SolveLevelPage.tsx` | Owns the actual hook wiring (useCircuit, useDragAndDrop, useCircuitValidation) for desktop |
+| `src/pages/MobileSolveLayout.tsx` | Mobile equivalent wiring |
+| `src/hooks/useCircuit.ts` | `gates[]` state; addGate, addTwoQubitGate, removeGate, clearGates, setGateOrder |
 | `src/hooks/useCircuitValidation.ts` | useMutation; handleCheck; builds and fires the API request |
-| `src/hooks/useDragAndDrop.ts` | Maps tool IDs → Gate enum; onDragEnd → addGate |
+| `src/hooks/useDragAndDrop.ts` | Maps tool IDs → Gate enum; onDragEnd → addGate/addTwoQubitGate; holds `LEVEL_SPECIFIC_TWO_QUBIT_SPAWN_ORDER` |
+| `src/utils/computeToolbox.ts` | `computeAvailableGates()` — unlock logic, `noGatesetUnlock` handling |
 | `src/controllers/simulate.ts` | `buildRequestFromLevel()` → UnitaryRequestDTO serialization |
-| `src/config/levels.ts` | All level definitions + LEVEL_ORDER + getNextLevel() |
+| `src/config/levels.ts` | All level definitions + `LEVEL_ORDER` + `getLevelNumber()` + `getNextLevel()` |
 | `src/config/gates.ts` | allowedOrdersFor, labelFor, arityFor per gate |
-| `src/components/GateDesign.tsx` | SVG glyphs — CNOTGlyph, CZGlyph, HGlyph, TGlyph, SGlyph, RXGlyph, RYGlyph, UGlyph |
+| `src/components/GateDesign.tsx` | SVG glyphs for all gate types |
+| `src/components/SortablePlacedMultiQubitGate.tsx` | Renders placed 2+/3-qubit gates; owns flip-icon (`ORDER_BEARING_GATES`) and extend/retract span controls |
 
 ---
 
@@ -183,19 +256,25 @@ export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
 
 ### Quantum simulation
 - **ALWAYS use Cirq.** Never suggest `numpy` matrix math, hand-rolled gate operations, or custom unitary computation.
-- Supported gates in `CirqGateMapper`: CNOT, H, X, Y, Z, S, T, Rx, Ry, CZ, SWAP
-- For parameterized gates: `cirq.rx(theta)`, `cirq.ry(theta)`, `cirq.rz(theta)` — theta is in radians
-- The `run_and_measure` path in `simulator.py` is not used — the game uses wavefunction simulation
+- The `run_and_measure` path in `simulator.py` is still not used.
+- Any AI-generated gate math (state vectors, truth tables, decompositions) must be verified
+  against Cirq output or Nielsen & Chuang before being committed — this is a hard rule, not a
+  suggestion, per multiple prior live exploits caught this way.
 
 ### Level development
-- **Adding a level always requires BOTH** a `target_library.py` entry AND a `levels.ts` entry
-- The `target_unitary` string in the FE must exactly match the `TARGET_LIBRARY` key in the BE
-- Expected outputs are truth table rows for all 2^n basis states in order
+- Adding a level always requires BOTH a `target_library.py` entry AND a `levels.ts` entry.
+- `target_unitary` in the FE must exactly match the `TARGET_LIBRARY` key in the BE.
+- Use current field names (`target_unitary`, `number_of_qubits`, `toolbox`) — not the old
+  (`id`, `targetUnitary`, `toolboxGates`) names from earlier project docs.
+- If a level unlocks a gate that shouldn't appear in the toolbox (e.g. it equals an existing
+  gate, or is deliberately non-reusable), use `noGatesetUnlock: true` rather than inventing a
+  new suppression mechanism.
 
 ### TypeScript
-- Prefer explicit types over `any`
-- Gate enum lives in `types/global.ts` — use it, don't use raw strings for gate names
-- `MAX_GATES` constant exists in `utils/constants.ts` — reference it, don't hardcode
+- Prefer explicit types over `any`.
+- `Gate` enum lives in `types/global.ts` — use it, don't use raw strings for gate names.
+- `uiMaxGates` (per-level field on `LevelDefinition`) replaces the old flat `MAX_GATES`
+  constant — verify current enforcement status before assuming it's wired everywhere.
 
 ### Testing
 - Pytest lives in `QMCB-be/tests/` only — do not add a `testing/` folder
@@ -205,16 +284,32 @@ export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
 - Always verify AI-generated quantum math against a reference (Nielsen & Chuang, or known Cirq output)
 
 ### What NOT to do
-- Do not re-introduce the `"validation_mode:"` trailing colon bug (already fixed in Week 1)
-- Do not add a second CORS wrapper — it already exists in `__init__.py`; `main.py` has a duplicate that is being removed
-- Do not suggest using `@dnd-kit/sortable` — it's installed but the project doesn't use it
-- Do not suggest using `get_unitary()` in `target_builder.py` — it's legacy dead code
-- Do not modify `utils/circuit.ts` helpers without checking if they're actually used (some are not)
-- Do not hardcode qubit counts — use `numberOfQubits` from the level config
+- Do not suggest a second CORS wrapper (single application in `__init__.py` — verify `main.py`
+  doesn't have a duplicate before assuming this is still true; not independently re-verified
+  this pass).
+- Do not assume `@dnd-kit/sortable` is entirely unused — `arrayMove` is actively imported in
+  `utils/placedGateDrag.ts`. It's fine to use `arrayMove`; don't assume the rest of the sortable
+  API (SortableContext, useSortable) is wired in, since the "Sortable*" component names are
+  misleading (they use `useDraggable` from `@dnd-kit/core`).
+- Do not suggest using `get_unitary()` in `target_builder.py` — still legacy dead code.
+- Do not hardcode qubit counts — use `number_of_qubits` from the level config.
+- Do not hardcode level display numbers — always derive via `getLevelNumber()`.
+- Do not reintroduce the RANDOM_U → Gate.U toolbox-unlock substitution (removed; RANDOM_U now
+  uses `noGatesetUnlock` like other equal-to-existing-gate levels).
+- Do not assume CNOT's toolbox spawn order is always the shared default — check
+  `LEVEL_SPECIFIC_TWO_QUBIT_SPAWN_ORDER` for per-level overrides before "fixing" apparent
+  inconsistencies in spawn order.
 
 ---
 
-## Known Bugs (do not re-introduce)
+## Known Open Issues (verified this pass)
+
+| Issue | Location | Status |
+|-------|----------|--------|
+| `target_params.theta` never parsed from nested object | `app/utils/unitary_payload.py` | Open — masked by fallback, low urgency |
+| Tier 3 FE gaps (uiMaxGates too low for Toffoli's ~15-gate decomposition, native TOFFOLI/FREDKIN placement, glyph wiring) | Documented in `QMCB-be/docs/tier3_fe_smoke_issues.md` (2026-06-23) | Partially addressed by later canvas-fix commits — needs a fresh spot-check, do not assume fully resolved or fully open |
+| `get_unitary()` dead code | `target_builder.py` | Still present, still legacy — leave alone |
+| `run_and_measure` path unused | `simulator.py` | Still present, still unused — leave alone |
 
 | Bug | Location | Status |
 |-----|----------|--------|
@@ -230,14 +325,20 @@ export const CNOT_FLIPPED_LEVEL: LevelDefinition = {
 
 ## Starting Primitives (gates available from game start)
 
-Students begin each session with: **Rz(θ)** and **Rx(π/2)**
-(Updated from original plan — confirmed in April 2026 meeting notes)
+Students begin each session with: **Rz(θ)** and **√X** (SQRT_X).
+Note: earlier project docs said "Rx(π/2)" here — that was imprecise. The actual starting gate
+is √X, a fixed non-parameterized gate. It's matrix-equivalent to Rx(π/2) up to global phase, but
+it is not the parameterized Rx gate — don't conflate the two when working on starting-gate logic.
 
 ---
 
-## Build Phases (high-level, for context)
+## Doc History Note
 
-- **Phase 1 (Wks 1–4, Apr 7 – May 4):** Foundation, parameterized gate infra, Tier 1 backend, Tier 1 frontend
-- **Phase 2 (Wks 5–8, May 5 – Jun 1):** Level progression, unlock system, routing, deployment
-- **Phase 3 (Wks 9–13, Jun 2 – Jul 6):** Auth, Tier 3 (Toffoli/Fredkin), polish, Berkeley
-- **Phase 4 (Wks 14–17, Jul 7 – Jul 29):** Berkeley feedback, AI hint assistant, Tier 4 (Grover)
+This file was restored in August 2026 after being found missing from the repo (likely excluded
+via a local `.gitignore` pattern on a previous machine and never committed). The restored April
+2026 version was significantly stale — it undercounted levels (3 vs. actual 23), used renamed
+field names, and listed several bugs as open that were already fixed. This version reflects a
+one-time audit against the live codebase as of Aug 7, 2026; some items above are explicitly
+marked unverified and should be spot-checked rather than trusted indefinitely. Keep this file
+committed (confirm it's not excluded by any `.gitignore` pattern) and treat drift as expected —
+re-audit periodically rather than assuming it stays accurate forever.

@@ -12,14 +12,14 @@
  * already in place on both chip components in anticipation of this.
  */
 
-import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder, type TwoQubitBaseWire } from "../types/global";
+import { Gate, type PlacedGate, type PlacedSingleQubitGate, type ControlTargetOrder, type TwoQubitBaseWire, type ThreeQubitOrder } from "../types/global";
 import { DroppableCell, TrashDropZone } from "./DragAndDropWrappers";
 import { SortablePlacedGate } from "./SortablePlacedGate";
 import {
   SortablePlacedMultiQubitGate,
   multiQubitGlyphDimensions,
 } from "./SortablePlacedMultiQubitGate";
-import { gatesInColumnOrder } from "../utils/circuit";
+import { gatesInColumnOrder, isPlacedThreeQubitGate } from "../utils/circuit";
 import { isSingleQubitGate, isMultiQubitGate, isToolboxDragId } from "../utils/placedGateDrag";
 import {
   CANVAS_PAD_X,
@@ -29,13 +29,14 @@ import {
 } from "../utils/canvasGeometry";
 import { baseWireFromDropWire } from "../utils/wireValidation";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
-import { isTwoQubitToolboxGate } from "../config/gates";
+import { isTwoQubitToolboxGate, isThreeQubitToolboxGate } from "../config/gates";
 import { colors, fonts } from "../design-tokens";
 import { Tooltip } from "./Tooltip";
 import { useCircuitPreview } from "../hooks/useCircuitPreview";
 
 const CELL_HOVER_RE = /^cell-col(\d+)-wire(\d+)$/;
 
+/** True when the active drag is a 2-wire (adjacent-pair) multi-qubit gate — CNOT/CZ/SWAP. */
 function isActiveTwoQubitDrag(activeId: string | null, gates: PlacedGate[]): boolean {
   if (!activeId) return false;
   if (isToolboxDragId(activeId)) {
@@ -43,7 +44,18 @@ function isActiveTwoQubitDrag(activeId: string | null, gates: PlacedGate[]): boo
     return gate != null && isTwoQubitToolboxGate(gate);
   }
   const gate = gates.find((g) => g.id === activeId);
-  return gate !== undefined && "order" in gate;
+  return gate !== undefined && "order" in gate && !isPlacedThreeQubitGate(gate);
+}
+
+/** True when the active drag is a 3-wire gate (Toffoli) — always spans the full canvas. */
+function isActiveThreeQubitDrag(activeId: string | null, gates: PlacedGate[]): boolean {
+  if (!activeId) return false;
+  if (isToolboxDragId(activeId)) {
+    const gate = TOOL_TO_GATE[activeId];
+    return gate != null && isThreeQubitToolboxGate(gate);
+  }
+  const gate = gates.find((g) => g.id === activeId);
+  return gate !== undefined && isPlacedThreeQubitGate(gate);
 }
 
 interface CircuitCanvasProps {
@@ -57,6 +69,8 @@ interface CircuitCanvasProps {
   onRemoveGate: (id: string) => void;
   onSetGateOrder: (id: string, order: ControlTargetOrder) => void;
   onSetGateSpan?: (id: string, span: { baseWire: TwoQubitBaseWire; extended: boolean }) => void;
+  /** Toffoli target-wire picker: reassigns which wire is the target. */
+  onSetThreeQubitTarget?: (id: string, order: ThreeQubitOrder) => void;
   onSetGateTheta: (id: string, theta: number) => void;
   onSetParameterSlot?: (id: string) => void;
   showParameterSlotControls?: boolean;
@@ -116,6 +130,7 @@ export function CircuitCanvas({
   onRemoveGate,
   onSetGateOrder,
   onSetGateSpan,
+  onSetThreeQubitTarget,
   onSetGateTheta,
   onSetParameterSlot,
   showParameterSlotControls = false,
@@ -142,18 +157,24 @@ export function CircuitCanvas({
   const wireYs = computeWireYs(numberOfQubits, canvasH);
 
   const twoQubitDrag = isActiveTwoQubitDrag(activeId, gates);
+  const threeQubitDrag = isActiveThreeQubitDrag(activeId, gates);
 
-  // Pair-spanning dashed box for 2q drops; 1q still uses per-cell isActiveTarget.
+  // Multi-wire dashed drop preview: full 3-wire span for Toffoli, adjacent-pair
+  // for CNOT/CZ/SWAP; 1q still uses per-cell isActiveTarget.
   let pairDropPreview: { left: number; top: number; width: number; height: number } | null =
     null;
-  if (twoQubitDrag && hoveredCellId) {
+  if ((twoQubitDrag || threeQubitDrag) && hoveredCellId) {
     const m = hoveredCellId.match(CELL_HOVER_RE);
     if (m) {
       const col = parseInt(m[1], 10);
-      const wire = parseInt(m[2], 10);
-      const baseWire = baseWireFromDropWire(wire, numberOfQubits);
-      // Drop targeting remains adjacent-pair only (Phase 3+ may extend).
-      const { wireSpan } = twoQubitGlyphLayout(wireYs, [baseWire, baseWire + 1]);
+      // Toffoli always occupies wires 0..n-1 regardless of hovered wire — same
+      // "always full span" rule the committed ToffoliGlyph/layout code already
+      // follows (see the isPlacedThreeQubitGate branch below).
+      const baseWire = threeQubitDrag
+        ? 0
+        : baseWireFromDropWire(parseInt(m[2], 10), numberOfQubits);
+      const hiWire = threeQubitDrag ? numberOfQubits - 1 : baseWire + 1;
+      const { wireSpan } = twoQubitGlyphLayout(wireYs, [baseWire, hiWire]);
       pairDropPreview = {
         left: PAD_X + col * COL_W - SQ_W / 2,
         top: (wireYs[baseWire] ?? 0) - SQ_H / 2,
@@ -206,7 +227,7 @@ export function CircuitCanvas({
                   top={y - SQ_H / 2}
                   width={SQ_W}
                   height={SQ_H}
-                  isActiveTarget={!twoQubitDrag && hoveredCellId === cellId}
+                  isActiveTarget={!twoQubitDrag && !threeQubitDrag && hoveredCellId === cellId}
                 />
               );
             })
@@ -303,9 +324,11 @@ export function CircuitCanvas({
                 const specMulti = speculativeMap ? speculativeMap.get(g.id) : undefined;
                 const displayGate =
                   specMulti !== undefined && "order" in specMulti ? specMulti : g;
-                // TEMP Phase 2 visual check: force `{ ...displayGate, extended: true }` locally,
-                // then revert — not a shipped interaction path.
-                const { top, wireSpan } = twoQubitGlyphLayoutForGate(wireYs, displayGate);
+                // Toffoli always spans all 3 wires (no baseWire/extended) — layout directly
+                // from wireYs rather than through the 2-qubit absoluteWires path.
+                const { top, wireSpan } = isPlacedThreeQubitGate(displayGate)
+                  ? twoQubitGlyphLayout(wireYs, [0, wireYs.length - 1])
+                  : twoQubitGlyphLayoutForGate(wireYs, displayGate);
                 const { width, height } = multiQubitGlyphDimensions(
                   g.type,
                   numberOfQubits,
@@ -324,6 +347,7 @@ export function CircuitCanvas({
                     cnotFlipUnlocked={cnotFlipUnlocked}
                     onSetGateOrder={onSetGateOrder}
                     onSetGateSpan={onSetGateSpan}
+                    onSetThreeQubitTarget={onSetThreeQubitTarget}
                   />
                 );
               }

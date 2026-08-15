@@ -29,16 +29,39 @@ import type { DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent } from 
 import {
   Gate,
   type TwoQubitGate,
+  type ThreeQubitGate,
   type SingleQubitGate,
   type PlacedGate,
   type SingleWire,
   type ControlTargetOrder,
+  type ThreeQubitOrder,
 } from "../types/global";
 import { isToolboxDragId, isPlacedGateId } from "../utils/placedGateDrag";
 import { isValidSingleWire, baseWireFromDropWire } from "../utils/wireValidation";
-import { isTwoQubitToolboxGate } from "../config/gates";
+import { isTwoQubitToolboxGate, isThreeQubitToolboxGate } from "../config/gates";
 import { TOOL_TO_GATE } from "../config/gateUiConfig";
-import { C1_T0 } from "../utils/constants";
+import { C1_T0, DEFAULT_THREE_QUBIT_ORDER } from "../utils/constants";
+
+/**
+ * Level-specific spawn-order overrides for three-qubit toolbox chips.
+ *
+ * Narrow, Toffoli-specific escape hatch — mirrors
+ * `LEVEL_SPECIFIC_TWO_QUBIT_SPAWN_ORDER` in spirit, but currently unused
+ * (every level falls through to `DEFAULT_THREE_QUBIT_ORDER`). Kept as an
+ * explicit lookup (rather than a bare default) so a future level needing a
+ * non-default Toffoli spawn order doesn't have to re-plumb this path.
+ */
+const LEVEL_SPECIFIC_THREE_QUBIT_SPAWN_ORDER: Partial<
+  Record<string, Partial<Record<ThreeQubitGate, ThreeQubitOrder>>>
+> = {};
+
+function threeQubitSpawnOrderFor(
+  levelId: string | undefined,
+  gate: ThreeQubitGate
+): ThreeQubitOrder {
+  const override = levelId ? LEVEL_SPECIFIC_THREE_QUBIT_SPAWN_ORDER[levelId]?.[gate] : undefined;
+  return override ?? DEFAULT_THREE_QUBIT_ORDER;
+}
 
 /**
  * Level-specific spawn-order overrides for two-qubit toolbox chips.
@@ -109,7 +132,8 @@ export function useDragAndDrop(
   ) => void,
   moveGate: (id: string, to: number, wire?: SingleWire) => void,
   removeGate: (id: string) => void,
-  levelId?: string
+  levelId?: string,
+  addThreeQubitGate?: (gate: ThreeQubitGate, column?: number, initialOrder?: ThreeQubitOrder) => void
 ) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hoveredCellId, setHoveredCellId] = useState<string | null>(null);
@@ -223,7 +247,12 @@ export function useDragAndDrop(
       const gateType = TOOL_TO_GATE[id];
       if (!gateType) return;
 
-      if (isTwoQubitToolboxGate(gateType)) {
+      if (isThreeQubitToolboxGate(gateType)) {
+        if (addThreeQubitGate) {
+          const initialOrder = threeQubitSpawnOrderFor(levelId, gateType);
+          addThreeQubitGate(gateType, col, initialOrder);
+        }
+      } else if (isTwoQubitToolboxGate(gateType)) {
         const baseWire = baseWireFromDropWire(wire, numberOfQubits);
         const initialOrder = spawnOrderFor(levelId, gateType);
         addTwoQubitGate(gateType, col, baseWire, initialOrder);
@@ -231,7 +260,16 @@ export function useDragAndDrop(
         addSingleQubitGate(gateType as SingleQubitGate, wire, col);
       }
     },
-    [gates, numberOfQubits, moveGate, removeGate, addTwoQubitGate, addSingleQubitGate, levelId]
+    [
+      gates,
+      numberOfQubits,
+      moveGate,
+      removeGate,
+      addTwoQubitGate,
+      addThreeQubitGate,
+      addSingleQubitGate,
+      levelId,
+    ]
   );
 
   return {

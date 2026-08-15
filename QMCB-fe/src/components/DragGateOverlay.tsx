@@ -2,10 +2,12 @@ import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/glob
 import { isToolboxDragId, isSingleQubitGate, isMultiQubitGate } from "../utils/placedGateDrag";
 import { twoQubitGlyphLayout } from "../utils/canvasGeometry";
 import { absoluteWires } from "../utils/twoQubitPlacement";
+import { isPlacedThreeQubitGate } from "../utils/circuit";
 import {
   CNOTGlyph,
   ControlledZGlyph,
   SwapGlyph,
+  ToffoliGlyph,
   HGlyph,
   TGlyph,
   SGlyph,
@@ -73,6 +75,15 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
           )
         : { width: 84, height: 64 };
 
+    // Toffoli always spans all 3 wires — size preview to the full 0–2 span
+    // (only reachable when numberOfQubits >= 3; that's the only canvas it's
+    // ever toolbox-draggable on).
+    const threeQDims = multiQubitGlyphDimensions(
+      Gate.TOFFOLI,
+      numberOfQubits,
+      twoQubitOverlaySpan(numberOfQubits, [0, 2])
+    );
+
     switch (activeId) {
       case "tool-x":
         return <XGlyph width={64} height={44} />;
@@ -116,6 +127,10 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
         return <YGlyph width={64} height={44} />;
       case "tool-y-dag":
         return <YDagGlyph width={64} height={44} />;
+      case "tool-toffoli":
+        return (
+          <ToffoliGlyph order={[0, 1, 2]} width={threeQDims.width} height={threeQDims.height} />
+        );
       default:
         return null;
     }
@@ -129,7 +144,12 @@ export function DragGateOverlay({ activeId, gates, numberOfQubits = 2 }: DragGat
   }
 
   if (isMultiQubitGate(gate) && "order" in gate) {
-    const wireSpan = twoQubitOverlaySpan(numberOfQubits, absoluteWires(gate));
+    // Toffoli always spans all 3 wires (no baseWire/extended) — wireSpan is ignored by
+    // multiQubitGlyphDimensions for TOFFOLI/FREDKIN anyway (fixed 3-row height).
+    const wires: readonly [number, number] = isPlacedThreeQubitGate(gate)
+      ? [0, 2]
+      : absoluteWires(gate);
+    const wireSpan = twoQubitOverlaySpan(numberOfQubits, wires);
     const { width, height } = multiQubitGlyphDimensions(gate.type, numberOfQubits, wireSpan);
     return <PlacedMultiQubitOverlayContent gate={gate} width={width} height={height} />;
   }

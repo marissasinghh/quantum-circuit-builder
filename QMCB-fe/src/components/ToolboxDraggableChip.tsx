@@ -7,7 +7,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { Gate } from "../types/global";
 import { GATE_TOOLTIPS, shouldShowGateTooltip } from "../config/gateTooltips";
 import { isTwoQubitToolboxGate } from "../config/gates";
-import { CNOTGlyph, ControlledZGlyph, SwapGlyph } from "./GateDesign";
+import { CNOTGlyph, ControlledZGlyph, SwapGlyph, ToffoliGlyph } from "./GateDesign";
 import { GateDisplayLabel } from "./GateDisplayLabel";
 import { Tooltip } from "./Tooltip";
 
@@ -17,6 +17,7 @@ export const TOOLBOX_CHIP_CLASS =
 
 const TOOLBOX_CHIP_SINGLE_H = "h-[56px] min-h-[56px]";
 const TOOLBOX_CHIP_TWO_Q_H = "h-[60px] min-h-[60px]";
+const TOOLBOX_CHIP_THREE_Q_H = "h-[72px] min-h-[72px]";
 
 export const TOOLBOX_CHIP_LABEL_CLASS =
   "font-mono font-medium text-[15px] text-tier3 leading-tight select-none";
@@ -25,14 +26,36 @@ export const TOOLBOX_CHIP_LABEL_CLASS =
 const TOOLBOX_GLYPH_W = 40;
 const TOOLBOX_GLYPH_H = 48;
 
+/**
+ * Taller footprint for 3-wire glyphs (Toffoli) so wires stay legibly spaced.
+ * Grown from 60 to use more of the TOOLBOX_CHIP_THREE_Q_H (72px) chip's height
+ * that was previously left unused — more vertical room means the symbols
+ * (below) can shrink less aggressively while still not crowding each other.
+ */
+const TOOLBOX_GLYPH_THREE_Q_H = 66;
+
+/**
+ * Toffoli symbol sizes at toolbox scale — smaller than the canvas defaults
+ * (5/9) so the control dots and target circle don't crowd each other at this
+ * glyph's tighter wire spacing. Same precedent as SwapGlyph's `markSize` prop.
+ */
+const TOOLBOX_TOFFOLI_CONTROL_R = 4;
+const TOOLBOX_TOFFOLI_TARGET_R = 7;
+
 /** Gates that render a circuit glyph instead of a text label. */
 function isGlyphToolboxGate(gate: Gate): boolean {
   return (
     gate === Gate.CNOT ||
     gate === Gate.CNOT_FLIPPED ||
     gate === Gate.CONTROLLED_Z ||
-    gate === Gate.SWAP
+    gate === Gate.SWAP ||
+    gate === Gate.TOFFOLI
   );
+}
+
+/** Gates whose toolbox chip needs the taller 3-wire chip height. */
+function isThreeWireToolboxGate(gate: Gate): boolean {
+  return gate === Gate.TOFFOLI;
 }
 
 interface ToolboxDraggableChipProps {
@@ -51,13 +74,15 @@ function ToolboxGateContent({ gate }: { gate: Gate }) {
     case Gate.CONTROLLED_Z:
       return <ControlledZGlyph order={[0, 1]} width={TOOLBOX_GLYPH_W} height={TOOLBOX_GLYPH_H} />;
     case Gate.SWAP:
+      return <SwapGlyph width={TOOLBOX_GLYPH_W} height={TOOLBOX_GLYPH_H} markSize={5} />;
+    case Gate.TOFFOLI:
       return (
-        <SwapGlyph
-          order={[0, 1]}
+        <ToffoliGlyph
+          order={[0, 1, 2]}
           width={TOOLBOX_GLYPH_W}
-          height={TOOLBOX_GLYPH_H}
-          primaryMarkSize={5}
-          secondaryMarkSize={4}
+          height={TOOLBOX_GLYPH_THREE_Q_H}
+          controlRadius={TOOLBOX_TOFFOLI_CONTROL_R}
+          targetRadius={TOOLBOX_TOFFOLI_TARGET_R}
         />
       );
     default:
@@ -80,7 +105,11 @@ export function ToolboxDraggableChip({
   const showTooltip =
     tooltipCfg != null &&
     shouldShowGateTooltip(gate, completedLevels, skippedLevels);
-  const heightClass = isGlyphToolboxGate(gate) ? TOOLBOX_CHIP_TWO_Q_H : TOOLBOX_CHIP_SINGLE_H;
+  const heightClass = isThreeWireToolboxGate(gate)
+    ? TOOLBOX_CHIP_THREE_Q_H
+    : isGlyphToolboxGate(gate)
+      ? TOOLBOX_CHIP_TWO_Q_H
+      : TOOLBOX_CHIP_SINGLE_H;
 
   return (
     <div
