@@ -265,13 +265,13 @@ export const H_DAG_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "H† is the inverse of the Hadamard gate. Like the Pauli gates, H is its own inverse — applying it twice returns you to where you started.",
+    "$H^\\dagger$ is the inverse of the Hadamard gate. Like the Pauli gates, H is its own inverse — applying it twice returns you to where you started.",
   hint1:
     "You might expect to invert H the same way you inverted S and T — by flipping the sign of the middle rotation. Try it and see where the state vector actually ends up.",
   hint2:
-    "That trick only works for gates built from a single rotation — H is built from two different axes, so reversing just one sign doesn't reverse the whole gate. But H² = I, so H is its own inverse regardless. You already have the circuit you need.",
+    "That trick only works for gates built from a single rotation — H is built from two different axes, so reversing just one sign doesn't reverse the whole gate. But $H^2 = I$, so H is its own inverse regardless. You already have the circuit you need.",
   insight:
-    "Notice! Unlike S† and T†, you can't invert H by simply negating the middle angle — that shortcut only works for gates built from a single axis of rotation. Truly inverting H means reversing the whole sequence and inverting each gate individually. But H happens to square to identity (H² = I), so that full inverse simplifies right back down to H itself — no new circuit needed.",
+    "Notice! Unlike $S^\\dagger$ and $T^\\dagger$, you can't invert H by simply negating the middle angle — that shortcut only works for gates built from a single axis of rotation. Truly inverting H means reversing the whole sequence and inverting each gate individually. But H happens to square to identity ($H^2 = I$), so that full inverse simplifies right back down to H itself — no new circuit needed.",
 } as const;
 
 // ========================
@@ -295,13 +295,13 @@ export const Y_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The Y gate is the third Pauli gate: it sends |0⟩ to i|1⟩ and |1⟩ to −i|0⟩. Synthesize a circuit whose unitary matches Y exactly.",
+    "The Y gate is the third Pauli gate: it sends $|0\\rangle$ to $i|1\\rangle$ and $|1\\rangle$ to $-i|0\\rangle$. Synthesize a circuit whose unitary matches Y exactly.",
   hint1:
-    "X and Y both send |0⟩ to the exact same spot — the south pole. That's because a gate only leaves points untouched if they sit exactly on its rotation axis; |0⟩ doesn't sit on either the X or Y axis, so both gates swing it all the way down. So |0⟩'s landing spot alone can't tell you which gate you built. Which of your gates changes both the bit value and the phase at once?",
+    "X and Y both send $|0\\rangle$ to the exact same spot — the south pole. That's because a gate only leaves points untouched if they sit exactly on its rotation axis; $|0\\rangle$ doesn't sit on either the X or Y axis, so both gates swing it all the way down. So $|0\\rangle$'s landing spot alone can't tell you which gate you built. Which of your gates changes both the bit value and the phase at once?",
   hint2:
     "You don't need a sandwich here — just two gates, back to back. X flips the bit. Which gate then adds the phase Y needs?",
   insight:
-    "Notice! X and Y both send |0⟩ to the south pole — tracing a single basis state can't tell them apart. What makes Y different is the phase it adds, and how it treats other states: X leaves |+⟩ fixed, Y flips it to |−⟩. Same lesson as Level 1.9 — matching one point on the sphere doesn't guarantee you've matched the whole gate.",
+    "Notice! X and Y both send $|0\\rangle$ to the south pole — tracing a single basis state can't tell them apart. What makes Y different is the phase it adds, and how it treats other states: X leaves $|+\\rangle$ fixed, Y flips it to $|-\\rangle$. Same lesson as Level 1.9 — matching one point on the sphere doesn't guarantee you've matched the whole gate.",
 } as const;
 
 // ========================
@@ -326,9 +326,9 @@ export const Y_DAG_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "Y† is the inverse of Y. Like the other Pauli gates, Y is its own inverse.",
-  hint1: "You've seen this pattern with X† and Z†. Does the same logic apply to Y?",
-  hint2: "Y applied twice returns the identity — Y² = I. So Y⁻¹ = Y, and Y† and Y are the same gate.",
+    "$Y^\\dagger$ is the inverse of Y. Like the other Pauli gates, Y is its own inverse.",
+  hint1: "You've seen this pattern with $X^\\dagger$ and $Z^\\dagger$. Does the same logic apply to Y?",
+  hint2: "Y applied twice returns the identity — $Y^2 = I$. So $Y^{-1} = Y$, and $Y^\\dagger$ and Y are the same gate.",
 } as const;
 
 // ========================
@@ -403,11 +403,11 @@ export const H_LEVEL: LevelDefinition = {
   uiMaxGates: MAX_GATES,
 
   description:
-    "The Hadamard gate creates equal superposition: |0⟩ ↦ (|0⟩+|1⟩)/√2 and |1⟩ ↦ (|0⟩−|1⟩)/√2. Synthesize a circuit whose unitary matches H, up to global phase.",
+    "The Hadamard gate creates equal superposition: $|0\\rangle \\mapsto \\frac{|0\\rangle + |1\\rangle}{\\sqrt{2}}$ and $|1\\rangle \\mapsto \\frac{|0\\rangle - |1\\rangle}{\\sqrt{2}}$. Synthesize a circuit whose unitary matches H, up to global phase.",
   hint1:
     "One gate rotates the state vector off the pole and onto the equator. A second gate then rotates it around to the target point. Which gate handles each job?",
   hint2:
-    "Once you're at the target point, both |0⟩ and |1⟩ already land in the right spot after two gates — but a single point on the sphere hides its own phase. Two states can each look correct while the phase relationship between them is still off. What gate could adjust that relationship without moving either point any further — one that rotates the state around the axis it's already sitting on?",
+    "Once you're at the target point, both $|0\\rangle$ and $|1\\rangle$ already land in the right spot after two gates — but a single point on the sphere hides its own phase. Two states can each look correct while the phase relationship between them is still off. What gate could adjust that relationship without moving either point any further — one that rotates the state around the axis it's already sitting on?",
   insight:
     "Notice! The outputs show different complex amplitudes but the circuit still passed. This is because the circuits differed by a global phase. Global phase differences are physically unobservable — the circuits will still have identical probability columns and be physically equivalent!",
 } as const;
@@ -437,7 +437,7 @@ export const RX_LEVEL: LevelDefinition = {
   hint2:
     "Applying that axis-swapping gate once puts you in a swapped view — so the rotation you place next actually happens around X instead of Z. But you're still stuck in that swapped view. What would switch the labeling back to normal — without undoing the rotation you just did?",
   insight:
-    "Notice! Conjugating a gate — sandwiching it between another gate and its inverse — doesn't just move a state, it relabels the entire rotation axis. H swaps the Z-axis and X-axis, so wrapping a Z-rotation in H's turns it into an X-rotation at the same angle. This trick is how you'll build Rx, Ry, and beyond from the phase gates you already have. H happens to work here because it's a full 180° flip that undoes itself — later levels will need a different kind of conjugator, and the sandwich won't always be symmetric like this one.",
+    "Notice! Conjugating a gate — sandwiching it between another gate and its inverse — doesn't just move a state, it relabels the entire rotation axis. H swaps the Z-axis and X-axis, so wrapping a Z-rotation in H's turns it into an X-rotation at the same angle. This trick is how you'll build $R_x$, $R_y$, and beyond from the phase gates you already have. H happens to work here because it's a full $180^\\circ$ flip that undoes itself — later levels will need a different kind of conjugator, and the sandwich won't always be symmetric like this one.",
 } as const;
 
 // ========================
@@ -463,11 +463,11 @@ export const RY_LEVEL: LevelDefinition = {
   hint1:
     "Which gate sweeps the X-axis over to the Y-axis? And since it's a sweep, not a self-inverse flip like H — what belongs on the other side of the sandwich?",
   hint2:
-    "Once you've built the full sandwich, you won't be able to tell if the sign is right just by watching |0⟩ or |1⟩ alone — the difference is invisible until you check the whole circuit. Move the θ slider and compare your circuit's output to the expected output as it changes. If they diverge, flip the sign on your outer gates.",
+    "Once you've built the full sandwich, you won't be able to tell if the sign is right just by watching $|0\\rangle$ or $|1\\rangle$ alone — the difference is invisible until you check the whole circuit. Move the $\\theta$ slider and compare your circuit's output to the expected output as it changes. If they diverge, flip the sign on your outer gates.",
   insight:
-    "Notice! Ry(θ) and Ry(−θ) produce the exact same measurement probabilities starting from |0⟩ — but they're genuinely different gates. The direction of rotation only shows up once you check the full matrix, not just where a single state lands. Get the sign of your conjugating Rz backwards, and your circuit can look right on the Bloch sphere while still failing the check.",
+    "Notice! $R_y(\\theta)$ and $R_y(-\\theta)$ produce the exact same measurement probabilities starting from $|0\\rangle$ — but they're genuinely different gates. The direction of rotation only shows up once you check the full matrix, not just where a single state lands. Get the sign of your conjugating Rz backwards, and your circuit can look right on the Bloch sphere while still failing the check.",
   preSolveCallout:
-    "You built Rx by sandwiching Rz between two H's — H maps the Z-axis onto the X-axis, so wrapping Rz in H turns a Z-rotation into an X-rotation. Ry works the same way: find a gate that maps the X-axis onto the Y-axis, and sandwich your Rx between that gate and its inverse. The difference: H is a full 180° flip that undoes itself, which is why the same H worked on both sides. The gate that maps X onto Y is only a 90° sweep, not a flip — it isn't its own inverse, so you'll need it on one side and its opposite on the other.",
+    "You built $R_x$ by sandwiching Rz between two H's — H maps the Z-axis onto the X-axis, so wrapping Rz in H turns a Z-rotation into an X-rotation. $R_y$ works the same way: find a gate that maps the X-axis onto the Y-axis, and sandwich your $R_x$ between that gate and its inverse. The difference: H is a full $180^\\circ$ flip that undoes itself, which is why the same H worked on both sides. The gate that maps X onto Y is only a $90^\\circ$ sweep, not a flip — it isn't its own inverse, so you'll need it on one side and its opposite on the other.",
 } as const;
 
 // ========================
