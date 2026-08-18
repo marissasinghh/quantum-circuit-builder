@@ -5,9 +5,41 @@
 import { useState } from "react";
 import type { LevelDefinition } from "../interfaces/levelDefinition";
 import type { TruthTableDTO } from "../interfaces/truthTable";
+import { Gate } from "../types/global";
 import { LEVEL_ORDER, getGateHeadingLabel, getLevelDisplayName, getLevelNumber } from "../config/levels";
 import { GateDisplayLabel } from "./GateDisplayLabel";
 import { MathText } from "./MathText";
+import { Tooltip } from "./Tooltip";
+
+const TASK_DESCRIPTION_CLASS = "task-description text-caption text-text-body leading-relaxed";
+
+const GLOBAL_PHASE_TOOLTIP =
+  "Two circuits can produce outputs that differ by an overall constant multiplier (like i or −1) and still represent the exact same physical state. This is called global phase, and it's unobservable — the probabilities and physical behavior are identical either way. That's why 'matches up to global phase' still counts as correct.";
+
+function TaskDescription({ level }: { level: LevelDefinition }) {
+  const text = level.description ?? "";
+
+  if (level.target_unitary === Gate.H) {
+    const marker = "global phase";
+    const idx = text.lastIndexOf(marker);
+    if (idx !== -1) {
+      const before = text.slice(0, idx + marker.length);
+      const after = text.slice(idx + marker.length);
+      return (
+        <span className={TASK_DESCRIPTION_CLASS}>
+          <MathText text={before} />
+          {" "}
+          <Tooltip id="h-global-phase" variant="inline" ariaLabel="Global phase info">
+            {GLOBAL_PHASE_TOOLTIP}
+          </Tooltip>
+          <MathText text={after} />
+        </span>
+      );
+    }
+  }
+
+  return <MathText text={text} className={TASK_DESCRIPTION_CLASS} />;
+}
 
 interface TaskCardProps {
   level: LevelDefinition;
@@ -58,10 +90,16 @@ export function TaskCard({ level, dynamicTruth, onNewUnitary }: TaskCardProps) {
           <GateDisplayLabel label={getGateHeadingLabel(level)} />
         )}
       </p>
-      <MathText
-        text={level.description ?? ""}
-        className="task-description text-caption text-text-body leading-relaxed"
-      />
+      <TaskDescription level={level} />
+
+      {level.preSolveCallout && (
+        <div className="mt-2 bg-bg-panel border border-tier1 rounded-panel px-3 py-2">
+          <p className="panel-heading mb-1.5">HOW THIS CONNECTS TO RX</p>
+          <p className="level-insight font-sans text-sm text-text-body leading-relaxed">
+            <MathText text={level.preSolveCallout} />
+          </p>
+        </div>
+      )}
 
       <div className="mt-2">
         <div className="level-label mb-1">

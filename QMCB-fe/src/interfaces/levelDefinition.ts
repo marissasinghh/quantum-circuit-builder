@@ -34,6 +34,11 @@ export interface LevelDefinition {
   hint2?: string;
   /** Post-solve insight shown after the student first passes the level. */
   insight?: string;
+  /**
+   * Always-visible TaskCard callout shown before the level is solved
+   * (not gated on hint clicks or a passing grade).
+   */
+  preSolveCallout?: string;
   /** When true, level appears on the picker but is not openable from the grid (stub / deferred). */
   locked?: boolean;
   /**
