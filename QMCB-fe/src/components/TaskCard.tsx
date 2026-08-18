@@ -9,12 +9,19 @@ import { Gate } from "../types/global";
 import { LEVEL_ORDER, getGateHeadingLabel, getLevelDisplayName, getLevelNumber } from "../config/levels";
 import { GateDisplayLabel } from "./GateDisplayLabel";
 import { MathText } from "./MathText";
-import { Tooltip } from "./Tooltip";
+import { Tooltip, TooltipMath } from "./Tooltip";
 
 const TASK_DESCRIPTION_CLASS = "task-description text-caption text-text-body leading-relaxed";
 
-const GLOBAL_PHASE_TOOLTIP =
-  "Two circuits can produce outputs that differ by an overall constant multiplier (like i or −1) and still represent the exact same physical state. This is called global phase, and it's unobservable — the probabilities and physical behavior are identical either way. That's why 'matches up to global phase' still counts as correct.";
+const GLOBAL_PHASE_TOOLTIP = (
+  <>
+    Two circuits can produce outputs that differ by an overall constant multiplier (like{" "}
+    <TooltipMath>i</TooltipMath> or <TooltipMath>−1</TooltipMath>) and still represent the exact
+    same physical state. This is called global phase, and it&apos;s unobservable — the
+    probabilities and physical behavior are identical either way. That&apos;s why &apos;matches up
+    to global phase&apos; still counts as correct.
+  </>
+);
 
 function TaskDescription({ level }: { level: LevelDefinition }) {
   const text = level.description ?? "";
