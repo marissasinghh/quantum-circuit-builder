@@ -281,7 +281,12 @@ TARGET_LIBRARY: Dict[str, Dict[str, Any]] = {
         TargetLibraryField.NUM_QUBITS.value: LEVEL2_QUBITS,
         TargetLibraryField.PARAMETERIZED.value: True,
         TargetLibraryField.PARAMETER_MODE.value: TargetParameterMode.SEED_ZXZ.value,
-        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: False,
+        TargetLibraryField.ALLOW_GLOBAL_PHASE.value: True,
+        TargetLibraryField.GRADING_MODE.value: GradingMode.UNITARY_GLOBAL_PHASE.value,
+        # PLACEHOLDER — not yet calibrated for CONTROLLED_U's longer decomposition
+        # (5 rotation gates vs RANDOM_U's 3). Mari to calibrate and confirm via her
+        # own test before this ships.
+        TargetLibraryField.GRADING_ATOL.value: 1e-3,
         # composite_gate: True tells TargetUnitaryBuilder to bypass the generic
         # step iteration and call _build_composite() instead.  CirqGateMapper
         # has no single named Cirq primitive for this gate; it is built from

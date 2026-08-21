@@ -13,6 +13,8 @@ venv/
 # Environment variables
 .env
 .env.*
+!.env.sample
+!.env.local.example
 
 # Build / coverage
 *.egg-info/
