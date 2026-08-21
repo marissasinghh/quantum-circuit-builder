@@ -17,9 +17,9 @@ const GLOBAL_PHASE_TOOLTIP = (
   <>
     Two circuits can produce outputs that differ by an overall constant multiplier (like{" "}
     <TooltipMath>i</TooltipMath> or <TooltipMath>−1</TooltipMath>) and still represent the exact
-    same physical state. This is called global phase, and it&apos;s unobservable — the
+    same physical state. This is called global phase, and it&apos;s unobservable. The
     probabilities and physical behavior are identical either way. That&apos;s why &apos;matches up
-    to global phase&apos; still counts as correct.
+    to global phase&apos; still counts as correct. Read more: Nielsen &amp; Chuang, Section 2.2.
   </>
 );
 
