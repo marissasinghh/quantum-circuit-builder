@@ -99,5 +99,5 @@ class TestResolveTargetParams:
             validate_target=False,
         )
         assert resolved.simulate_live is True
-        assert resolved.allow_global_phase is False
+        assert resolved.allow_global_phase is True
         assert resolved.step_thetas == [alpha, beta, gamma]

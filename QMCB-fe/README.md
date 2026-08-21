@@ -1,13 +1,15 @@
 # QMCB-FE — Quantum Circuit Builder (Frontend)
 
-This is the **prototype frontend** for building quantum circuits in a NAND-Game–style UI.  
-Students drag gates from a toolbox onto a two-wire canvas (|a⟩ and |b⟩), submit the circuit to the backend, and compare the **trial** vs **target** truth tables (e.g., SWAP).
+This is the **frontend** for building quantum circuits in a NAND-Game–style UI.
+Students drag gates from a progressive toolbox onto a 1-, 2-, or 3-wire canvas, submit the circuit to the backend, and compare the **trial** vs **target** truth tables (SWAP is one of 23 levels).
+
+Live site: [cnotgame.com](https://cnotgame.com)
 
 ## Prerequisites
 
-- **Node.js** ≥ 18 (LTS is fine)
+- **Node.js** ≥ 18 (CI uses Node 20)
 - **npm** (comes with Node)
-- Backend running locally (see `qmcb-be/README.md`)
+- Backend running locally (see `QMCB-be/README.md`)
 
 ## Getting Started
 
@@ -16,8 +18,8 @@ Students drag gates from a toolbox onto a two-wire canvas (|a⟩ and |b⟩), sub
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/marissasinghh/qmcb.git
-cd qmcb/qmcb-fe
+git clone https://github.com/marissasinghh/quantum-circuit-builder.git
+cd quantum-circuit-builder/QMCB-fe
 ```
 
 Only clone if you haven't already for backend setup.
@@ -55,7 +57,7 @@ Open: http://localhost:5173
 
 For daily development, you need to:
 
-1. Start backend (qmcb-be) and verify `POST /api/simulate` works (for example with curl or your HTTP client).
+1. Start backend (`QMCB-be`) and verify `POST /api/simulate` works (Swagger at `http://127.0.0.1:5000/api/docs`, or curl / an HTTP client).
 
 2. Start front end:
 
@@ -63,117 +65,139 @@ For daily development, you need to:
 npm run dev
 ```
 
-3. Build types & lint:
+3. Build types, lint, format, and tests:
 
 ```bash
 npm run typecheck
 npm run lint
-npm run format
+npm run format        # Prettier check (does not write)
+npm run format:fix    # Prettier write
+npm run test          # Vitest
 ```
 
 ### Environment Variables
 
 The application uses the following environment variables:
 
-- `VITE_API_BASE_URL` =base URL for the backend (e.g., http://127.0.0.1:5000).
+- `VITE_API_BASE_URL` = base URL for the backend (e.g., http://127.0.0.1:5000).
   Vite only exposes vars prefixed with VITE\_.
   Do **not** commit your .env.local; commit .env.local.example.
 
 ### API Contract
 
+Primary grading path:
+
 1. POST ${VITE_API_BASE_URL}/api/simulate
+
+Other endpoints the frontend also calls:
+
+- `GET /api/levels/random-unitary` and `GET /api/levels/controlled-unitary` (seeded target generation)
+- `POST /api/feedback/solution` (Feedback page → GitHub Issue)
+- `POST /api/metrics/event` (fire-and-forget instrumentation)
 
 ## Example Request:
 
+```json
 {
-"target_unitary": "SWAP",
-"number_of_qubits": 2,
-"gates": ["CNOT", "CNOT", "CNOT"],
-"qubit_order": [[0, 1], [1, 0], [0, 1]]
+  "target_unitary": "SWAP",
+  "number_of_qubits": 2,
+  "gates": ["CNOT", "CNOT", "CNOT"],
+  "qubit_order": [[0, 1], [1, 0], [0, 1]]
 }
+```
 
-- Two-qubit CNOT uses orders [0,1] or [1,0] (control→target).
-- Single-qubit gates (H, T/Rz) encode wire as [wire, wire]:
-  - on |a⟩ → [0,0]
-  - on |b⟩ → [1,1]
+- Two-qubit CNOT uses orders `[0, 1]` (`C0_T1`) or `[1, 0]` (`C1_T0`) (control→target).
+- Single-qubit gates encode wire as `[wire, wire]`:
+  - on wire 0 → `[0, 0]` (`Q0`)
+  - on wire 1 → `[1, 1]` (`Q1`)
+- Three-qubit gates use `[0, 1, 2]` (`C0_C1_T2` / `C0_T1_T2`) or a reconfigured order such as `[0, 2, 1]`.
+- Parameterized gates may be objects instead of strings, e.g. `{ "gate": "RX", "theta": 1.57 }`. Optional request fields: `seed`, `target_params`, `parameter_gate_index`.
 
 ## Example Response:
 
+```json
 {
-"message": "Successfully simulated trial and target unitaries.",
-"trial_truth_table": {
-"input": [
-"00",
-"01",
-"10",
-"11"
-],
-"output": [
-"00",
-"10",
-"01",
-"11"
-]
-},
-"target_truth_table": {
-"input": [
-"00",
-"01",
-"10",
-"11"
-],
-"output": [
-"00",
-"10",
-"01",
-"11"
-]
+  "message": "Successfully simulated circuits.",
+  "grading_mode": null,
+  "samples_checked": null,
+  "samples_passed": null,
+  "trial_truth_table": {
+    "input": ["00", "01", "10", "11"],
+    "output": ["00", "10", "01", "11"]
+  },
+  "target_truth_table": {
+    "input": ["00", "01", "10", "11"],
+    "output": ["00", "10", "01", "11"]
+  },
+  "all_match": true,
+  "validation_mode": false
 }
-}
+```
+
+`grading_mode` is `"random_theta"` (Rx/Ry sampling; truth tables are `null`), `"unitary_global_phase"`, or `null` (Dirac/Born path). Truth tables may also include `probabilities` and `amplitudes`.
 
 ### Scripts
 
 ```bash
-npm run dev        # start Vite dev server
-npm run build      # production build -> dist/
-npm run preview    # preview the production build
-npm run typecheck  # TypeScript type check (no emit)
-npm run lint       # ESLint (flat config)
-npm run format     # Prettier write
+npm run dev          # start Vite dev server
+npm run build        # production build -> dist/
+npm run preview      # preview the production build
+npm run typecheck    # TypeScript type check (no emit)
+npm run lint         # ESLint (flat config)
+npm run format       # Prettier check
+npm run format:fix   # Prettier write
+npm run test         # Vitest
 ```
 
 ### Project Structure
 
 ```bash
-qmcb-fe/
+QMCB-fe/
 ├─ src/
-│  ├─ services/
-│  │  └─ simulate.ts           # fetch wrapper (POST /api/simulate)
+│  ├─ App.tsx                          # routing shell only
+│  ├─ main.tsx
+│  ├─ pages/
+│  │  ├─ LevelsPage.tsx
+│  │  ├─ SolveLevelPage.tsx            # desktop hook wiring (useCircuit, DnD, validation)
+│  │  ├─ AboutPage.tsx
+│  │  ├─ SettingsPage.tsx
+│  │  ├─ FeedbackPage.tsx
+│  │  └─ MySolutionsPage.tsx
 │  ├─ components/
-│  │  └─ gate-designs.tsx      # SVG glyphs for CNOT, H, T
-│  ├─ controllers/
-│  │  └─ simulate.ts           # buildRequestFromLevel, toTruthRows
-│  ├─ dto/
-│  │  ├─ level-definition.ts   # LevelDefinition, SWAP level metadata
-│  │  ├─ response-dto.ts       # SimulationResponseDTO
-│  │  ├─ truth-table.ts        # TruthTableDTO
-│  │  └─ unitary.ts            # UnitaryRequestDTO
+│  │  ├─ CircuitCanvas.tsx
+│  │  ├─ GateDesign.tsx                # SVG glyphs
+│  │  ├─ OutputTable.tsx
+│  │  ├─ BlochSphere.tsx
+│  │  ├─ MobileSolveLayout.tsx         # mobile equivalent of SolveLevelPage wiring
+│  │  └─ DragGateOverlay.tsx
 │  ├─ hooks/
-│  │  └─ use-circuit.ts        # circuit state: placed gates, orders, wires
-│  ├─ repositories/
-│  │  ├─ circuit-repo.ts       # pure helpers for serializing/sorting (optional)
-│  │  ├─ quantum-gates.ts      # UI metadata: allowed orders, arity, labels
-│  │  └─ target-library.ts     # SWAP level definition
+│  │  ├─ useCircuit.ts
+│  │  ├─ useDragAndDrop.ts
+│  │  ├─ useCircuitValidation.ts       # Check Solution → POST /api/simulate
+│  │  └─ useLevelProgress.ts
+│  ├─ config/
+│  │  ├─ levels.ts                     # 23 level definitions + LEVEL_ORDER
+│  │  └─ gates.ts
+│  ├─ controllers/
+│  │  └─ simulate.ts                   # buildRequestFromLevel, toTruthRows
+│  ├─ services/
+│  │  ├─ simulate.ts                   # fetch wrapper (POST /api/simulate)
+│  │  ├─ randomUnitary.ts
+│  │  ├─ controlledUnitary.ts
+│  │  └─ feedback.ts
+│  ├─ interfaces/
+│  │  ├─ levelDefinition.ts
+│  │  ├─ responseDTO.ts
+│  │  ├─ truthTable.ts
+│  │  └─ unitary.ts                    # UnitaryRequestDTO
 │  ├─ types/
-│  │  └─ global.ts             # ToolboxGate, PlacedGate unions, tuple types
-│  ├─ utils/
-│  │  ├─ constants.ts          # MAX_GATES, ALLOWED_QUBIT_ORDERS, etc.
-│  │  └─ dnd-helpers.tsx       # DraggableTool, DroppableStrip
-│  ├─ App.tsx                  # layout, DnD wiring, canvas rendering
-│  ├─ index.css
-│  └─ main.tsx
+│  │  └─ global.ts                     # Gate enum, PlacedGate unions
+│  └─ utils/
+│     ├─ circuit.ts                    # serializeOrders, serializeUnitaryGateEntries
+│     ├─ computeToolbox.ts
+│     └─ constants.ts
 ├─ .env.local.example
-├─ eslint.config.cjs
+├─ eslint.config.js
 ├─ .prettierrc.json
 ├─ package.json
 └─ vite.config.ts
@@ -181,30 +205,31 @@ qmcb-fe/
 
 ### UI Overview
 
-- Task: instructions and expected SWAP truth table.
-- Toolbox: draggable CNOT, H, T glyphs.
-- Canvas: two wires (|a⟩, |b⟩).
-- Drop CNOT onto the canvas, then set control→target order in the list.
-- Drop H/T directly onto a specific wire.
-- Check Solution: POSTs to backend; shows trial vs target truth tables with ✓.
+- Levels page: three tiers; progress persisted in localStorage (`cnot_progress`).
+- Toolbox: progressive gateset (starts with Rz(θ) and √X); completing a level unlocks its gate unless `noGatesetUnlock` is set.
+- Canvas: 1, 2, or 3 wires depending on the level. Drop gates onto wires; 2-/3-qubit chips can flip or reconfigure order on the canvas.
+- Check Solution: POSTs to the backend via `useCircuitValidation`; shows trial vs target truth tables with row-level match. Disabled when no gates are placed.
+- Single-qubit levels also show a Bloch sphere; a level-complete modal appears when `all_match` is true.
+- First-run onboarding; mobile layout in `MobileSolveLayout`.
 
 ### Troubleshooting
 
 - CORS error in console:
   - Make sure backend allows http://localhost:5173 (dev) and your production FE origin.
 - 404 on `/api/simulate`:
-  - Check backend routes (`flask --app app.main routes`), `VITE_API_BASE_URL`, and that `src/services/simulate.ts` posts to `/api/simulate`.
+  - Check backend is running (`python -m app.main` from `QMCB-be`), Swagger at `/api/docs`, `VITE_API_BASE_URL`, and that `src/services/simulate.ts` posts to `/api/simulate`.
 - Drag overlay not showing / errors with useDndMonitor:
-  - We use DndContext props (onDragStart/onDragEnd) instead of useDndMonitor to avoid provider issues.
+  - DnD lives in `SolveLevelPage` / `MobileSolveLayout` (`DndContext` props `onDragStart`/`onDragEnd`); the overlay is `DragGateOverlay.tsx`.
 - No gates placed but output appears:
-  - Check Solution is disabled when no gates are present; verify gates.length guards in App.tsx.
+  - Check Solution is disabled when no gates are present (`gates.length` guard in `useCircuitValidation.handleCheck`).
 
 ### Deploy
 
-- Frontend (Vercel/Netlify)
-  - Project root: qmcb-fe
-  - Build command: npm run build
-  - Output dir: dist
-  - Env: set VITE_API_BASE_URL to your production backend URL
+- Frontend (Vercel; or any static host)
+  - Project root: `QMCB-fe`
+  - Build command: `npm run build`
+  - Output dir: `dist`
+  - Env: set `VITE_API_BASE_URL` to your production backend URL (Render)
+  - Live site: cnotgame.com
 - Backend
   - Ensure CORS allows the FE production origin.

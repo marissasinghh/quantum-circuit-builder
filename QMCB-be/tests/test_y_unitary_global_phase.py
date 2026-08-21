@@ -32,6 +32,7 @@ def test_y_library_sets_unitary_global_phase_mode() -> None:
         Gate.SQRT_X_DAG.value,
         Gate.CONTROLLED_H.value,
         Gate.RANDOM_U.value,
+        Gate.CONTROLLED_U.value,
     }
 
 def test_x_then_z_passes_y() -> None:

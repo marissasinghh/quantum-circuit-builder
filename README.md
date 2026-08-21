@@ -1,9 +1,10 @@
 # QMCB — Quantum Circuit Builder (Monorepo)
 
-Prototype **full-stack learning tool** where students build quantum circuits, submit them for simulation, and compare **trial** vs **target** truth tables (for example, a two-qubit SWAP gate).
+Full-stack learning tool where students build quantum circuits, submit them for simulation, and compare **trial** vs **target** truth tables across 23 levels (1–3 qubits). SWAP is one Tier 2 exercise; the same pipeline grades every level.
 
-- Backend: `qmcb-be/` (Flask, Python)
-- Frontend: `qmcb-fe/` (Vite, React, TypeScript)
+- Backend: `QMCB-be/` (Flask, Python, Cirq)
+- Frontend: `QMCB-fe/` (Vite, React, TypeScript)
+- Live site: [cnotgame.com](https://cnotgame.com)
 
 ---
 
@@ -27,9 +28,9 @@ Introductory quantum computing courses often present gate-level concepts (for ex
 
 This project addresses that gap by providing:
 
-- A **drag-and-drop circuit builder** where students construct circuits on a two-qubit canvas.
-- A **backend simulator** that computes the trial unitary and truth table for the student-designed circuit.
-- A **comparison view** between the trial truth table and a target truth table drawn from a small library of canonical two-qubit unitaries (for example, SWAP).
+- A **drag-and-drop circuit builder** where students construct circuits on a 1-, 2-, or 3-wire canvas, depending on the level.
+- A **backend simulator** (Cirq) that computes the trial unitary and truth table for the student-designed circuit.
+- A **comparison view** between the trial truth table and a target truth table drawn from a library of 23 named unitaries across three tiers (for example, SWAP on Tier 2).
 
 The goal is to make it easy for students to iterate on designs, see immediate feedback, and develop an intuition for how gate placement and qubit ordering affect circuit behavior.
 
@@ -42,19 +43,21 @@ Although this project is not an ML training pipeline, it does operate over struc
 ### Core Data Entities
 
 - **Target unitaries**
-  - Small library of named unitaries (for example, `SWAP`) exposed to the frontend.
-  - Each target unitary has an associated truth table over all computational basis inputs for the configured number of qubits.
+  - Named unitaries in `QMCB-be/app/config/target_library.py`, keyed by `target_unitary` (must match the frontend registry in `QMCB-fe/src/config/levels.ts`).
+  - 23 levels: 16 single-qubit (Tier 1), 5 two-qubit (Tier 2, including SWAP), 2 three-qubit (Tier 3: Toffoli, Fredkin).
+  - Each target has an associated truth table over all computational basis inputs for the configured number of qubits.
 
 - **Trial circuits**
   - Student-designed gate sequences built in the UI.
-  - Represented as an ordered list of gates (for example, `["CNOT", "CNOT", "CNOT"]`) and associated qubit order tuples (for example, `[[0, 1], [1, 0], [0, 1]]`).
-  - Encoded as a JSON payload and submitted to the `/api/simulate` backend endpoint.
+  - Represented as an ordered list of gates (plain strings such as `"CNOT"`, or parameterized objects such as `{ "gate": "RX", "theta": 1.57 }`) and associated qubit-order tuples (for example, `[[0, 1], [1, 0], [0, 1]]`; named aliases `Q0`, `C0_T1`, `C0_C1_T2`, … exist in both codebases).
+  - Encoded as a JSON payload and submitted to the `POST /api/simulate` backend endpoint.
 
 - **Truth tables**
   - For a given circuit and number of qubits, the backend computes:
     - Inputs: all basis states (for example, `["00", "01", "10", "11"]` for two qubits).
-    - Outputs: the resulting basis states after applying the circuit.
-  - Both **trial** and **target** truth tables are returned so the frontend can render side-by-side comparisons.
+    - Outputs: Dirac-formatted resulting states after applying the circuit.
+    - Optional `probabilities` and `amplitudes` per row.
+  - Both **trial** and **target** truth tables are returned so the frontend can render side-by-side comparisons. For `random_theta` grading (Rx/Ry), the tables are `null` and the backend grades via sampled unitary comparison instead.
 
 ### Example Simulation Payload
 
@@ -65,50 +68,54 @@ The following example illustrates the data exchanged between frontend and backen
   - `number_of_qubits`: `2`
   - `gates`: `["CNOT", "CNOT", "CNOT"]`
   - `qubit_order`: `[[0, 1], [1, 0], [0, 1]]`
+  - Optional fields used by other levels: `seed`, `target_params`, `parameter_gate_index`
 
 - Response body (simplified):
-  - `trial_truth_table`: trial inputs and outputs for the constructed circuit.
-  - `target_truth_table`: reference truth table for the SWAP unitary.
+  - `trial_truth_table` / `target_truth_table`: trial and reference tables (or `null` in `random_theta` mode)
+  - `all_match`: whether the trial is accepted
+  - `grading_mode`: `"unitary_global_phase"` | `"random_theta"` | `null` (Dirac/Born path)
 
 ---
 
 ## Modeling Approach
 
-The system implements a simple end-to-end modeling pipeline that takes a symbolic circuit description as input and returns discrete truth tables as output.
+The system implements a simple end-to-end modeling pipeline that takes a symbolic circuit description as input and returns discrete truth tables (or a sampled unitary verdict) as output. The frontend does not simulate; all quantum math runs on the backend through Cirq.
 
 ### 1. Circuit Specification (Frontend)
 
-- Students assemble circuits by dragging gate glyphs from a toolbox onto a two-wire canvas.
+- Students assemble circuits by dragging gate glyphs from a progressive toolbox onto a canvas with 1, 2, or 3 wires.
 - Each placed gate is encoded as:
-  - Gate type (for example, `CNOT`, `H`, `T`).
+  - Gate type (for example, `CNOT`, `H`, `RX`) or a parameterized object `{ gate, theta?, alpha?, beta?, gamma? }`.
   - Qubit order tuple:
-    - For two-qubit gates (for example, `CNOT`): `[control, target]` such as `[0, 1]` or `[1, 0]`.
-    - For single-qubit gates: `[wire, wire]` such as `[0, 0]` for the first wire and `[1, 1]` for the second.
-- The frontend controller serializes the ordered list of placed gates and wires into a `UnitaryRequestDTO` that is POSTed to `/api/simulate`.
+    - Single-qubit: `[wire, wire]` such as `[0, 0]` (`Q0`).
+    - Two-qubit (for example, `CNOT`): `[control, target]` such as `[0, 1]` (`C0_T1`) or `[1, 0]` (`C1_T0`).
+    - Three-qubit: `[0, 1, 2]` (`C0_C1_T2` / `C0_T1_T2`) or a reconfigured order such as `[0, 2, 1]`.
+- `buildRequestFromLevel` in `QMCB-fe/src/controllers/simulate.ts` serializes the ordered list of placed gates into a `UnitaryRequestDTO` that is POSTed to `/api/simulate`.
 
 ### 2. Quantum Circuit Construction (Backend)
 
 Within the backend, the modeling pipeline consists of three conceptual layers:
 
 - **Target library**
-  - Maps a target unitary label (for example, `"SWAP"`) to a canonical description and reference truth table.
+  - Maps a target unitary label (for example, `"SWAP"`) to a canonical Cirq description and reference truth table in `app/config/target_library.py`.
 - **Circuit construction**
-  - Converts the incoming gate sequence and qubit orders into an internal circuit representation.
-  - Uses a quantum gate repository to look up primitive operations and compose them in order.
-- **Simulation**
-  - Applies the constructed circuit to each computational basis state for the configured number of qubits.
-  - Produces the trial unitary behavior in truth-table form rather than exposing raw state vectors or complex amplitudes.
+  - `CircuitBuilder` converts the incoming gate sequence and qubit orders into a Cirq circuit (`app/services/circuit_builder.py`).
+  - Composite student gates (for example, `CNOT_FLIPPED`, `CONTROLLED_H`) are expanded before mapping to Cirq primitives.
+- **Simulation and grading**
+  - Applies the constructed circuit to each computational basis state (or compares full unitaries / sampled angles, depending on `grading_mode`).
+  - Produces trial vs target truth tables for the Dirac/Born path, rather than exposing raw state vectors as the primary student-facing output.
 
 ### 3. Comparison and Response Shaping
 
 - The backend computes and returns both:
   - `trial_truth_table`: behavior of the student-designed circuit.
   - `target_truth_table`: behavior of the reference unitary.
-- A response DTO structures the result for the frontend to render:
-  - Side-by-side truth tables.
-  - Row-level equality checks so the UI can mark which inputs match the target behavior.
+- A plain response dict structures the result for the frontend to render:
+  - Side-by-side truth tables (when present).
+  - `all_match` plus row-level equality so the UI can mark which inputs match the target.
+  - `grading_mode` so the UI can distinguish truth-table, global-phase, and random-theta results.
 
-This approach prioritizes pedagogical clarity over low-level simulation detail: students interact with discrete inputs and outputs, while the backend encapsulates the underlying linear algebra.
+This approach prioritizes pedagogical clarity over low-level simulation detail: students interact with discrete inputs and outputs, while the backend encapsulates the underlying linear algebra in Cirq.
 
 ---
 
@@ -118,11 +125,15 @@ While the system does not train a model, it does compute metrics that characteri
 
 ### Circuit-Level Metrics
 
+- **`all_match`**
+  - Authoritative pass/fail for the trial vs the target. Depending on the level, this is a Dirac/Born truth-table match, a full unitary comparison up to global phase (`unitary_global_phase`), or sampled-angle unitary comparison (`random_theta`).
 - **Truth table match rate**
-  - Fraction of input rows where trial and target outputs are identical.
+  - Fraction of input rows where trial and target outputs are identical (Dirac/Born path).
   - For a perfect SWAP implementation on two qubits, this should be 1.0 across all basis states.
 - **Row-level correctness flags**
-  - Boolean indicator per input row (for example, `00`, `01`, `10`, `11`) that the UI uses to highlight mismatches.
+  - Boolean indicator per input row that the UI uses to highlight mismatches.
+- **`samples_passed` / `samples_checked`**
+  - For Rx/Ry (`random_theta`) levels only: how many sampled angles passed.
 
 ### System-Level Metrics
 
@@ -131,19 +142,19 @@ While the system does not train a model, it does compute metrics that characteri
 - **Input validation**
   - Requests with invalid gate types or qubit orders are rejected with structured error responses rather than causing runtime failures.
 
-These metrics are primarily surfaced qualitatively in the UI today, but they provide a foundation for future logging and analytics (for example, distribution of student errors over time).
+These metrics are primarily surfaced in the UI today. The frontend also POSTs fire-and-forget events to `/api/metrics/event` (level start/complete, submission, skip). `MONGO_URI` is reserved in settings but unused.
 
 ---
 
 ## Results
 
-This prototype demonstrates that a lightweight full-stack application is sufficient to support interactive reasoning about small quantum circuits:
+Three tiers (23 levels) are implemented and live at [cnotgame.com](https://cnotgame.com) (frontend on Vercel, backend on Render).
 
-- Students can construct and iterate on SWAP-style circuits using only three CNOT gates and simple wire-order semantics.
-- The backend reliably simulates trial vs target behavior and exposes clear truth tables for each.
-- The UI design (two-wire canvas plus side-by-side tables) makes it straightforward to see how a single misplaced gate or qubit order choice affects the overall unitary.
+- Students construct circuits from a progressive toolbox (starting primitives: Rz(θ) and √X), unlocking each built gate as a reusable component.
+- The backend simulates trial vs target behavior in Cirq and exposes truth tables (or a sampled unitary verdict) plus `all_match`.
+- The UI (1–3 wire canvas, output table, Bloch sphere on single-qubit levels) makes it straightforward to see how gate placement, qubit order, and parameters affect the overall unitary.
 
-As the target library grows beyond SWAP, this same pattern can be reused for additional exercises (for example, controlled-phase or simple entangling circuits).
+*(Narrative / pedagogical copy for this section will be updated separately.)*
 
 ---
 
@@ -153,39 +164,44 @@ The repository is organized as a monorepo with separate backend and frontend pac
 
 ### Prerequisites
 
-- Python 3.x
+- Python 3.11 (see `QMCB-be/.python-version`)
 - Make
-- Node.js 18 or later
+- Node.js 18 or later (CI uses Node 20)
 - npm (bundled with Node)
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/marissasinghh/qmcb.git
-cd qmcb
+git clone https://github.com/marissasinghh/quantum-circuit-builder.git
+cd quantum-circuit-builder
 ```
 
 ### 2. Start the Backend (Flask)
 
 ```bash
-cd qmcb-be
-make init    # create virtualenv, install dependencies, set up env
+cd QMCB-be
+make init    # create virtualenv, install dependencies
 make run     # starts Flask on http://127.0.0.1:5000
 ```
 
-Key environment variables (configured via `.env`):
+Swagger UI: [http://127.0.0.1:5000/api/docs](http://127.0.0.1:5000/api/docs)
+
+Key environment variables (copy `QMCB-be/.env.sample` to `.env`):
 
 - `SECRET_KEY`
 - `ALLOWED_ORIGINS` (must include your frontend origin, for example, `http://localhost:5173` in development)
 - `API_VERSION`
-- `MONGO_URI` (if using persistence)
+- `MONGO_URI` (unused; reserved)
+- `GITHUB_PAT` / `GITHUB_REPO` (required only for Feedback page submissions)
+- `VALIDATE_TARGET_CIRCUITS` (optional)
+- `PORT` (optional; defaults to 5000)
 
 ### 3. Start the Frontend (Vite + React)
 
 Open a new terminal:
 
 ```bash
-cd qmcb-fe
+cd QMCB-fe
 npm install
 cp .env.local.example .env.local
 ```
@@ -206,46 +222,53 @@ Open the application at `http://localhost:5173`. You should be able to place gat
 
 ### 4. Recommended Developer Workflow
 
-- Start the backend and verify that `POST /api/simulate` responds as expected (for example, using `curl` or an HTTP client).
+- Start the backend and verify that `POST /api/simulate` responds as expected (Swagger at `/api/docs`, or `curl` / an HTTP client).
 - Start the frontend and confirm the UI can reach the backend without CORS issues.
 - Use tooling/scripts in each package for quality checks:
-  - Frontend: `npm run typecheck`, `npm run lint`, `npm run format`
-  - Backend: formatter and linter targets surfaced via `make` if configured.
+  - Frontend: `npm run typecheck`, `npm run lint`, `npm run format` (check), `npm run format:fix` (write), `npm run test` (Vitest)
+  - Backend: `make lint`, `make fmt`, `make check`, and `pytest` from `QMCB-be/`
 
 ---
 
 ## Architecture Diagram
 
-High-level architecture for the QMCB prototype:
+High-level architecture for QMCB:
 
 ```text
 ┌───────────────────────────────────────────────────────────────┐
 │                         STUDENT BROWSER                       │
 ├───────────────────────────────────────────────────────────────┤
-│  React + Vite UI (qmcb-fe)                                    │
-│  - Drag-and-drop gate canvas                                  │
+│  React + Vite UI (QMCB-fe)                                    │
+│  - App.tsx: routing shell (/levels, /level/:id, …)            │
+│  - SolveLevelPage / MobileSolveLayout: DnD + circuit hooks    │
+│  - 1–3 wire canvas, progressive toolbox                       │
 │  - Builds UnitaryRequestDTO                                   │
-│  - Renders trial vs target truth tables                       │
+│  - Renders trial vs target truth tables, Bloch, level-complete│
 └───────────────▲───────────────────────────────────────────────┘
                 │  POST /api/simulate (JSON)
+                │  GET  /api/levels/…
+                │  POST /api/feedback/solution
+                │  POST /api/metrics/event
                 │
 ┌───────────────┴───────────────────────────────────────────────┐
-│                     FLASK API (qmcb-be)                        │
+│                     FLASK API (QMCB-be)                        │
 ├───────────────────────────────────────────────────────────────┤
 │  API Layer                                                     │
-│  - `/api/simulate` endpoint                                        │
-│  - Request validation and DTO mapping                          │
+│  - /api/simulate, /api/levels, /api/feedback, /api/metrics     │
+│  - Request validation (unitary_payload) and DTO mapping        │
+│  - Swagger at /api/docs                                        │
 │                                                                 │
 │  Controllers / Services                                        │
-│  - Construct trial circuit from gate sequence                  │
-│  - Look up target unitary from library                         │
+│  - Construct trial Cirq circuit from gate sequence             │
+│  - Look up target unitary from TARGET_LIBRARY                  │
+│  - Grade: Dirac/Born | unitary_global_phase | random_theta     │
 │                                                                 │
-│  Repositories / Simulation Core                                │
-│  - Quantum gate definitions                                    │
-│  - Circuit composition and simulation                          │
+│  Config / Simulation Core                                      │
+│  - CirqGateMapper primitives                                   │
+│  - CircuitBuilder + CircuitSimulator (Cirq)                    │
 │  - Truth table generation for trial and target                 │
 └───────────────┬───────────────────────────────────────────────┘
-                │  JSON response (truth tables)
+                │  JSON response (truth tables + all_match)
                 ▼
 ┌───────────────────────────────────────────────────────────────┐
 │                        FRONTEND VIEW                          │
@@ -261,25 +284,32 @@ High-level architecture for the QMCB prototype:
 
 ```bash
 .
-├─ qmcb-be/        # Flask API (POST /api/simulate)
-├─ qmcb-fe/        # Vite + React UI
+├─ QMCB-be/        # Flask + Cirq API (POST /api/simulate and related)
+├─ QMCB-fe/        # Vite + React UI
 ├─ .gitignore
 └─ README.md       # This file
 ```
 
 For detailed package-level documentation, see:
 
-- Backend: `qmcb-be/README.md` (setup, environment, API contract, project layout).
-- Frontend: `qmcb-fe/README.md` (scripts, environment variables, UI overview, troubleshooting).
+- Backend: `QMCB-be/README.md` (setup, environment, API contract, project layout).
+- Frontend: `QMCB-fe/README.md` (scripts, environment variables, UI overview, troubleshooting).
 
 ---
 
 ## Technologies Used
 
-- **Python 3.x**: Backend language for the Flask API.
-- **Flask**: Lightweight web framework exposing the `/api/simulate` endpoint.
-- **NumPy / quantum gate utilities**: For unitary and truth table computation (in the repositories layer).
-- **JavaScript / TypeScript**: Frontend application logic and DTOs.
-- **React + Vite**: Frontend framework and dev tooling.
+- **Python 3.11**: Backend language for the Flask API.
+- **Flask + Flask-RESTX**: Web framework and Swagger UI (`/api/docs`).
+- **flask-cors**: CORS for the Vite origin.
+- **Cirq 1.6**: All quantum circuit construction, simulation, and unitary comparison.
+- **Gunicorn**: Production WSGI server (listed in backend requirements; app is hosted on Render).
+- **pytest**: Backend tests in `QMCB-be/tests/`.
+- **TypeScript / React 18 + Vite 5**: Frontend application logic and DTOs.
+- **TanStack Query**: `useMutation` for the simulate call.
+- **@dnd-kit/core**: Drag-and-drop circuit building.
+- **React Router**: `/levels`, `/level/:id`, and the other app routes.
+- **Tailwind CSS**: Styling.
 - **ESLint / Prettier / TypeScript**: Static analysis, formatting, and type checking for the frontend.
-- **Make**: Task runner for backend setup and execution.
+- **Vitest**: Frontend unit tests.
+- **Make**: Task runner for backend setup, run, lint, and format.
