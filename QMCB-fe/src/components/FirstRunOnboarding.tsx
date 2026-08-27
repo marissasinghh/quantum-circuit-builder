@@ -240,12 +240,15 @@ function OnboardingContent({
 
       {showCta && (
         <div>
+          <p className="text-body text-text-secondary mb-4">
+            Jump straight in, or read a quick introduction first.
+          </p>
           <button
             type="button"
             onClick={handleStart}
             className="bg-tier3/5 border border-tier3/35 rounded-gate text-text-body font-mono text-[12px] px-7 py-3 cursor-pointer tracking-[0.1em] uppercase hover:bg-tier3/10 hover:border-tier3/60 transition-colors"
           >
-            Got it, start playing
+            Start Playing
           </button>
         </div>
       )}

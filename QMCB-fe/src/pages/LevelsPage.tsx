@@ -137,6 +137,8 @@ export default function LevelsPage() {
   return (
     <main className="flex-1 overflow-y-auto panel-scroll canvas-grid p-6 space-y-8">
       <div>
+        <p className="page-eyebrow mb-3">{"// levels"}</p>
+        <h1 className="page-title mb-2">Welcome</h1>
         <p className="text-body text-text-secondary mb-4">
           Build a quantum computer from Rz(θ), √X, and CNOT by progressing through
           the levels below. See the{" "}
