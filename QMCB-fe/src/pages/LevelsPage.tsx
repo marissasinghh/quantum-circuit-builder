@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useLevelProgress } from "../hooks/useLevelProgress";
 import {
   LEVEL_ORDER,
@@ -137,10 +137,16 @@ export default function LevelsPage() {
   return (
     <main className="flex-1 overflow-y-auto panel-scroll canvas-grid p-6 space-y-8">
       <div>
-        <p className="page-eyebrow mb-3">{"// levels"}</p>
-        <h1 className="page-title mb-2">Choose a Level</h1>
-        <p className="text-body text-text-secondary italic mb-4">
-          Pick a level from the grid to start building.
+        <p className="text-body text-text-secondary mb-4">
+          Build a quantum computer from Rz(θ), √X, and CNOT by progressing through
+          the levels below. See the{" "}
+          <Link
+            to="/help"
+            className="text-tier2 hover:text-tier3 transition-colors"
+          >
+            Help page
+          </Link>{" "}
+          for more background.
         </p>
         <LevelStatusLegend />
       </div>

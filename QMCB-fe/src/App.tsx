@@ -6,6 +6,7 @@ import LevelsPage from "./pages/LevelsPage";
 import MySolutionsPage from "./pages/MySolutionsPage";
 import SolveLevelPage from "./pages/SolveLevelPage";
 import AboutPage from "./pages/AboutPage";
+import HelpPage from "./pages/HelpPage";
 import SettingsPage from "./pages/SettingsPage";
 import FeedbackPage from "./pages/FeedbackPage";
 import { LevelProgressProvider, useLevelProgress } from "./hooks/useLevelProgress";
@@ -110,6 +111,7 @@ function AppShell() {
               }
             />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/help" element={<HelpPage />} />
             <Route path="/solutions" element={<MySolutionsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
