@@ -233,16 +233,13 @@ function OnboardingContent({
             Welcome
           </h1>
           <p className="text-body text-text-secondary italic mb-10">
-            A quick intro before you start building circuits.
+            Jump straight in, or take a quick tour of how this all works first.
           </p>
         </>
       )}
 
       {showCta && (
         <div>
-          <p className="text-body text-text-secondary mb-4">
-            Jump straight in, or read a quick introduction first.
-          </p>
           <button
             type="button"
             onClick={handleStart}
