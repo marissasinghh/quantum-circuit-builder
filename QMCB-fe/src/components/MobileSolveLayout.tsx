@@ -293,17 +293,12 @@ export function MobileSolveLayout({
                         onSelect0={() => setInitialState(0)}
                         onSelect1={() => setInitialState(1)}
                       />
-                      <div className="relative mx-auto w-[255px]">
-                        <BlochSphere
-                          theta={blochState.theta}
-                          phi={blochState.phi}
-                          targetTheta={targetBlochState?.theta}
-                          targetPhi={targetBlochState?.phi}
-                        />
-                        {showTargetHint && (
-                          <BlochTargetHint onDismiss={onDismissTargetHint} />
-                        )}
-                      </div>
+                      <BlochSphere
+                        theta={blochState.theta}
+                        phi={blochState.phi}
+                        targetTheta={targetBlochState?.theta}
+                        targetPhi={targetBlochState?.phi}
+                      />
                       {showOrderTip && showsOrderTip && (
                         <div className="relative w-full mt-[14px] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                           <button
@@ -319,6 +314,9 @@ export function MobileSolveLayout({
                             sphere, try placing Sqrt_X first.
                           </p>
                         </div>
+                      )}
+                      {showTargetHint && (
+                        <BlochTargetHint onDismiss={onDismissTargetHint} />
                       )}
                       <Tooltip id="bloch-sphere-mobile">{BLOCH_SPHERE_TOOLTIP}</Tooltip>
                     </div>

@@ -4,7 +4,7 @@ interface BlochTargetHintProps {
 
 export function BlochTargetHint({ onDismiss }: BlochTargetHintProps) {
   return (
-    <div className="absolute top-2 right-2 z-10 max-w-[10.5rem] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
+    <div className="absolute top-0 right-2 z-10 max-w-[10.5rem] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
       <button
         type="button"
         onClick={onDismiss}
