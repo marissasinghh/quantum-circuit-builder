@@ -24,6 +24,7 @@ import { OutputTable, type GradingSummary, type OutputTableMode } from "./Output
 import { TaskCard } from "./TaskCard";
 import { MathText } from "./MathText";
 import { BlochSphere } from "./BlochSphere";
+import { BlochTargetHint } from "./BlochTargetHint";
 import {
   BlochSphereHeader,
   BlochPreviewToggle,
@@ -100,6 +101,8 @@ interface MobileSolveLayoutProps {
   showOrderTip: boolean;
   setShowOrderTip: (val: boolean) => void;
   showsOrderTip: boolean;
+  showTargetHint: boolean;
+  onDismissTargetHint: () => void;
 
   // Scroll ref (passed through from SolveLevelContent)
   circuitOutputRef: React.RefObject<HTMLDivElement>;
@@ -164,6 +167,8 @@ export function MobileSolveLayout({
   showOrderTip,
   setShowOrderTip,
   showsOrderTip,
+  showTargetHint,
+  onDismissTargetHint,
   circuitOutputRef,
 }: MobileSolveLayoutProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>("info");
@@ -309,6 +314,9 @@ export function MobileSolveLayout({
                             sphere, try placing Sqrt_X first.
                           </p>
                         </div>
+                      )}
+                      {showTargetHint && (
+                        <BlochTargetHint onDismiss={onDismissTargetHint} />
                       )}
                       <Tooltip id="bloch-sphere-mobile">{BLOCH_SPHERE_TOOLTIP}</Tooltip>
                     </div>
