@@ -82,6 +82,9 @@ export const LEVEL_SOLUTIONS_KEY = "cnot_level_solutions";
 /** localStorage key for first-run onboarding dismissal. */
 export const ONBOARDING_COMPLETE_KEY = "cnot_onboarding_complete";
 
+/** localStorage key for per-level first-run popup dismissal. */
+export const SEEN_POPUPS_KEY = "cnot_seen_popups";
+
 // ========================
 // BASIS STATES - 1 QUBITS
 // ========================`

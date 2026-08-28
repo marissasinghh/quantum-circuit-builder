@@ -26,6 +26,7 @@ import { DragGateOverlay } from "../components/DragGateOverlay";
 import { OutputTable, type GradingSummary } from "../components/OutputTable";
 import { LevelCompleteModal } from "../components/LevelCompleteModal";
 import { BlochSphere } from "../components/BlochSphere";
+import { BlochTargetHint } from "../components/BlochTargetHint";
 
 import { LEVEL_ORDER, getNextLevel, isLevelCleared } from "../config/levels";
 import { computeAvailableGates } from "../utils/computeToolbox";
@@ -37,6 +38,7 @@ import { Gate, type PlacedGate, type PlacedSingleQubitGate } from "../types/glob
 import { useMobileView } from "../hooks/useMobileView";
 import { MobileSolveLayout } from "../components/MobileSolveLayout";
 import { loadLevelSolutions, saveLevelSolution } from "../utils/levelSolutions";
+import { getSeenPopups, markPopupSeen } from "../utils/seenPopups";
 import { trackEvent } from "../utils/trackEvent";
 
 function gatesAreOnlyRz(gates: PlacedGate[]): boolean {
@@ -274,6 +276,13 @@ function SolveLevelContent({
     currentLevel.target_unitary === Gate.S ||
     currentLevel.target_unitary === Gate.T;
   const [showOrderTip, setShowOrderTip] = React.useState(false);
+  const [showTargetHint, setShowTargetHint] = React.useState(
+    () => currentLevel.target_unitary === Gate.X && getSeenPopups()[Gate.X] !== true,
+  );
+  const handleDismissTargetHint = React.useCallback(() => {
+    markPopupSeen(Gate.X);
+    setShowTargetHint(false);
+  }, []);
   const prevGateCountRef = React.useRef(0);
   const prevRzThetaSigRef = React.useRef("");
 
@@ -458,6 +467,8 @@ function SolveLevelContent({
         showOrderTip={showOrderTip}
         setShowOrderTip={setShowOrderTip}
         showsOrderTip={showsOrderTip}
+        showTargetHint={showTargetHint}
+        onDismissTargetHint={handleDismissTargetHint}
         circuitOutputRef={circuitOutputRef}
         handleSkipLevel={handleSkipLevel}
         showSkip={showSkip}
@@ -538,6 +549,9 @@ function SolveLevelContent({
                       targetTheta={targetBlochState?.theta}
                       targetPhi={targetBlochState?.phi}
                     />
+                    {showTargetHint && (
+                      <BlochTargetHint onDismiss={handleDismissTargetHint} />
+                    )}
                     {showOrderTip && showsOrderTip && (
                       <div className="relative w-full mt-[14px] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                         <button

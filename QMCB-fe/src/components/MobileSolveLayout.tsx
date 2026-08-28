@@ -24,6 +24,7 @@ import { OutputTable, type GradingSummary, type OutputTableMode } from "./Output
 import { TaskCard } from "./TaskCard";
 import { MathText } from "./MathText";
 import { BlochSphere } from "./BlochSphere";
+import { BlochTargetHint } from "./BlochTargetHint";
 import {
   BlochSphereHeader,
   BlochPreviewToggle,
@@ -100,6 +101,8 @@ interface MobileSolveLayoutProps {
   showOrderTip: boolean;
   setShowOrderTip: (val: boolean) => void;
   showsOrderTip: boolean;
+  showTargetHint: boolean;
+  onDismissTargetHint: () => void;
 
   // Scroll ref (passed through from SolveLevelContent)
   circuitOutputRef: React.RefObject<HTMLDivElement>;
@@ -164,6 +167,8 @@ export function MobileSolveLayout({
   showOrderTip,
   setShowOrderTip,
   showsOrderTip,
+  showTargetHint,
+  onDismissTargetHint,
   circuitOutputRef,
 }: MobileSolveLayoutProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>("info");
@@ -294,6 +299,9 @@ export function MobileSolveLayout({
                         targetTheta={targetBlochState?.theta}
                         targetPhi={targetBlochState?.phi}
                       />
+                      {showTargetHint && (
+                        <BlochTargetHint onDismiss={onDismissTargetHint} />
+                      )}
                       {showOrderTip && showsOrderTip && (
                         <div className="relative w-full mt-[14px] text-[10px] text-text-body bg-bg-panel border border-tier1 rounded-panel px-2 py-1.5 leading-relaxed font-sans">
                           <button
