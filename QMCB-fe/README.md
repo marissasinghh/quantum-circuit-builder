@@ -1,7 +1,6 @@
-# QMCB-FE — Quantum Circuit Builder (Frontend)
+# QMCB-FE — The CNOT Game (Frontend)
 
-This is the **frontend** for building quantum circuits in a NAND-Game–style UI.
-Students drag gates from a progressive toolbox onto a 1-, 2-, or 3-wire canvas, submit the circuit to the backend, and compare the **trial** vs **target** truth tables (SWAP is one of 23 levels).
+This is the frontend for [The CNOT Game](https://cnotgame.com) — the quantum analog of The NAND Game. Just as that project builds up from relays to a full CPU, students here start from Rz(θ) and √X and progressively derive every other quantum gate themselves, unlocking each one as a reusable component. Students drag gates from a progressive toolbox onto a 1-, 2-, or 3-wire canvas, submit the circuit to the backend, and compare the **trial** vs **target** truth tables across 23 levels.
 
 Live site: [cnotgame.com](https://cnotgame.com)
 

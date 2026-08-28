@@ -1,8 +1,8 @@
 [![CI](https://github.com/marissasinghh/quantum-circuit-builder/actions/workflows/ci.yml/badge.svg)](https://github.com/marissasinghh/quantum-circuit-builder/actions/workflows/ci.yml)
 
-# QMCB-BE — Quantum Circuit Builder (Backend)
+# QMCB-BE — The CNOT Game (Backend)
 
-This project is the **backend** for a web application that allows users to build quantum circuits from scratch, test output results, and compare the results via a truth table with the target circuit output results. All quantum simulation goes through Cirq.
+This is the backend for [The CNOT Game](https://cnotgame.com), where students build quantum gates from scratch starting from Rz(θ) and √X, and get graded against a target circuit via a truth-table comparison. All quantum simulation goes through Cirq.
 
 ## Prerequisites
 

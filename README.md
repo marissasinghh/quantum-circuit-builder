@@ -1,6 +1,6 @@
-# QMCB — Quantum Circuit Builder (Monorepo)
+# The CNOT Game — Quantum Circuit Builder (Monorepo)
 
-Full-stack learning tool where students build quantum circuits, submit them for simulation, and compare **trial** vs **target** truth tables across 23 levels (1–3 qubits). SWAP is one Tier 2 exercise; the same pipeline grades every level.
+A full-stack learning tool where students build every quantum gate from scratch, starting from a minimal universal gateset — Rz(θ) and √X — and deriving everything else themselves. Currently in beta, live at [cnotgame.com](https://cnotgame.com), having run with real students at a Berkeley Summer Camp alpha and MSU's Quantum Motor City beta.
 
 - Backend: `QMCB-be/` (Flask, Python, Cirq)
 - Frontend: `QMCB-fe/` (Vite, React, TypeScript)
@@ -24,15 +24,15 @@ Full-stack learning tool where students build quantum circuits, submit them for 
 
 ## Problem Statement
 
-Introductory quantum computing courses often present gate-level concepts (for example, CNOT, H, phase gates) abstractly, which can make it difficult for students to build intuition about how small circuits compose into larger unitaries. Students may understand the matrix representations in isolation but struggle to reason about multi-qubit behavior and truth tables for simple benchmarks such as SWAP.
+The CNOT Game is the quantum analog of [The NAND Game](https://nandgame.com). Just as that project builds up from relays to NAND to a full CPU, students here start from Rz(θ) and √X and progressively construct every other quantum gate — X, H, CNOT, up through Toffoli and Fredkin — deriving each one before they're allowed to use it. This is a different approach from tools like IBM's Quantum Composer or standard Qiskit tutorials, which hand students pre-built gates to observe. The pedagogical bet: checking a circuit's output on every basis state (linearity) is enough to prove it's correct for all inputs — a concrete, hands-on version of an idea that's usually taught abstractly.
 
 This project addresses that gap by providing:
 
 - A **drag-and-drop circuit builder** where students construct circuits on a 1-, 2-, or 3-wire canvas, depending on the level.
 - A **backend simulator** (Cirq) that computes the trial unitary and truth table for the student-designed circuit.
-- A **comparison view** between the trial truth table and a target truth table drawn from a library of 23 named unitaries across three tiers (for example, SWAP on Tier 2).
+- A **comparison view** between the trial truth table and a target truth table drawn from a library of 23 named unitaries across three tiers.
 
-The goal is to make it easy for students to iterate on designs, see immediate feedback, and develop an intuition for how gate placement and qubit ordering affect circuit behavior.
+The goal is to make it easy for students to iterate on designs, see immediate feedback, and build real intuition for how gate placement and qubit ordering affect circuit behavior — not just watch it happen.
 
 ---
 
@@ -150,11 +150,11 @@ These metrics are primarily surfaced in the UI today. The frontend also POSTs fi
 
 Three tiers (23 levels) are implemented and live at [cnotgame.com](https://cnotgame.com) (frontend on Vercel, backend on Render).
 
-- Students construct circuits from a progressive toolbox (starting primitives: Rz(θ) and √X), unlocking each built gate as a reusable component.
+- Students construct circuits from a progressive toolbox (starting primitives: Rz(θ) and √X), unlocking each built gate as a reusable component for the next level.
 - The backend simulates trial vs target behavior in Cirq and exposes truth tables (or a sampled unitary verdict) plus `all_match`.
 - The UI (1–3 wire canvas, output table, Bloch sphere on single-qubit levels) makes it straightforward to see how gate placement, qubit order, and parameters affect the overall unitary.
 
-*(Narrative / pedagogical copy for this section will be updated separately.)*
+The project has run with real students at two events — a Berkeley Summer Camp alpha and MSU's Quantum Motor City beta — and is currently in beta, with outreach underway to bring it into more classrooms and camps.
 
 ---
 
